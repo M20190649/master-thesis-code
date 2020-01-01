@@ -1,0 +1,288 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "174 Frankfurter Allee",
+        "address": "10247 Berlin, Friedrichshain-Kreuzberg, Frankfurter Allee 86b",
+        "ubaId": 172,
+        "ubaCode": "DEBE065",
+        "ubaName": "Berlin Frankfurter Allee",
+        "ubaLocationLong": 13.4699,
+        "ubaLocationLat": 52.5141,
+        "ubaLocationType": "urban area, urban, traffic"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [13.47022533416748, 52.5141478919602]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "085 Friedrichshagen",
+        "address": "12587 Berlin Treptow-Köpenick, Ortsteil Friedrichshagen, Müggelseedamm 307-310",
+        "ubaId": 163,
+        "ubaCode": "DEBE056",
+        "ubaName": "Berlin Friedrichshagen",
+        "ubaLocationLong": 13.6471,
+        "ubaLocationLat": 52.4477,
+        "ubaLocationType": "rural near town, rural, background"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [13.647068738937378, 52.44773825493454]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "282 Karlshorst",
+        "address": "10318 Berlin, Lichtenberg, Ortsteil Karlshorst, Johanna-und-Willy-Brauer-Platz",
+        "ubaId": 173,
+        "ubaCode": "DEBE066",
+        "ubaName": "Berlin Karlshorst",
+        "ubaLocationLong": 13.5295,
+        "ubaLocationLat": 52.4853,
+        "ubaLocationType": "urban area, urban, background"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [13.529502153396606, 52.48532018659733]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "027 Marienfelde",
+        "address": "12307 Berlin, Tempelhof-Schöneberg, Schichauweg 60",
+        "ubaId": 138,
+        "ubaCode": "DEBE027",
+        "ubaName": "Berlin Marienfelde",
+        "ubaLocationLong": 13.3681,
+        "ubaLocationLat": 52.3984,
+        "ubaLocationType": "rural near town, rural, background"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [13.368076086044312, 52.39840939630484]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "124 Mariendorfer Damm",
+        "address": "12099 Berlin, Tempelhof-Schöneberg, Mariendorfer Damm 148",
+        "ubaId": 176,
+        "ubaCode": "DEBE069",
+        "ubaName": "Berlin Mariendorfer Damm",
+        "ubaLocationLong": 13.3877,
+        "ubaLocationLat": 52.4381,
+        "ubaLocationType": "urban area, urban, traffic"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [13.387650847434998, 52.438155851108064]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "143 Silbersteinstraße",
+        "address": "12051 Berlin, Neukölln, Silbersteinstr. 1",
+        "ubaId": 170,
+        "ubaCode": "DEBE063",
+        "ubaName": "Berlin Silbersteinstraße",
+        "ubaLocationLong": 13.4417,
+        "ubaLocationLat": 52.4675,
+        "ubaLocationType": "urban area, urban, traffic"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [13.441665172576904, 52.467517746641136]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "220 Karl-Marx-Straße",
+        "address": "12043 Berlin, Neukölln, Karl-Marx-Str. 76",
+        "ubaId": 171,
+        "ubaCode": "DEBE064",
+        "ubaName": "Berlin Karl-Marx-Straße",
+        "ubaLocationLong": 13.434,
+        "ubaLocationLat": 52.4817,
+        "ubaLocationType": "urban area, urban, traffic"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [13.433932363986969, 52.48168252000161]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "042 Neukölln",
+        "address": "12047 Berlin, Neukölln, Nansenstr. 10",
+        "ubaId": 145,
+        "ubaCode": "DEBE034",
+        "ubaName": "Berlin Neukölln",
+        "ubaLocationLong": 13.4308,
+        "ubaLocationLat": 52.4895,
+        "ubaLocationType": "urban area, urban, background"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [13.430847823619843, 52.48943935421994]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "171 Mitte",
+        "address": "10179 Berlin, Mitte, Brückenstr. 6",
+        "ubaId": 175,
+        "ubaCode": "DEBE068",
+        "ubaName": "Berlin Mitte",
+        "ubaLocationLong": 13.4188,
+        "ubaLocationLat": 52.5136,
+        "ubaLocationType": "urban area, urban, background"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [13.418858349323271, 52.51358964184953]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "088 Messwagen Leipziger Str.",
+        "address": "wechselnd, seit 12/2017: Leipziger Str. 20, Berlin-Mitte"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [13.388485014438627, 52.51019101887146]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "018 Schöneberg",
+        "address": "10823 Berlin, Tempelhof-Schöneberg, Belziger Str. 52",
+        "ubaId": 129,
+        "ubaCode": "DEBE018",
+        "ubaName": "Berlin Schöneberg",
+        "ubaLocationLong": 13.3488,
+        "ubaLocationLat": 52.4858,
+        "ubaLocationType": "urban area, urban, background"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [13.348815143108366, 52.485762827786786]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "117 Schildhornstraße",
+        "address": "12163 Berlin, Steglitz-Zehlendorf, Schildhornstr. 76",
+        "ubaId": 168,
+        "ubaCode": "DEBE061",
+        "ubaName": "Berlin Schildhornstraße",
+        "ubaLocationLong": 13.3183,
+        "ubaLocationLat": 52.4636,
+        "ubaLocationType": "urban area, urban, traffic"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [13.318323791027069, 52.46361714061715]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "032 Grunewald",
+        "address": "14193 Berlin, Charlottenburg-Wilmersdorf, Forst Grunewald, Jagen 91",
+        "ubaId": 143,
+        "ubaCode": "DEBE032",
+        "ubaName": "Berlin Grunewald (3.5 m)",
+        "ubaLocationLong": 13.2251,
+        "ubaLocationLat": 52.4732,
+        "ubaLocationType": "rural near town, rural, background"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [13.225114345550537, 52.473174400200236]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "115 Hardenbergplatz",
+        "address": "10623 Berlin, Charlottenburg-Wilmersdorf, Hardenbergplatz",
+        "ubaId": 174,
+        "ubaCode": "DEBE067",
+        "ubaName": "Berlin Hardenbergplatz",
+        "ubaLocationLong": 13.333,
+        "ubaLocationLat": 52.5066,
+        "ubaLocationType": "urban area, urban, traffic"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [13.332968652248383, 52.50662887543474]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "010 Wedding",
+        "address": "13353 Mitte, Amrumer Str./Limburger Str.",
+        "ubaId": 121,
+        "ubaCode": "DEBE010",
+        "ubaName": "Berlin Wedding",
+        "ubaLocationLong": 13.3493,
+        "ubaLocationLat": 52.543,
+        "ubaLocationType": "urban area, urban, background"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [13.349241614341736, 52.54292407304787]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "077 Buch",
+        "address": "13125 Berlin, Pankow, Ortsteil Buch, Hobrechtsfelder Chaussee 112, Waldschmiede",
+        "ubaId": 158,
+        "ubaCode": "DEBE051",
+        "ubaName": "Berlin Buch",
+        "ubaLocationLong": 13.4831,
+        "ubaLocationLat": 52.6442,
+        "ubaLocationType": "suburban area, suburban, background"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [13.483282327651978, 52.64409200898614]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "145 Frohnau",
+        "address": "13465 Berlin, Reinickendorf, Frohnau, Jägerstieg 1",
+        "ubaId": 169,
+        "ubaCode": "DEBE062",
+        "ubaName": "Berlin Frohnau (3.5 m)",
+        "ubaLocationLong": 13.2961,
+        "ubaLocationLat": 52.6533,
+        "ubaLocationType": "rural near town, rural, background"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [13.296149969100952, 52.6533480714511]
+      }
+    }
+  ]
+}

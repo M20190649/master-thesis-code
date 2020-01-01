@@ -1,0 +1,12 @@
+.vscode
+node_modules
+__pycache__
+airdata/data
+.idea
+output
+
+*.pdf
+*.osm.pbf
+*.rest
+*.qgz
+airdata/*.cmd
