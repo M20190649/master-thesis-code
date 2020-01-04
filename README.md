@@ -6,6 +6,11 @@ A collection of all code used for my master thesis
 
 ## Setup for Windows
 
+### General Requirements
+
+* Python
+* Linux shell (All shell scripts are written in bash) (I use Git Bash with some add features like wget)
+
 ### Sumo
 
 1. Download and install SUMO

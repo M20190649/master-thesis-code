@@ -4,10 +4,12 @@ __pycache__
 airdata/data
 .idea
 output
+airdata/*.cmd
 
 *.pdf
 *.osm.pbf
 *.rest
 *.qgz
 *.xml
-airdata/*.cmd
+*.bz2
+*.gz
