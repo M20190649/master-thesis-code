@@ -9,4 +9,5 @@ output
 *.osm.pbf
 *.rest
 *.qgz
+*.xml
 airdata/*.cmd
