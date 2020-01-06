@@ -3,21 +3,17 @@ const axios = require("axios")
 
 function pad(number) {
   if (number < 10) {
-    return "0" + number
+    return `0${number}`
   }
   return String(number)
 }
 
 const dateToString = date => {
-  return (
-    String(date.getUTCFullYear()) +
+  return `${String(date.getUTCFullYear()) +
     pad(date.getUTCMonth() + 1) +
-    pad(date.getUTCDate()) +
-    "-" +
-    pad(date.getUTCHours()) +
-    pad(date.getUTCMinutes()) +
-    pad(date.getUTCSeconds())
-  )
+    pad(date.getUTCDate())}-${pad(date.getUTCHours())}${pad(date.getUTCMinutes())}${pad(
+    date.getUTCSeconds()
+  )}`
 }
 
 function downloadFromOpenSenseNetwork(pollutant) {
@@ -28,8 +24,7 @@ function downloadFromOpenSenseNetwork(pollutant) {
   const baseUrl = "https://www.opensense.network/beta/api/v1.0/sensors"
   const berlinBbox = [52.301761, 13.040771, 52.714667, 13.827667]
   const url =
-    baseUrl +
-    `?measurandId=${pollutantMapping[pollutant]}` +
+    `${baseUrl}?measurandId=${pollutantMapping[pollutant]}` +
     `&boundingBox=%5B${berlinBbox.join("%2C")}%5D`
 
   axios
@@ -49,7 +44,7 @@ function downloadFromLuftdatenInfo(pollutant) {
   }
   const baseUrl = "http://data.sensor.community/airrohr/v1/filter"
   const berlinBbox = [52.301761, 13.040771, 52.714667, 13.827667]
-  const url = baseUrl + `/box=${berlinBbox.join("%2C")}`
+  const url = `${baseUrl}/box=${berlinBbox.join("%2C")}`
 
   axios
     .get(url)
@@ -70,8 +65,8 @@ function downloadFromLuftdatenInfo(pollutant) {
           return uniqueMeasurements
         }, [])
 
-      console.log("All measurements: " + measurements.length)
-      console.log("PM Measurements: " + pmMeasurements.length)
+      console.log(`All measurements: ${measurements.length}`)
+      console.log(`PM Measurements: ${pmMeasurements.length}`)
 
       const outputGeojson = {
         type: "FeatureCollection",

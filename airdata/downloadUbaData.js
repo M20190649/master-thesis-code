@@ -29,9 +29,8 @@ async function downloadFromUmweltBundesamt(
   timeTo
 ) {
   const baseURL = "https://www.umweltbundesamt.de/api/air_data/v2/measures/json"
-  let apiUrl =
-    baseURL +
-    `?component=${pollutant}` +
+  const apiUrl =
+    `${baseURL}?component=${pollutant}` +
     `&scope=${valueType}` +
     `&date_from=${dateFrom}` +
     `&time_from=${timeFrom}` +
@@ -45,7 +44,7 @@ async function downloadFromUmweltBundesamt(
       continue
     }
 
-    const res = await axios.get(apiUrl + `&station=${station.properties.ubaId}`)
+    const res = await axios.get(`${apiUrl}&station=${station.properties.ubaId}`)
 
     if (Object.keys(res.data.data).length === 0) {
       continue
