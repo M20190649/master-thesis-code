@@ -36,7 +36,7 @@ def transformLayer(layer):
 def importDistricts():
     print("Importing District layer...")
     
-    districtsFile = baseDirectory + "/berlinDistricts.geojson"
+    districtsFile = baseDirectory + "/shared/berlinDistricts.geojson"
 
     districtLayer = QgsVectorLayer(districtsFile, "Berlin Districts", "ogr")
     

@@ -1,7 +1,7 @@
 const fs = require("fs")
 const axios = require("axios")
 
-const stationsGeoJSON = JSON.parse(fs.readFileSync("../berlinSensorStations.geojson"))
+const stationsGeoJSON = JSON.parse(fs.readFileSync("../shared/berlinSensorStations.geojson"))
 
 function getUmweltBundesamtBerlinStations() {
   const berlinStations = []
