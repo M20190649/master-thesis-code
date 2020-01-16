@@ -20,12 +20,21 @@ function onOpenTag(node) {
     console.log(`New person: ${this.currentPerson.id}`)
   }
 
-  if (this.currentTag === "leg") {
+  if (this.currentTag === "plan") {
+    this.parsePlan = node.attributes.selected === "yes"
+  }
+
+  if (this.currentTag === "leg" && this.parsePlan) {
     if (node.attributes.mode === "car") {
+      // console.log(node)
       this.parseRoute = true
       this.routeCounter++
     }
   }
+
+  // if (this.currentTag === "route" && this.parsePlan) {
+  //   console.log(node)
+  // }
 
   // console.log(node)
 }
@@ -33,10 +42,18 @@ function onCloseTag(tagName) {
   if (tagName === "person") {
     console.log(`Person ${this.currentPerson.id} done`)
     this.routeCounter = 0
+
+    // if (this.personCounter === 1) {
+    //   this.inputStream.end()
+    // }
   }
 
   if (tagName === "route") {
     this.parseRoute = false
+  }
+
+  if (tagName === "plan") {
+    this.parsePlan = false
   }
 }
 
@@ -72,6 +89,7 @@ function parseStream() {
   }
   this.personCounter = 0
   this.routeCounter = 0
+  this.parsePlan = false
   this.parseRoute = false
 
   const saxStream = sax.createStream(true)
@@ -81,6 +99,7 @@ function parseStream() {
   saxStream.on("text", onText.bind(this))
   saxStream.on("end", onEnd.bind(this))
 
+  this.inputStream = saxStream
   this.outputStream = fs.createWriteStream(this.outputPath)
   this.outputStream.write("<routes>\n")
   fs.createReadStream(this.path).pipe(saxStream)
