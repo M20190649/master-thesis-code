@@ -68,4 +68,13 @@
     * Use [DUAROUTER](https://sumo.dlr.de/docs/DUAROUTER.html) to calculate routes
     * I am not sure if this may cause any inaccuracies regarding the demand model. I don't think it will because in the end during my own simulation the routes of the drivers will change anyways.
 
+## 19.01.2020
+
+* Add conversion of MATSim plans to SUMO trips in order to convert them using DUAROUTER
+* Try to import OSM network into SUMO to check if the coordinates of every node in the MATSim network is equal to the same location of that node in the OSM network
+  * Problem: OSM file is extremely large. Import takes like 30 minutes. 
+  * Maybe try to find a smaller version (only roads) of the OSM network
+* TODO:
+  * Find smaller OSM network version
+  * Apply DUAROUTER to trips and check the outcome
 
