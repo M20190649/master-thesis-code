@@ -32,9 +32,20 @@ function onOpenTag(node) {
     }
   }
 
-  // if (this.currentTag === "route" && this.parsePlan) {
-  //   console.log(node)
-  // }
+  if (this.currentTag === "route" && this.parseRoute && this.parsePlan) {
+    if (this.outputType === "trips") {
+      const xml = xmlBuilder
+        .begin()
+        .element("trip", {
+          id: `${this.currentPerson.id}_${this.routeCounter}`,
+          depart: `${this.personCounter * 100 + this.routeCounter}`,
+          from: node.attributes.start_link,
+          to: node.attributes.end_link,
+        })
+        .end({ pretty: true })
+      this.outputStream.write(`${xml}\n`)
+    }
+  }
 
   // console.log(node)
 }
@@ -59,24 +70,26 @@ function onCloseTag(tagName) {
 
 function onText(text) {
   if (this.currentTag === "route" && this.parseRoute) {
-    const xml = xmlBuilder
-      .begin()
-      .element("vehicle", {
-        id: `${this.currentPerson.id}_${this.routeCounter}`,
-        color: this.currentPerson.color,
-        depart: `${this.personCounter * 100 + this.routeCounter}`,
-      })
-      .element("route", {
-        edges: text,
-      })
-      .end({ pretty: true })
-    // console.log(text)
-    this.outputStream.write(`${xml}\n`)
+    if (this.outputType === "routes") {
+      const xml = xmlBuilder
+        .begin()
+        .element("vehicle", {
+          id: `${this.currentPerson.id}_${this.routeCounter}`,
+          color: this.currentPerson.color,
+          depart: `${this.personCounter * 100 + this.routeCounter}`,
+        })
+        .element("route", {
+          edges: text,
+        })
+        .end({ pretty: true })
+      // console.log(text)
+      this.outputStream.write(`${xml}\n`)
+    }
   }
 }
 
 function onEnd() {
-  this.outputStream.write("</routes>")
+  this.outputStream.write(`</${this.outputType}>`)
   this.outputStream.end()
   console.log("Done!")
 }
@@ -101,7 +114,7 @@ function parseStream() {
 
   this.inputStream = saxStream
   this.outputStream = fs.createWriteStream(this.outputPath)
-  this.outputStream.write("<routes>\n")
+  this.outputStream.write(`<${this.outputType}>\n`)
   fs.createReadStream(this.path).pipe(saxStream)
 }
 
