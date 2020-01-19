@@ -9,9 +9,12 @@ A collection of all code used for my master thesis
 ### General Requirements
 
 * Python
-* Linux shell (All shell scripts are written in bash) (I use Git Bash with some add features like wget)
+* NodeJS
+* Linux shell (All shell scripts are written in bash) 
+* If you use Git Bash add the command `wget` for it ([Install Instructions](https://gist.github.com/evanwill/0207876c3243bbb6863e65ec5dc3f058#wget))
 
 ### Sumo
 
-1. Download and install SUMO
+1. Download and install/unpack SUMO
 2. Set `SUMO_HOME` environment variable to your SUMO install directory (e.g. `C:\Users\Mazel\Desktop\sumo-1.4.0`)
+3. Add the `bin` directory of your SUMO directory to the PATH variable (e.g. `C:\Users\Mazel\Desktop\sumo-1.4.0\bin`)
