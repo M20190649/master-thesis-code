@@ -78,3 +78,8 @@
   * Find smaller OSM network version
   * Apply DUAROUTER to trips and check the outcome
 
+## 20.01.2020
+
+* DUAROUTER works on the generated trips but I feel like the routes are unnecessarily long 
+* Try and use `osmGet.py` + `osmBuild` to extract smaller OSM network
+
