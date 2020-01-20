@@ -8,7 +8,7 @@ A collection of all code used for my master thesis
 
 ### General Requirements
 
-* Python
+* Python 64bit
 * NodeJS
 * Linux shell (All shell scripts are written in bash) 
 * If you use Git Bash add the command `wget` for it ([Install Instructions](https://gist.github.com/evanwill/0207876c3243bbb6863e65ec5dc3f058#wget))

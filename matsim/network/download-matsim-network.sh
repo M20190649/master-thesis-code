@@ -6,7 +6,7 @@ if [ -f "$IN_FILE" ]; then
 else 
   echo "Berlin MATSim Network File does not exist"
   echo "Downloading now..."
-  wget https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.4-10pct/input/berlin-v5-network.xml.gz -O $IN_FILE
+  wget https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.4-10pct/input/berlin-v5-network.xml.gz -O $IN_FILE --no-check-certificate
   echo "Done!"
 fi
 
