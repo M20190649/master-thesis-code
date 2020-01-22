@@ -81,5 +81,18 @@
 ## 20.01.2020
 
 * DUAROUTER works on the generated trips but I feel like the routes are unnecessarily long 
-* Try and use `osmGet.py` + `osmBuild` to extract smaller OSM network
+  * I could maybe use it for the OSM approach
+* Try and use `osmGet.py` + `osmBuild` to extract smaller OSM network. Did not really work.
+
+## 21.01.2020
+
+* Realized the converted MATSim network is horrible and looks really weird in some places
+* Tried to circumvent the "missing connection between edges" error by manually removing some edges from some plans but the error keeps popping up again and again 
+  * -> This is not really a feasable options
+* Successfully used the Overpass API to get only the road network from OSM
+* I was able to open it in SUMO
+* Next problem: How do I convert the MATSim plans from its format to OSM coordinates?
+  * Submitted GitHub issue to ask for help
+* Maybe DUAROUTER could be useful for plan conversion once I figure out the mapping of the coordinates
+
 
