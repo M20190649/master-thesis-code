@@ -1,3 +1,5 @@
+cd ../osm
+
 IN_FILE=berlin-latest.osm.bz2
 OUT_FILE=berlin-latest.osm.xml
 

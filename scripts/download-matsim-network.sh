@@ -1,3 +1,5 @@
+cd ../matsim/network
+
 IN_FILE=berlin-v5-network.xml.gz
 OUT_FILE=berlin-v5-network.xml
 
