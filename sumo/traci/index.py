@@ -7,12 +7,11 @@ if "SUMO_HOME" in os.environ:
 else:
     sys.exit("please declare environment variable 'SUMO_HOME'")
 
-sumoBinary = os.environ["SUMO_HOME"] + "/bin/sumo-gui"
+sumoBinary = os.environ["SUMO_HOME"] + "/bin/sumo"
 sumoCmd = [sumoBinary, "-c", "../test-config.sumocfg"]
 
 from controller import SimController
 
-config = {"sumoCmd": sumoCmd, "steps": 1000}
+config = {"sumoCmd": sumoCmd, "steps": 50}
 controller = SimController(config)
-
 controller.start()
