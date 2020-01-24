@@ -95,4 +95,12 @@
   * Submitted GitHub issue to ask for help
 * Maybe DUAROUTER could be useful for plan conversion once I figure out the mapping of the coordinates
 
+## 23.01.2020
+
+* Amazing day of progress <333
+* Started implementing TraCI
+* Added conversion from GeoJSON to SUMO polygon specification
+* Import the polygon shape into SUMO and use them to track the vehicles
+* Added vehicle distance tracking for polygons
+
 
