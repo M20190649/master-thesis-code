@@ -103,4 +103,26 @@
 * Import the polygon shape into SUMO and use them to track the vehicles
 * Added vehicle distance tracking for polygons
 
+## 24.01.2020
 
+# Sandro meeting
+
+* Can you add cost of edge PER CAR or is it global?
+* rerouting
+* sandro schreibt dlr mail
+
+* concept
+  * tool chain ohne die techniken zu erzählen
+  * was wollen wir rauskriegen und wie
+
+* implementation
+  * toolchain mit tools
+
+## 25.01.2020
+
+* Someone responded to my GitHub issue!!
+* Realized that there is a `<activity type="car interaction">` before every `<leg mode="car">`
+* All coordinates are in GK4
+* TODO:
+  * Test conversion of GK4 coordinates to WGS84 and see where it is located on the OSM map
+  * Check if it is a valid approach
