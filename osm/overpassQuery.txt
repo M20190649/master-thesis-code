@@ -13,8 +13,10 @@ The original search was:
 
 (
   way
-  	["highway"~"service|elevator|footway|steps|cycleway|corridor|path|pedestrian|platform"]
+  	["highway"~"service|elevator|footway|steps|cycleway|corridor|path|pedestrian|platform|access_ramp"]
   	({{bbox}});
+  relation 
+    ["highway"~"footway"]({{bbox}});
 )->.exclude;
 
 (.all; - .exclude;);
@@ -23,3 +25,6 @@ The original search was:
 out body;
 >;
 out skel qt;
+
+( way["highway"~"motorway|trunk|primary|secondary|tertiary|residential|living_street|motorway_link|motorway_link|trunk_link|primary_link|secondary_link|tertiary_link|road|unclassified"]({{bbox}});
+>;);out;

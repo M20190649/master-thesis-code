@@ -1,0 +1,8 @@
+(
+  way["highway"~"motorway|trunk|primary|secondary|tertiary|residential|living_street|motorway_link|motorway_link|trunk_link|primary_link|secondary_link|tertiary_link|road|unclassified"]({{bbox}});
+)->.all;
+
+// print results
+out body;
+>;
+out skel qt;
