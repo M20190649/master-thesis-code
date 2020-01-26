@@ -1,5 +1,6 @@
 const parseSync = require("./parseSync")
 const parseStream = require("./parseStream")
+const getOSMEdge = require("./getOSMEdge")
 
 const defaultOptions = {
   path: "",
@@ -14,6 +15,7 @@ function PlanParser(options = defaultOptions) {
 
   this.parseSync = parseSync
   this.parseStream = parseStream
+  this.getOSMEdge = getOSMEdge
 }
 
 module.exports = PlanParser

@@ -24,6 +24,18 @@ function onOpenTag(node) {
     this.parsePlan = node.attributes.selected === "yes"
   }
 
+  if (this.currentTag === "activity") {
+    this.carInteractionX = node.attributes.x
+    this.carInteractionY = node.attributes.y
+
+    if (this.outputType === "trips" && this.parseRoute && this.parsePlan) {
+      this.currentRoute.toCoordinates = {
+        x: this.carInteractionX,
+        y: this.carInteractionY,
+      }
+    }
+  }
+
   if (this.currentTag === "leg" && this.parsePlan) {
     if (node.attributes.mode === "car") {
       // console.log(node)
@@ -34,22 +46,23 @@ function onOpenTag(node) {
 
   if (this.currentTag === "route" && this.parseRoute && this.parsePlan) {
     if (this.outputType === "trips") {
-      const xml = xmlBuilder
-        .begin()
-        .element("trip", {
-          id: `${this.currentPerson.id}_${this.routeCounter}`,
-          depart: `${this.personCounter * 100 + this.routeCounter}`,
-          from: node.attributes.start_link,
-          to: node.attributes.end_link,
-        })
-        .end({ pretty: true })
-      this.outputStream.write(`${xml}\n`)
+      this.currentRoute = {
+        id: `${this.currentPerson.id}_${this.routeCounter}`,
+        depart: `${this.personCounter * 100 + this.routeCounter}`,
+        from: node.attributes.start_link,
+        fromCoordinates: {
+          x: this.carInteractionX,
+          y: this.carInteractionY,
+        },
+        to: node.attributes.end_link,
+      }
     }
   }
 
   // console.log(node)
 }
-function onCloseTag(tagName) {
+
+async function onCloseTag(tagName) {
   if (tagName === "person") {
     console.log(`Person ${this.currentPerson.id} done`)
     this.routeCounter = 0
@@ -59,12 +72,34 @@ function onCloseTag(tagName) {
     // }
   }
 
-  if (tagName === "route") {
-    this.parseRoute = false
-  }
-
   if (tagName === "plan") {
     this.parsePlan = false
+  }
+
+  if (tagName === "activity" && this.parseRoute && this.parsePlan) {
+    // this.inputStream.pause()
+    // const fromOSMEdge = await this.getOSMEdge(
+    //   this.currentRoute.from,
+    //   this.currentRoute.fromCoordinates
+    // )
+    // const toOSMEdge = await this.getOSMEdge(this.currentRoute.to, this.currentRoute.toCoordinates)
+
+    // const xml = xmlBuilder
+    //   .begin()
+    //   .element("trip", {
+    //     id: this.currentRoute.id,
+    //     depart: this.currentRoute.depart,
+    //     from: fromOSMEdge,
+    //     to: toOSMEdge,
+    //   })
+    //   .end({ pretty: true })
+    // this.outputStream.write(`${xml}\n`)
+
+    console.log(this.currentRoute)
+
+    this.parseRoute = false
+
+    // this.inputStream.resume()
   }
 }
 
@@ -104,18 +139,39 @@ function parseStream() {
   this.routeCounter = 0
   this.parsePlan = false
   this.parseRoute = false
+  this.carInteractionX = 0
+  this.carInteractionY = 0
+  this.currentRoute = {
+    id: "some id",
+    depart: "time when vehicle departs",
+    from: "edge from where the vehicle departs",
+    fromCoordinates: {
+      x: "x from coordinate in GK4",
+      y: "y from coordinate in GK4",
+    },
+    to: "edge to where the vehicle drives",
+    toCoordinates: {
+      x: "x to coordinate in GK4",
+      y: "y to coordinate in GK4",
+    },
+  }
 
-  const saxStream = sax.createStream(true)
-  saxStream.on("error", onError.bind(this))
-  saxStream.on("opentag", onOpenTag.bind(this))
-  saxStream.on("closetag", onCloseTag.bind(this))
-  saxStream.on("text", onText.bind(this))
-  saxStream.on("end", onEnd.bind(this))
+  const parser = sax.parser(true)
+  parser.onerror = onError.bind(this)
+  parser.onopentag = onOpenTag.bind(this)
+  parser.onclosetag = onCloseTag.bind(this)
+  parser.ontext = onText.bind(this)
+  parser.onend = onEnd.bind(this)
 
-  this.inputStream = saxStream
   this.outputStream = fs.createWriteStream(this.outputPath)
   this.outputStream.write(`<${this.outputType}>\n`)
-  fs.createReadStream(this.path).pipe(saxStream)
+
+  this.inputStream = fs.createReadStream(this.path)
+  this.inputStream.setEncoding("utf8")
+  this.inputStream.on("data", chunk => {
+    // console.log(chunk)
+    parser.write(chunk)
+  })
 }
 
 module.exports = parseStream
