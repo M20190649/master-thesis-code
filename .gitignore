@@ -13,3 +13,5 @@ airdata/*.cmd
 *.xml
 *.bz2
 *.gz
+*.sqlite
+*.sqlite-journal
