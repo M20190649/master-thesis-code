@@ -126,3 +126,26 @@
 * TODO:
   * Test conversion of GK4 coordinates to WGS84 and see where it is located on the OSM map
   * Check if it is a valid approach
+
+## 26.01.2020
+
+* Start working on OSM Edge conversion
+* Worked great on test case
+* Problem:
+  * Some edges can't be 100% identified based on the `car interaction`. Overpass API returns more than 1 edge. Maybe choose random?
+
+## 27.01.2020
+
+* Edge conversion is working but it is not efficient
+* Question: Should I query the overpass API on the fly everytime I encounter an unseen edge or should I somehow try to convert the whole MATSim network in advance?
+* At best I should also store the mapping between MATSim and OSM edges permanently somewhere so I don't have to do the conversion multiple times
+* Should I set up an own overpass API server on my machine?
+
+### Evening update
+
+* Wrote a MATSim to OSM mapper
+  * Parses all nodes and edges
+  * Loops through all edges and queries the overpass API for all edges close to the `from` and the `to` node (radius 5m)
+  * I assume that the combined results of both queries should have (at least) one duplicate edge ID which should be the OSM edges that is connecting the two nodes
+* Used SQLite to store MATSim network data and OSM mapping
+
