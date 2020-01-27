@@ -1,61 +1,81 @@
 const fs = require("fs")
 const sax = require("sax")
-const xmlBuilder = require("xmlbuilder")
+
+let currentTag = ""
+let currentPerson = ""
+let personCounter = 0
+let routeCounter = 0
+let parsePlan = false
+let parseRoute = false
+let carInteractionX = 0
+let carInteractionY = 0
+let currentTrip = {
+  id: "some id",
+  depart: "time when vehicle departs",
+  from: "edge from where the vehicle departs",
+  fromCoordinates: {
+    x: "x from coordinate in GK4",
+    y: "y from coordinate in GK4",
+  },
+  to: "edge to where the vehicle drives",
+  toCoordinates: {
+    x: "x to coordinate in GK4",
+    y: "y to coordinate in GK4",
+  },
+}
 
 function onError(err) {
   console.error(err)
 }
 
 function onOpenTag(node) {
-  this.currentTag = node.name
-  if (this.currentTag === "person") {
-    this.currentPerson.id = node.attributes.id
+  currentTag = node.name
+  if (currentTag === "person") {
+    currentPerson = node.attributes.id
 
-    const randomR = Math.floor(Math.random() * 256)
-    const randomG = Math.floor(Math.random() * 256)
-    const randomB = Math.floor(Math.random() * 256)
-    this.currentPerson.color = `${randomR},${randomG},${randomB}`
+    // const randomR = Math.floor(Math.random() * 256)
+    // const randomG = Math.floor(Math.random() * 256)
+    // const randomB = Math.floor(Math.random() * 256)
+    // currentPerson.color = `${randomR},${randomG},${randomB}`
 
-    this.personCounter++
-    console.log(`New person: ${this.currentPerson.id}`)
+    personCounter++
+    console.log(`New person: ${currentPerson}`)
   }
 
-  if (this.currentTag === "plan") {
-    this.parsePlan = node.attributes.selected === "yes"
+  if (currentTag === "plan") {
+    parsePlan = node.attributes.selected === "yes"
   }
 
-  if (this.currentTag === "activity") {
-    this.carInteractionX = node.attributes.x
-    this.carInteractionY = node.attributes.y
+  if (currentTag === "activity") {
+    carInteractionX = parseFloat(node.attributes.x)
+    carInteractionY = parseFloat(node.attributes.y)
 
-    if (this.outputType === "trips" && this.parseRoute && this.parsePlan) {
-      this.currentRoute.toCoordinates = {
-        x: this.carInteractionX,
-        y: this.carInteractionY,
+    if (parseRoute && parsePlan) {
+      currentTrip.toCoordinates = {
+        x: carInteractionX,
+        y: carInteractionY,
       }
     }
   }
 
-  if (this.currentTag === "leg" && this.parsePlan) {
+  if (currentTag === "leg" && parsePlan) {
     if (node.attributes.mode === "car") {
       // console.log(node)
-      this.parseRoute = true
-      this.routeCounter++
+      parseRoute = true
+      routeCounter++
     }
   }
 
-  if (this.currentTag === "route" && this.parseRoute && this.parsePlan) {
-    if (this.outputType === "trips") {
-      this.currentRoute = {
-        id: `${this.currentPerson.id}_${this.routeCounter}`,
-        depart: `${this.personCounter * 100 + this.routeCounter}`,
-        from: node.attributes.start_link,
-        fromCoordinates: {
-          x: this.carInteractionX,
-          y: this.carInteractionY,
-        },
-        to: node.attributes.end_link,
-      }
+  if (currentTag === "route" && parseRoute && parsePlan) {
+    currentTrip = {
+      id: `${currentPerson}_${routeCounter}`,
+      depart: `${personCounter * 100 + routeCounter}`,
+      from: node.attributes.start_link,
+      fromCoordinates: {
+        x: carInteractionX,
+        y: carInteractionY,
+      },
+      to: node.attributes.end_link,
     }
   }
 
@@ -64,114 +84,55 @@ function onOpenTag(node) {
 
 async function onCloseTag(tagName) {
   if (tagName === "person") {
-    console.log(`Person ${this.currentPerson.id} done`)
-    this.routeCounter = 0
-
-    // if (this.personCounter === 1) {
-    //   this.inputStream.end()
-    // }
+    console.log(`Person ${currentPerson} done`)
+    routeCounter = 0
   }
 
   if (tagName === "plan") {
-    this.parsePlan = false
+    parsePlan = false
   }
 
-  if (tagName === "activity" && this.parseRoute && this.parsePlan) {
-    // this.inputStream.pause()
-    // const fromOSMEdge = await this.getOSMEdge(
-    //   this.currentRoute.from,
-    //   this.currentRoute.fromCoordinates
-    // )
-    // const toOSMEdge = await this.getOSMEdge(this.currentRoute.to, this.currentRoute.toCoordinates)
-
-    // const xml = xmlBuilder
-    //   .begin()
-    //   .element("trip", {
-    //     id: this.currentRoute.id,
-    //     depart: this.currentRoute.depart,
-    //     from: fromOSMEdge,
-    //     to: toOSMEdge,
-    //   })
-    //   .end({ pretty: true })
-    // this.outputStream.write(`${xml}\n`)
-
-    console.log(this.currentRoute)
-
-    this.parseRoute = false
-
-    // this.inputStream.resume()
+  if (tagName === "activity" && parseRoute && parsePlan) {
+    this.planWriter.writeTrip(currentTrip)
+    parseRoute = false
   }
 }
 
 function onText(text) {
-  if (this.currentTag === "route" && this.parseRoute) {
-    if (this.outputType === "routes") {
-      const xml = xmlBuilder
-        .begin()
-        .element("vehicle", {
-          id: `${this.currentPerson.id}_${this.routeCounter}`,
-          color: this.currentPerson.color,
-          depart: `${this.personCounter * 100 + this.routeCounter}`,
-        })
-        .element("route", {
-          edges: text,
-        })
-        .end({ pretty: true })
-      // console.log(text)
-      this.outputStream.write(`${xml}\n`)
-    }
-  }
+  // if (currentTag === "route" && parseRoute) {
+  //   if (outputType === "routes") {
+  //     const xml = xmlBuilder
+  //       .begin()
+  //       .element("vehicle", {
+  //         id: `${currentPerson.id}_${routeCounter}`,
+  //         color: currentPerson.color,
+  //         depart: `${personCounter * 100 + routeCounter}`,
+  //       })
+  //       .element("route", {
+  //         edges: text,
+  //       })
+  //       .end({ pretty: true })
+  //     // console.log(text)
+  //     outputStream.write(`${xml}\n`)
+  //   }
+  // }
 }
 
 function onEnd() {
-  this.outputStream.write(`</${this.outputType}>`)
-  this.outputStream.end()
-  console.log("Done!")
+  this.planWriter.finish()
+  console.log("Parsing done!")
 }
 
 function parseStream() {
-  this.currentTag = ""
-  this.currentPerson = {
-    id: -1,
-    color: "0,0,0",
-  }
-  this.personCounter = 0
-  this.routeCounter = 0
-  this.parsePlan = false
-  this.parseRoute = false
-  this.carInteractionX = 0
-  this.carInteractionY = 0
-  this.currentRoute = {
-    id: "some id",
-    depart: "time when vehicle departs",
-    from: "edge from where the vehicle departs",
-    fromCoordinates: {
-      x: "x from coordinate in GK4",
-      y: "y from coordinate in GK4",
-    },
-    to: "edge to where the vehicle drives",
-    toCoordinates: {
-      x: "x to coordinate in GK4",
-      y: "y to coordinate in GK4",
-    },
-  }
+  const saxStream = sax.createStream(true)
+  saxStream.on("error", onError.bind(this))
+  saxStream.on("opentag", onOpenTag.bind(this))
+  saxStream.on("closetag", onCloseTag.bind(this))
+  saxStream.on("text", onText.bind(this))
+  saxStream.on("end", onEnd.bind(this))
 
-  const parser = sax.parser(true)
-  parser.onerror = onError.bind(this)
-  parser.onopentag = onOpenTag.bind(this)
-  parser.onclosetag = onCloseTag.bind(this)
-  parser.ontext = onText.bind(this)
-  parser.onend = onEnd.bind(this)
-
-  this.outputStream = fs.createWriteStream(this.outputPath)
-  this.outputStream.write(`<${this.outputType}>\n`)
-
-  this.inputStream = fs.createReadStream(this.path)
-  this.inputStream.setEncoding("utf8")
-  this.inputStream.on("data", chunk => {
-    // console.log(chunk)
-    parser.write(chunk)
-  })
+  this.planWriter.start()
+  fs.createReadStream(this.path).pipe(saxStream)
 }
 
 module.exports = parseStream
