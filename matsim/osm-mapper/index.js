@@ -6,20 +6,13 @@ const { default: PQueue } = require("p-queue")
 
 const pqueue = new PQueue({ concurrency: 1 })
 
-const addToPQueue = async (asyncFn, cb) => {
-  await pqueue.add(asyncFn)
-  cb()
-}
-
 const db = require("../../db/matsim")
 
-const N_NORMAL_NODES = 73689
-const N_NORMAL_EDGES = 159039
+const N_TOTAL_NODES = 73689
+const N_TOTAL_LINKS = 159039
 
 let nNodes = 0
-let nEdges = 0
-
-const edgeMapping = {}
+let nLinks = 0
 
 let timestamp = new Date().getTime()
 
@@ -42,17 +35,9 @@ async function sleep(duration) {
   return new Promise(resolve => setTimeout(resolve, duration))
 }
 
-async function getOSMEdge(edge) {
-  const fromNode = nodes[edge.from]
-  const toNode = nodes[edge.to]
-
-  if (fromNode.WGS84Coordinates === undefined) {
-    fromNode.WGS84Coordinates = gk.toWGS(fromNode.GK4Coordinates)
-  }
-
-  if (toNode.WGS84Coordinates === undefined) {
-    toNode.WGS84Coordinates = gk.toWGS(toNode.GK4Coordinates)
-  }
+async function getOSMEdge(MATSimLink) {
+  const [fromNode] = await MATSimLink.getMATSimNodes({ where: { id: MATSimLink.from } })
+  const [toNode] = await MATSimLink.getMATSimNodes({ where: { id: MATSimLink.to } })
 
   const getQuery = (latitude, longitude) =>
     `(way(around:5,${latitude},${longitude})[highway~"motorway|trunk|primary|secondary|tertiary|residential|living_street|motorway_link|motorway_link|trunk_link|primary_link|secondary_link|tertiary_link|road|unclassified"];>;);out;`
@@ -60,48 +45,56 @@ async function getOSMEdge(edge) {
   const fromWays = await axios
     .get("https://lz4.overpass-api.de/api/interpreter", {
       params: {
-        data: getQuery(fromNode.WGS84Coordinates.latitude, fromNode.WGS84Coordinates.longitude),
+        data: getQuery(fromNode.latitude, fromNode.longitude),
       },
     })
     .then(res => getPossibleWays(res.data))
 
-  await sleep(2000)
+  await sleep(1000)
 
   const toWays = await axios
     .get("https://lz4.overpass-api.de/api/interpreter", {
       params: {
-        data: getQuery(toNode.WGS84Coordinates.latitude, toNode.WGS84Coordinates.longitude),
+        data: getQuery(toNode.latitude, toNode.longitude),
       },
     })
     .then(res => getPossibleWays(res.data))
 
   const mergedSetLength = new Set(fromWays.concat(toWays)).size
   const nDuplicates = fromWays.length + toWays.length - mergedSetLength
+  let warning = false
   if (nDuplicates === 0) {
-    console.log(`Warning: No OSM edge found for ${edge.id}`)
+    console.log(`Warning: No OSM edge found for MATSim link ${MATSimLink.id}`)
+    warning = true
   }
 
   if (nDuplicates > 1) {
-    console.log(`Warning: No unique OSM edge found for ${edge.id}`)
+    console.log(`Warning: No unique OSM edge found for MATSim link ${MATSimLink.id}`)
+    warning = true
+  }
+
+  if (warning) {
     console.log(fromWays, toWays)
+    console.log(MATSimLink.dataValues)
+    console.log(fromNode.dataValues)
+    console.log(toNode.dataValues)
   }
 
   const OSMEdge = fromWays.find(w => toWays.includes(w))
 
-  await sleep(2000)
+  await sleep(1000)
 
   return OSMEdge
 }
 
 async function processNetwork() {
-  for (const edge of Object.values(edges)) {
-    const OSMEdge = await getOSMEdge(edge)
-    edgeMapping[edge.id] = OSMEdge
+  const MATSimLinks = await db.getAllLinks()
+  for (const link of MATSimLinks) {
+    const OSMEdge = await getOSMEdge(link)
+    await db.setOSMEdge(link.id, OSMEdge)
 
-    console.log(`MATSim Edge ${edge.id} -> OSM Edge ${OSMEdge}`)
+    console.log(`MATSim Link ${link.id} -> OSM Edge ${OSMEdge}`)
   }
-
-  console.log(edgeMapping)
 }
 
 const saxStream = sax.createStream(true)
@@ -113,38 +106,49 @@ saxStream.on("opentag", node => {
 
     nNodes++
 
-    addToPQueue(
-      () => db.createMATSimNode(id, x, y),
-      () => console.log(`Stored node ${id}`)
-    )
+    const { latitude, longitude } = gk.toWGS({ x: parseFloat(x), y: parseFloat(y) })
+    pqueue.add(async () => {
+      await db.createMATSimNode(id, x, y, latitude, longitude)
+      console.log(`Stored node ${id}`)
+    })
     return
   }
 
   if (node.name === "link") {
     const { id, from, to } = node.attributes
-    if (id.startsWith("pt_")) return // skip public transport edges
-    nEdges++
-    addToPQueue(
-      () => db.createMATSimLink(id, from, to),
-      () => console.log(`Stored edge ${id}`)
-    )
+    if (id.startsWith("pt_")) return // skip public transport linkMappings
+    nLinks++
+
+    pqueue.add(async () => {
+      await db.createMATSimLink(id, from, to)
+      console.log(`Stored edge ${id}`)
+    })
   }
 })
 
 saxStream.on("end", () => {
-  const lastTimestamp = timestamp
-  timestamp = new Date().getTime()
-  console.log(`Done! (${timestamp - lastTimestamp}ms)`)
-  console.log(`Total Nodes: ${nNodes}`)
-  console.log(`Total Edges: ${nEdges}`)
-  // processNetwork()
+  pqueue.add(() => {
+    const lastTimestamp = timestamp
+    timestamp = new Date().getTime()
+    console.log(`Done! (${timestamp - lastTimestamp}ms)`)
+    console.log(`Total Nodes: ${nNodes}`)
+    console.log(`Total Links: ${nLinks}`)
+    processNetwork()
+  })
 })
 
 async function start() {
   await db.init()
   timestamp = new Date().getTime()
   console.log("Parsing MATSim network...")
-  fs.createReadStream("../network/berlin-v5-network.xml").pipe(saxStream)
+  const nTotalNodes = await db.countNodes()
+  const nTotalLinks = await db.countLinks()
+  if (nTotalNodes === N_TOTAL_NODES && nTotalLinks === N_TOTAL_LINKS) {
+    // processNetwork()
+  } else {
+    // fs.createReadStream("../network/berlin-v5-network.xml").pipe(saxStream)
+    fs.createReadStream(`${__dirname}/../network/test-network.xml`).pipe(saxStream)
+  }
 }
 
 start()

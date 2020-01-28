@@ -12,5 +12,8 @@ module.exports = sequelize => {
     to: {
       type: DataTypes.STRING,
     },
+    osmEdge: {
+      type: DataTypes.STRING,
+    },
   })
 }
