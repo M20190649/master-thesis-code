@@ -149,3 +149,10 @@
   * I assume that the combined results of both queries should have (at least) one duplicate edge ID which should be the OSM edges that is connecting the two nodes
 * Used SQLite to store MATSim network data and OSM mapping
 
+## 28.01.2020
+
+* Built an MATSim Network Builder for Simunto for better testing purposes
+* Continued working on OSM mapping
+* Problem: How to deal with edges that can't be uniquely identified...?
+  * Maybe repeat the OSM queries with a greater radius
+  
