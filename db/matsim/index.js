@@ -33,27 +33,20 @@ exports.testConnection = async () => {
 }
 
 exports.createMATSimNode = async (id, x, y, latitude, longitude) => {
-  await models.MATSimNode.findOrCreate({
-    where: { id },
-    defaults: { id, x, y, latitude, longitude },
-  })
+  await models.MATSimNode.create({ id, x, y, latitude, longitude })
 }
 
 exports.createMATSimLink = async (id, from, to) => {
-  const MATSimLink = await models.MATSimLink.create({ id, from, to })
+  await models.MATSimLink.create({ id, from, to })
+}
 
-  const fromMATSimNode = await models.MATSimNode.findOne({ where: { id: from } })
-  const toMATSimNode = await models.MATSimNode.findOne({ where: { id: to } })
-
-  if (fromMATSimNode) {
-    await MATSimLink.addMATSimNode(fromMATSimNode)
-    await fromMATSimNode.addMATSimLink(MATSimLink)
-  }
-
-  if (toMATSimNode) {
-    await MATSimLink.addMATSimNode(toMATSimNode)
-    await toMATSimNode.addMATSimLink(MATSimLink)
-  }
+exports.getFromAndToNodes = async MATSimLink => {
+  const nodes = await models.MATSimNode.findAll({
+    where: {
+      id: [MATSimLink.from, MATSimLink.to],
+    },
+  })
+  return nodes
 }
 
 exports.countNodes = async () => {
