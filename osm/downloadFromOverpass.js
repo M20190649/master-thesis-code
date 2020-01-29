@@ -8,6 +8,7 @@ const optionDefinitions = [
     type: bboxString => bboxString.split(",").map(Number),
   },
   { name: "name", alias: "n", type: String },
+  { name: "matsim", type: input => input !== undefined },
 ]
 const options = commandLineArgs(optionDefinitions)
 
@@ -16,8 +17,17 @@ const query = `(way["highway"~"motorway|trunk|primary|secondary|tertiary|residen
 
 const testBbox = [52.5056, 13.3075, 52.5182, 13.344] // south,west,north,east
 const greaterBerlinBbox = [52.2984, 12.8815, 52.7001, 14.0474] // south,west,north,east
+const matsimBbox = [50.819395, 11.227191, 54.321129, 15.241843]
 
-const bbox = options.bbox || testBbox
+let bbox = testBbox
+
+if (options.matsim !== undefined) {
+  bbox = matsimBbox
+}
+
+if (options.bbox !== undefined) {
+  bbox = options.bbox
+}
 
 const outputStream = fs.createWriteStream(`./${options.name || "road-network"}.osm.xml`)
 axios
