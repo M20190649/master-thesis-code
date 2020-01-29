@@ -138,7 +138,7 @@ saxStream.on("end", () => {
 })
 
 async function start() {
-  await db.init()
+  await db.init(true)
   timestamp = new Date().getTime()
   console.log("Parsing MATSim network...")
   const nTotalNodes = await db.countNodes()

@@ -6,11 +6,11 @@ const initModels = require("./models")
 let models = null
 let sequelize = null
 
-exports.init = async dbPath => {
+exports.init = async clearDb => {
   // Create connection
   sequelize = new Sequelize({
     dialect: "sqlite",
-    storage: dbPath || join(__dirname, "matsim.sqlite"),
+    storage: join(__dirname, "matsim.sqlite"),
     logging: false,
   })
 
@@ -18,7 +18,7 @@ exports.init = async dbPath => {
   models = initModels(sequelize)
 
   // Sync models to DB
-  await sequelize.sync({ force: true })
+  await sequelize.sync({ force: clearDb || false })
 }
 
 exports.testConnection = async () => {
