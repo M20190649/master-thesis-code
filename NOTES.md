@@ -155,4 +155,47 @@
 * Continued working on OSM mapping
 * Problem: How to deal with edges that can't be uniquely identified...?
   * Maybe repeat the OSM queries with a greater radius
-  
+
+## 29.01.2020
+
+* Investigating the problematic cases of edge conversion (no edge found at all + no unique edge found)
+* I need to get more into the overpass query language to optimize the queries to find the edges
+
+### No edge found
+
+* Sometimes a MATSim Link is split into smaller sub-edges in OSM -> Reason for script not finding an edge because there is a "middle piece" that is not found. 
+* Solutions
+  * Iteratively increase the search radius until a unique overlapping edge is found
+
+### No unique edge found
+
+* Sometimes there are multiple OSM edges very close to the start and end point of a MATSim link
+* Solutions:
+  * Somehow find the closest one
+    * Choose the one with the closest center point
+    * Choose the one with the smallest bbox
+  * Just take a random one from the overlapping ones
+
+
+### Comment on MATSim Berlin Github Issue
+
+* *netconvert can import MATSim networks directly using option --matsim-files*
+  * I did that but there are a lot of warnings and some parts of the network are a bit weird
+  * Also the number of lanes are quite often incorrect. 
+  * Tried different matsim import settings from the SUMO docs but nothing gave me better results
+
+* *netconvert can also create MATSim networks from any of the supported input formats using option --matsim-out*
+  * I saw that but I don't need to output any MATSim networks
+
+* *SUMO includes the tool matsim_importPlans.py (in tools/import/matsim) which can import matsim plans (either vehicles or vehicles and persons)*
+  * I did not know about this until now
+  * I tried it but I get errors when I try to import the Berlin plans
+  * It does nothing else than copying the edges from the plans into the `edges` property of a `route` definition... not very helpful because I don't prefer to use the imported MATSim network
+  * The script is only about 100 lines long so I don't mind writing my own parser
+
+* *the sumo and duarouter applications can import trip data that is specified in terms of xy or lonLat coordinates*
+  * I also did not know about the definitions of trips via XY or LongLat. Previously I had only used the from (edge id) to (edge id).
+  * I can't use the XY values from the plans because those are in GK4 and when importing the converted MATSim network the internal SUMO XY values are totally different and are just a regular plane
+  * I might be able to convert the GK4 XY into WGS84 and then use those coordinates on the OSM network
+
+
