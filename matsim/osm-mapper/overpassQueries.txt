@@ -1,0 +1,45 @@
+[out:json];
+
+way
+[highway~"motorway|trunk|primary|secondary|tertiary|residential|living_street|motorway_link|motorway_link|trunk_link|primary_link|secondary_link|tertiary_link|road|unclassified"]
+(around:0,52.51810461038301,13.30651473297023,52.518087710315,13.306516433031096);
+
+out geom;
+
+
+-----------------------------------------
+
+[out:json];
+
+way
+[highway~"motorway|trunk|primary|secondary|tertiary|residential|living_street|motorway_link|motorway_link|trunk_link|primary_link|secondary_link|tertiary_link|road|unclassified"]
+(around:10,52.51810461038301,13.30651473297023)->.fromWays;
+
+way
+[highway~"motorway|trunk|primary|secondary|tertiary|residential|living_street|motorway_link|motorway_link|trunk_link|primary_link|secondary_link|tertiary_link|road|unclassified"]
+(around:10,52.518087710315,13.306516433031096)->.toWays;
+
+way.fromWays.toWays->.commonWays;
+
+if (commonWays.count(ways) == 1)
+{
+  .commonWays;
+  out ids;
+}
+
+if (commonWays.count(ways) == 0)
+{
+  // No overlapping edge found
+  // Repeat query with bigger radius
+  .commonWays;
+  out ids;
+}
+
+if (commonWays.count(ways) > 1)
+{
+  // There are multiple edges close to the nodes
+  // Return the shortest one
+  way.commonWays(if: length() == commonWays.min(length()))->.shortestWay;
+  .shortestWay;
+  out ids;
+}
