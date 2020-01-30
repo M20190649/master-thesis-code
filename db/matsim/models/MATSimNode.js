@@ -7,16 +7,16 @@ module.exports = sequelize => {
       primaryKey: true,
     },
     x: {
-      type: DataTypes.NUMBER,
+      type: DataTypes.FLOAT,
     },
     y: {
-      type: DataTypes.NUMBER,
+      type: DataTypes.FLOAT,
     },
     latitude: {
-      type: DataTypes.NUMBER,
+      type: DataTypes.FLOAT,
     },
     longitude: {
-      type: DataTypes.NUMBER,
+      type: DataTypes.FLOAT,
     },
   })
 }

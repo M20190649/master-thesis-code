@@ -4,7 +4,7 @@ const axios = require("axios")
 const gk = require("gauss-krueger")
 const { default: PQueue } = require("p-queue")
 
-const pqueue = new PQueue({ concurrency: 1 })
+const pqueue = new PQueue({ concurrency: 20 })
 
 const db = require("../../db/matsim")
 
@@ -36,51 +36,39 @@ async function sleep(duration) {
 }
 
 async function getOSMEdge(MATSimLink) {
-  const [fromNode] = await MATSimLink.getMATSimNodes({ where: { id: MATSimLink.from } })
-  const [toNode] = await MATSimLink.getMATSimNodes({ where: { id: MATSimLink.to } })
+  const nodes = await db.getFromAndToNodes(MATSimLink)
 
-  const getQuery = (latitude, longitude) =>
-    `(way(around:5,${latitude},${longitude})[highway~"motorway|trunk|primary|secondary|tertiary|residential|living_street|motorway_link|motorway_link|trunk_link|primary_link|secondary_link|tertiary_link|road|unclassified"];>;);out;`
+  const getQuery = (fromNode, toNode) =>
+    `[out:json];way(around:0,${fromNode.latitude},${fromNode.longitude},${toNode.latitude},${toNode.longitude})[highway~"motorway|trunk|primary|secondary|tertiary|residential|living_street|motorway_link|motorway_link|trunk_link|primary_link|secondary_link|tertiary_link|road|unclassified"];out ids;`
 
-  const fromWays = await axios
+  const { elements: ways } = await axios
     .get("https://lz4.overpass-api.de/api/interpreter", {
       params: {
-        data: getQuery(fromNode.latitude, fromNode.longitude),
+        data: getQuery(nodes[MATSimLink.from], nodes[MATSimLink.to]),
       },
     })
-    .then(res => getPossibleWays(res.data))
+    .then(res => res.data)
 
-  await sleep(1000)
-
-  const toWays = await axios
-    .get("https://lz4.overpass-api.de/api/interpreter", {
-      params: {
-        data: getQuery(toNode.latitude, toNode.longitude),
-      },
-    })
-    .then(res => getPossibleWays(res.data))
-
-  const mergedSetLength = new Set(fromWays.concat(toWays)).size
-  const nDuplicates = fromWays.length + toWays.length - mergedSetLength
   let warning = false
-  if (nDuplicates === 0) {
+  if (ways.length === 0) {
     console.log(`Warning: No OSM edge found for MATSim link ${MATSimLink.id}`)
     warning = true
   }
 
-  if (nDuplicates > 1) {
+  if (ways.length > 1) {
     console.log(`Warning: No unique OSM edge found for MATSim link ${MATSimLink.id}`)
     warning = true
   }
 
   if (warning) {
-    console.log(fromWays, toWays)
+    console.log(ways)
     console.log(MATSimLink.dataValues)
-    console.log(fromNode.dataValues)
-    console.log(toNode.dataValues)
+    console.log(nodes[MATSimLink.from].dataValues)
+    console.log(nodes[MATSimLink.to].dataValues)
+    return "unknown"
   }
 
-  const OSMEdge = fromWays.find(w => toWays.includes(w))
+  const OSMEdge = ways[0].id
 
   await sleep(1000)
 
@@ -91,7 +79,7 @@ async function processNetwork() {
   const MATSimLinks = await db.getAllLinks()
   for (const link of MATSimLinks) {
     const OSMEdge = await getOSMEdge(link)
-    await db.setOSMEdge(link.id, OSMEdge)
+    // await db.setOSMEdge(link.id, OSMEdge)
 
     console.log(`MATSim Link ${link.id} -> OSM Edge ${OSMEdge}`)
   }
@@ -133,22 +121,23 @@ saxStream.on("end", () => {
     console.log(`Done! (${timestamp - lastTimestamp}ms)`)
     console.log(`Total Nodes: ${nNodes}`)
     console.log(`Total Links: ${nLinks}`)
-    processNetwork()
+    // processNetwork()
   })
 })
 
 async function start() {
-  await db.init(true)
+  await db.init(false)
   timestamp = new Date().getTime()
   console.log("Parsing MATSim network...")
   const nTotalNodes = await db.countNodes()
   const nTotalLinks = await db.countLinks()
-  if (nTotalNodes === N_TOTAL_NODES && nTotalLinks === N_TOTAL_LINKS) {
-    // processNetwork()
-  } else {
-    // fs.createReadStream("../network/berlin-v5-network.xml").pipe(saxStream)
-    fs.createReadStream(`${__dirname}/../network/test-network.xml`).pipe(saxStream)
-  }
+  // if (nTotalNodes === N_TOTAL_NODES && nTotalLinks === N_TOTAL_LINKS) {
+  //   processNetwork()
+  // } else {
+  //   // fs.createReadStream("../network/berlin-v5-network.xml").pipe(saxStream)
+  //   fs.createReadStream(`${__dirname}/../network/simunto-network.xml`).pipe(saxStream)
+  // }
+  processNetwork()
 }
 
 start()

@@ -8,9 +8,9 @@ let sequelize = null
 
 exports.init = async clearDb => {
   // Create connection
-  sequelize = new Sequelize({
-    dialect: "sqlite",
-    storage: join(__dirname, "matsim.sqlite"),
+  sequelize = new Sequelize("matsim", "postgres", "admin", {
+    host: "localhost",
+    dialect: "postgres",
     logging: false,
   })
 
@@ -46,7 +46,10 @@ exports.getFromAndToNodes = async MATSimLink => {
       id: [MATSimLink.from, MATSimLink.to],
     },
   })
-  return nodes
+  return {
+    [MATSimLink.from]: nodes.find(n => n.id === MATSimLink.from),
+    [MATSimLink.to]: nodes.find(n => n.id === MATSimLink.to),
+  }
 }
 
 exports.countNodes = async () => {
