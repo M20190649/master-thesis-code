@@ -125,28 +125,29 @@ saxStream.on("opentag", node => {
 })
 
 saxStream.on("end", () => {
-  pqueue.add(() => {
+  pqueue.add(async () => {
     const lastTimestamp = timestamp
     timestamp = new Date().getTime()
     console.log(`Done! (${timestamp - lastTimestamp}ms)`)
     console.log(`Total Nodes: ${nNodes}`)
     console.log(`Total Links: ${nLinks}`)
-    // processNetwork()
+    // const MATSimLinks = await db.getAllLinks()
+    // processLinks(MATSimLinks)
   })
 })
 
 async function start() {
-  await db.init(false)
+  await db.init(true)
   timestamp = new Date().getTime()
   console.log("Parsing MATSim network...")
   const nTotalNodes = await db.countNodes()
   const nTotalLinks = await db.countLinks()
 
-  // fs.createReadStream("../network/berlin-v5-network.xml").pipe(saxStream)
+  fs.createReadStream("../network/berlin-v5-network.xml").pipe(saxStream)
   // fs.createReadStream(`${__dirname}/../network/simunto-network.xml`).pipe(saxStream)
 
-  const MATSimLinks = await db.getAllLinks()
-  processLinks(MATSimLinks)
+  // const MATSimLinks = await db.getAllLinks()
+  // processLinks(MATSimLinks)
 }
 
 start()
