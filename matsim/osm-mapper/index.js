@@ -4,8 +4,9 @@ const axios = require("axios")
 const gk = require("gauss-krueger")
 const { default: PQueue } = require("p-queue")
 
-const pqueue = new PQueue({ concurrency: 20 })
+const pqueue = new PQueue({ concurrency: 1000 })
 
+const query = fs.readFileSync("./optimizedQuery.txt", "utf8")
 const db = require("../../db/matsim")
 
 const N_TOTAL_NODES = 73689
@@ -16,77 +17,80 @@ let nLinks = 0
 
 let timestamp = new Date().getTime()
 
-async function getPossibleWays(overpassXML) {
-  return new Promise((resolve, reject) => {
-    const possibleWays = []
-    const parser = sax.parser(true)
-    parser.onopentag = node => {
-      if (node.name === "way") {
-        possibleWays.push(node.attributes.id)
-      }
-    }
-    parser.onend = () => resolve(possibleWays)
-    parser.write(overpassXML).close()
-  })
-}
-
 async function sleep(duration) {
   console.log(`Sleeping ${duration}ms...`)
   return new Promise(resolve => setTimeout(resolve, duration))
 }
 
-async function getOSMEdge(MATSimLink) {
+const getQuery = async (MATSimLink, radius = 5) => {
   const nodes = await db.getFromAndToNodes(MATSimLink)
+  const { [MATSimLink.from]: fromNode, [MATSimLink.to]: toNode } = nodes
 
-  const getQuery = (fromNode, toNode) =>
-    `[out:json];way(around:0,${fromNode.latitude},${fromNode.longitude},${toNode.latitude},${toNode.longitude})[highway~"motorway|trunk|primary|secondary|tertiary|residential|living_street|motorway_link|motorway_link|trunk_link|primary_link|secondary_link|tertiary_link|road|unclassified"];out ids;`
-
-  const { elements: ways } = await axios
-    .get("https://lz4.overpass-api.de/api/interpreter", {
-      params: {
-        data: getQuery(nodes[MATSimLink.from], nodes[MATSimLink.to]),
-      },
-    })
-    .then(res => res.data)
-
-  let warning = false
-  if (ways.length === 0) {
-    console.log(`Warning: No OSM edge found for MATSim link ${MATSimLink.id}`)
-    warning = true
-  }
-
-  if (ways.length > 1) {
-    console.log(`Warning: No unique OSM edge found for MATSim link ${MATSimLink.id}`)
-    warning = true
-  }
-
-  if (warning) {
-    console.log(ways)
-    console.log(MATSimLink.dataValues)
-    console.log(nodes[MATSimLink.from].dataValues)
-    console.log(nodes[MATSimLink.to].dataValues)
-    return "unknown"
-  }
-
-  const OSMEdge = ways[0].id
-
-  await sleep(1000)
-
-  return OSMEdge
+  return query
+    .replace(/{radius}/g, radius)
+    .replace("{fromLatitude},{fromLongitude}", `${fromNode.latitude},${fromNode.longitude}`)
+    .replace("{toLatitude},{toLongitude}", `${toNode.latitude},${toNode.longitude}`)
+    .replace(/{MATSimLinkId}/g, MATSimLink.id)
 }
 
-async function processNetwork() {
-  const MATSimLinks = await db.getAllLinks()
-  for (const link of MATSimLinks) {
-    const OSMEdge = await getOSMEdge(link)
-    // await db.setOSMEdge(link.id, OSMEdge)
+async function processLinks(MATSimLinks, radius = 5) {
+  let n = 0
+  let currentQuery = `[out:json];`
 
-    console.log(`MATSim Link ${link.id} -> OSM Edge ${OSMEdge}`)
+  const unknownLinks = []
+  // Loop through all links
+  for (const link of MATSimLinks) {
+    // if (link.osmEdge !== null) {
+    //   continue
+    // }
+
+    // Get the query for 7 links (length of 7 queries seems to be the max for the overpass API)
+    currentQuery += await getQuery(link, radius)
+    currentQuery += "\n\n"
+    n++
+    if (n === 7) {
+      // Send the query
+      const { elements: mappings } = await axios
+        .get("https://lz4.overpass-api.de/api/interpreter", {
+          params: {
+            data: currentQuery,
+          },
+        })
+        .then(res => res.data)
+
+      // Write results to DB
+      for (const mapping of mappings) {
+        if (mapping.tags.OSMEdge === "unknown") {
+          console.log(`Warning: No OSM edge found for MATSim link ${mapping.tags.MATSimLink}`)
+          unknownLinks.push(mapping.tags.MATSimLink)
+        } else {
+          await db.setOSMEdge(mapping.tags.MATSimLink, mapping.tags.OSMEdge)
+          console.log(mapping.tags.MATSimLink, mapping.tags.OSMEdge)
+        }
+      }
+
+      // Reset query and counter
+      currentQuery = `[out:json];`
+      n = 0
+
+      await sleep(2000)
+    }
+  }
+
+  const additionalRadius = 5
+  if (unknownLinks.length !== 0) {
+    const unknownLinkObjects = db.getLinksWithId(unknownLinks)
+    console.log(
+      `Repeating queries with increased radius (${radius + additionalRadius}m) for ${
+        unknownLinks.length
+      } unknown links`
+    )
+    processLinks(unknownLinkObjects, radius + additionalRadius)
   }
 }
 
 const saxStream = sax.createStream(true)
-
+let n = 0
 saxStream.on("opentag", node => {
   if (node.name === "node") {
     const { id, x, y } = node.attributes
@@ -97,7 +101,10 @@ saxStream.on("opentag", node => {
     const { latitude, longitude } = gk.toWGS({ x: parseFloat(x), y: parseFloat(y) })
     pqueue.add(async () => {
       await db.createMATSimNode(id, x, y, latitude, longitude)
-      console.log(`Stored node ${id}`)
+      n++
+      if (n % 1000 === 0) {
+        console.log(`Stored node ${id}`)
+      }
     })
     return
   }
@@ -109,7 +116,10 @@ saxStream.on("opentag", node => {
 
     pqueue.add(async () => {
       await db.createMATSimLink(id, from, to)
-      console.log(`Stored edge ${id}`)
+      n++
+      if (n % 1000 === 0) {
+        console.log(`Stored edge ${id}`)
+      }
     })
   }
 })
@@ -131,13 +141,12 @@ async function start() {
   console.log("Parsing MATSim network...")
   const nTotalNodes = await db.countNodes()
   const nTotalLinks = await db.countLinks()
-  // if (nTotalNodes === N_TOTAL_NODES && nTotalLinks === N_TOTAL_LINKS) {
-  //   processNetwork()
-  // } else {
-  //   // fs.createReadStream("../network/berlin-v5-network.xml").pipe(saxStream)
-  //   fs.createReadStream(`${__dirname}/../network/simunto-network.xml`).pipe(saxStream)
-  // }
-  processNetwork()
+
+  // fs.createReadStream("../network/berlin-v5-network.xml").pipe(saxStream)
+  // fs.createReadStream(`${__dirname}/../network/simunto-network.xml`).pipe(saxStream)
+
+  const MATSimLinks = await db.getAllLinks()
+  processLinks(MATSimLinks)
 }
 
 start()

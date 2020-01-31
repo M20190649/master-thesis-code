@@ -1,0 +1,44 @@
+way
+[highway~"motorway|trunk|primary|secondary|tertiary|residential|living_street|motorway_link|motorway_link|trunk_link|primary_link|secondary_link|tertiary_link|road|unclassified"]
+(around:{radius},{fromLatitude},{fromLongitude})->.fromWays;
+
+way
+[highway~"motorway|trunk|primary|secondary|tertiary|residential|living_street|motorway_link|motorway_link|trunk_link|primary_link|secondary_link|tertiary_link|road|unclassified"]
+(around:{radius},{toLatitude},{toLongitude})->.toWays;
+
+way.fromWays.toWays->.commonWays;
+
+if (commonWays.count(ways) == 1)
+{
+  foreach.commonWays
+  {
+    (
+      convert mapping MATSimLink = {MATSimLinkId}, OSMEdge = id();
+      ._;
+    );
+    out tags;
+  }
+  
+}
+
+if (commonWays.count(ways) == 0)
+{
+  (
+      make mapping MATSimLink = {MATSimLinkId}, OSMEdge = "unknown";
+      ._;
+  );
+  out tags;
+}
+
+if (commonWays.count(ways) > 1)
+{
+  way.commonWays(if: length() == commonWays.min(length()))->.shortestWay;      
+  foreach.shortestWay
+  {
+    (
+      convert mapping MATSimLink = {MATSimLinkId}, OSMEdge = id();
+      ._;
+    );
+    out tags;
+  }
+}
