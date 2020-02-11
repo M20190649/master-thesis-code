@@ -5,18 +5,25 @@ const gk = require("gauss-krueger")
 const XMLBuilder = require("xmlbuilder")
 const commandLineArgs = require("command-line-args")
 
+const db = require("../../db/matsim/index")
+
 const optionDefinitions = [
   {
     name: "plans",
     alias: "p",
     type: String,
     defaultValue: join(__dirname, "..", "plans", "test-pop.xml"),
+    // defaultValue: join(__dirname, "..", "plans", "berlin-v5.4-1pct.output_plans.xml"),
   },
   {
     name: "output",
     alias: "o",
     type: String,
-    defaultValue: join(__dirname, "..", "..", "sumo", "matsim-plans.trips.xml"),
+    defaultValue: join(__dirname, "..", "..", "sumo", "matsim-trips.xml"),
+  },
+  {
+    name: "bbox",
+    type: bboxString => bboxString.split(",").map(Number),
   },
 ]
 
@@ -124,6 +131,24 @@ function onCloseTag(tagName) {
   }
 
   if (tagName === "activity" && parseRoute && parsePlan) {
+    if (options.bbox) {
+      const [south, west, north, east] = options.bbox
+      if (
+        currentTrip.fromCoordinates.latitude < south ||
+        currentTrip.fromCoordinates.latitude > north ||
+        currentTrip.fromCoordinates.longitude < west ||
+        currentTrip.fromCoordinates.longitude > east ||
+        currentTrip.toCoordinates.latitude < south ||
+        currentTrip.toCoordinates.latitude > north ||
+        currentTrip.toCoordinates.longitude < west ||
+        currentTrip.toCoordinates.longitude > east
+      ) {
+        // trip is out of bounds
+        parseRoute = false
+        return
+      }
+    }
+    console.log(`Adding trip ${currentTrip.id}`)
     tripsXML.element("trip", {
       id: currentTrip.id,
       depart: currentTrip.depart,
