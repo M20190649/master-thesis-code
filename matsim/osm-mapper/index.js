@@ -4,14 +4,15 @@ const axios = require("axios")
 const gk = require("gauss-krueger")
 const { default: PQueue } = require("p-queue")
 
+const helpers = require("../../shared/helpers")
+
 const pqueue = new PQueue({ concurrency: 1000 })
 
 const query = fs.readFileSync("./optimizedQuery.txt", "utf8")
-const now = new Date()
 const logStream = fs.createWriteStream(
-  `./log_${now.getFullYear()}-${now.getMonth() +
-    1}-${now.getDate()}T${now.getHours()}-${now.getMinutes()}-${now.getSeconds()}.txt`
+  `./log_${helpers.getDateString()}T${helpers.getTimeString()}.txt`
 )
+
 const db = require("../../db/matsim")
 
 const N_TOTAL_NODES = 73689
@@ -45,20 +46,17 @@ const getQuery = async (MATSimLink, radius = 5) => {
 
 async function processLinks(MATSimLinks, radius = 5) {
   let n = 0
-  let currentQuery = `[out:json];`
+  const baseQuery = "[out:json];\n\n"
+  let currentQuery = baseQuery
 
   const unknownLinks = []
   // Loop through all links
   for (const link of MATSimLinks) {
-    if (link.osmEdge !== null) {
-      continue
-    }
-
     // Get the query for 7 links (length of 7 queries seems to be the max for the overpass API)
     currentQuery += await getQuery(link, radius)
     currentQuery += "\n\n"
     n++
-    if (n === 7) {
+    if (n % 7 === 0 || MATSimLinks.length - n < 7) {
       // Send the query
       const { elements: mappings } = await axios
         .get("https://lz4.overpass-api.de/api/interpreter", {
@@ -73,29 +71,16 @@ async function processLinks(MATSimLinks, radius = 5) {
         if (mapping.tags.OSMEdge === "unknown") {
           log(`Warning: No OSM edge found for MATSim link ${mapping.tags.MATSimLink}`)
           unknownLinks.push(mapping.tags.MATSimLink)
-        } else {
-          await db.setOSMEdge(mapping.tags.MATSimLink, mapping.tags.OSMEdge)
-          log(`${mapping.tags.MATSimLink} -> ${mapping.tags.OSMEdge}`)
         }
+
+        await db.setOSMEdge(mapping.tags.MATSimLink, mapping.tags.OSMEdge)
+        log(`${mapping.tags.MATSimLink} -> ${mapping.tags.OSMEdge}`)
       }
 
       // Reset query and counter
-      currentQuery = `[out:json];`
-      n = 0
-
-      await sleep(3000)
+      currentQuery = baseQuery
+      await sleep(5000)
     }
-  }
-
-  const additionalRadius = 5
-  if (unknownLinks.length !== 0) {
-    const unknownLinkObjects = db.getLinksWithId(unknownLinks)
-    log(
-      `Repeating queries with increased radius (${radius + additionalRadius}m) for ${
-        unknownLinks.length
-      } unknown links`
-    )
-    processLinks(unknownLinkObjects, radius + additionalRadius)
   }
 }
 
@@ -149,13 +134,30 @@ saxStream.on("end", () => {
 async function start() {
   await db.init(false)
   timestamp = new Date().getTime()
-  log("Parsing MATSim network...")
 
   // fs.createReadStream("../network/berlin-v5-network.xml").pipe(saxStream)
   // fs.createReadStream(`${__dirname}/../network/simunto-network.xml`).pipe(saxStream)
 
-  const MATSimLinks = await db.getAllLinks()
-  processLinks(MATSimLinks)
+  let radius = 2400
+
+  const nullMATSimLinks = await db.getAllNullLinks()
+
+  if (nullMATSimLinks.length === 0) {
+    log("All links have a value for their OSM Edge!")
+
+    let unknownMATSimLinks = await db.getAllUnknownLinks()
+    const additionalRadius = 200
+
+    while (unknownMATSimLinks.length !== 0) {
+      radius += additionalRadius
+      log(`Warning: There are still ${unknownMATSimLinks.length} unknown edges`)
+      log(`Warning: Repeating query with increased radius (${radius}m)`)
+      await processLinks(unknownMATSimLinks, radius)
+      unknownMATSimLinks = await db.getAllUnknownLinks()
+    }
+  } else {
+    processLinks(nullMATSimLinks, radius)
+  }
 }
 
 start()
