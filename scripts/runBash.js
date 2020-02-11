@@ -6,6 +6,7 @@ const defaultOptions = {
 
 module.exports = (bash, options = defaultOptions) => {
   return new Promise((resolve, reject) => {
+    console.log(`Executing: ${bash}`)
     const [command, ...args] = bash.split(" ")
     const child = spawn(command, args, {
       cwd: options.cwd,
