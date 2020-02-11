@@ -198,4 +198,15 @@
   * I can't use the XY values from the plans because those are in GK4 and when importing the converted MATSim network the internal SUMO XY values are totally different and are just a regular plane
   * I might be able to convert the GK4 XY into WGS84 and then use those coordinates on the OSM network
 
+## 30/31.01.2020
 
+* Optimize overpass queries and fix all the problems
+* Store all data into PostGreSQL
+
+## 05.02.2020 - 09.02.2020
+
+* Let OSM Mapper run to find an OSM edge for every MATSim edge
+
+## 10.02.2020
+
+* Work on automating scripts and trip/route generation
