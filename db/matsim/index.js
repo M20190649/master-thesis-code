@@ -1,4 +1,3 @@
-const { join } = require("path")
 const { Sequelize } = require("sequelize")
 
 const initModels = require("./models")
@@ -64,6 +63,24 @@ exports.countLinks = async () => {
 
 exports.getAllLinks = async () => {
   const links = await models.MATSimLink.findAll()
+  return links
+}
+
+exports.getAllNullLinks = async () => {
+  const links = await models.MATSimLink.findAll({
+    where: {
+      osmEdge: null,
+    },
+  })
+  return links
+}
+
+exports.getAllUnknownLinks = async () => {
+  const links = await models.MATSimLink.findAll({
+    where: {
+      osmEdge: "unknown",
+    },
+  })
   return links
 }
 
