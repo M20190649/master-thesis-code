@@ -5,21 +5,21 @@ const gk = require("gauss-krueger")
 const XMLBuilder = require("xmlbuilder")
 const commandLineArgs = require("command-line-args")
 
-const db = require("../../db/matsim/index")
+const db = require("../db/matsim/index")
 
 const optionDefinitions = [
   {
     name: "plans",
     alias: "p",
     type: String,
-    defaultValue: join(__dirname, "..", "plans", "test-pop.xml"),
-    // defaultValue: join(__dirname, "..", "plans", "berlin-v5.4-1pct.output_plans.xml"),
+    defaultValue: join(__dirname, "plans", "test-pop.xml"),
+    // defaultValue: join(__dirname, "plans", "berlin-v5.4-1pct.output_plans.xml"),
   },
   {
     name: "output",
     alias: "o",
     type: String,
-    defaultValue: join(__dirname, "..", "..", "sumo", "matsim-trips.xml"),
+    defaultValue: join(__dirname, "..", "sumo", "matsim-trips.xml"),
   },
   {
     name: "bbox",
