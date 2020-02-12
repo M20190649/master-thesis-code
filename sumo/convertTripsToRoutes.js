@@ -1,6 +1,6 @@
 const commandLineArgs = require("command-line-args")
 
-const runBash = require("./runBash")
+const { runBash } = require("../shared/helpers")
 
 const optionDefinitions = [
   { name: "trips", alias: "t", type: String },

@@ -1,3 +1,0 @@
-../sumo
-
-sumo-gui 

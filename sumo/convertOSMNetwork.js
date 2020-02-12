@@ -1,6 +1,6 @@
 const commandLineArgs = require("command-line-args")
 
-const runBash = require("./runBash")
+const { runBash } = require("../shared/helpers")
 
 const optionDefinitions = [
   { name: "input", type: String },
@@ -9,13 +9,11 @@ const optionDefinitions = [
 const options = commandLineArgs(optionDefinitions)
 
 if (options.input === undefined) {
-  console.error("Error: You must supply an input path to an OSM file")
-  process.exit(0)
+  throw new Error("Error: You must supply an input path to an OSM file")
 }
 
 if (options.output === undefined) {
-  console.error("Error: You must supply an output path")
-  process.exit(0)
+  throw new Error("Error: You must supply an output path")
 }
 
 runBash(`netconvert --osm-files ${options.input} -o ${options.output}`)
