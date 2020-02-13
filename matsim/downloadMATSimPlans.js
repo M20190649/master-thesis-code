@@ -7,11 +7,6 @@ const { runBash } = require("../shared/helpers")
 
 const CLIOptions = parseCLIOptions([
   {
-    name: "name",
-    type: String,
-    description: "Custom name for the XML plan file",
-  },
-  {
     name: "scenario",
     type: String,
     description:
@@ -48,7 +43,7 @@ async function downloadMATSimPlans(callerOptions) {
     throw new Error("Unknown scenario")
   }
 
-  const filename = options.name ? options.name : `berlin-v5.4-${options.scenario}.output_plans.xml`
+  const filename = `berlin-v5.4-${options.scenario}.output_plans.xml`
   const plansDir = join(__dirname, "plans")
   const plansFile = join(plansDir, filename)
   const plansZipFile = `${plansFile}.gz`
