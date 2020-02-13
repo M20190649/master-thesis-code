@@ -4,11 +4,10 @@ const sax = require("sax")
 const gk = require("gauss-krueger")
 const XMLBuilder = require("xmlbuilder")
 
-const networkXML = XMLBuilder.create("network")
 const nodesXML = XMLBuilder.create("nodes")
 const linksXML = XMLBuilder.create("links")
 
-const config = fs.readFileSync(join(__dirname, "simunto.txt"), "utf8")
+const config = fs.readFileSync("simunto.txt", "utf8")
 
 let timestamp = new Date().getTime()
 
@@ -54,7 +53,7 @@ function buildNetwork() {
     .importDocument(linksXML)
     .end({ pretty: true, allowEmpty: true })
 
-  fs.writeFileSync(join(__dirname, "..", "simunto-network.xml"), xml)
+  fs.writeFileSync("simunto-network.xml", xml)
 
   const lastTimestamp = timestamp
   timestamp = new Date().getTime()

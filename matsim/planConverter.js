@@ -7,17 +7,20 @@ const commandLineArgs = require("command-line-args")
 
 const db = require("../db/matsim/index")
 
+const outputModes = {
+  geo: "GEO",
+  matsim: "MATSIM",
+}
+
 const optionDefinitions = [
   {
     name: "plans",
-    alias: "p",
     type: String,
     defaultValue: join(__dirname, "plans", "test-pop.xml"),
     // defaultValue: join(__dirname, "plans", "berlin-v5.4-1pct.output_plans.xml"),
   },
   {
     name: "output",
-    alias: "o",
     type: String,
     defaultValue: join(__dirname, "..", "sumo", "matsim-trips.xml"),
   },
@@ -25,9 +28,26 @@ const optionDefinitions = [
     name: "bbox",
     type: bboxString => bboxString.split(",").map(Number),
   },
+  {
+    name: "mode",
+    type: String,
+    defaultValue: "geo",
+  },
+  {
+    name: "verbose",
+    alias: "v",
+    type: Boolean,
+    defaultValue: false,
+  },
 ]
 
 const options = commandLineArgs(optionDefinitions)
+
+if (outputModes[options.mode] === undefined) {
+  throw new Error(`Unknown mode: "${options.mode}"`)
+} else {
+  options.mode = outputModes[options.mode]
+}
 
 let currentTag = ""
 let currentPerson = ""
@@ -37,7 +57,7 @@ let parsePlan = false
 let parseRoute = false
 let carInteractionX = 0
 let carInteractionY = 0
-let currentTrip = {
+const currentTrip = {
   id: "some id",
   depart: "time when vehicle departs",
   from: "edge from where the vehicle departs",
@@ -54,6 +74,12 @@ let currentTrip = {
     latitude: "latitude to",
     longitude: "longitude to",
   },
+}
+
+const log = (x, isImportant) => {
+  if (options.verbose || isImportant) {
+    console.log(x)
+  }
 }
 
 const tripsXML = XMLBuilder.create("trips")
@@ -73,7 +99,7 @@ function onOpenTag(node) {
     // currentPerson.color = `${randomR},${randomG},${randomB}`
 
     personCounter++
-    console.log(`New person: ${currentPerson}`)
+    log(`New person: ${currentPerson}`)
   }
 
   if (currentTag === "plan") {
@@ -96,7 +122,13 @@ function onOpenTag(node) {
 
   if (currentTag === "leg" && parsePlan) {
     if (node.attributes.mode === "car") {
-      // console.log(node)
+      if (node.attributes.dep_time === undefined) {
+        log(`Warning: Skipping person ${currentPerson} because departure times are missing`, true)
+        parsePlan = false
+        return
+      }
+      const [hour, minute, second] = node.attributes.dep_time.split(":").map(parseFloat)
+      currentTrip.depart = hour * 60 * 60 + minute * 60 + second
       parseRoute = true
       routeCounter++
     }
@@ -105,24 +137,21 @@ function onOpenTag(node) {
   if (currentTag === "route" && parseRoute && parsePlan) {
     const GK4coordinates = { x: carInteractionX, y: carInteractionY }
     const WGS84Coordinates = gk.toWGS(GK4coordinates)
-    currentTrip = {
-      id: `${currentPerson}_${routeCounter}`,
-      depart: `${personCounter * 100 + routeCounter}`,
-      from: node.attributes.start_link,
-      fromCoordinates: {
-        ...GK4coordinates,
-        ...WGS84Coordinates,
-      },
-      to: node.attributes.end_link,
+    currentTrip.id = `${currentPerson}_${routeCounter}`
+    currentTrip.from = node.attributes.start_link
+    currentTrip.to = node.attributes.end_link
+    currentTrip.fromCoordinates = {
+      ...GK4coordinates,
+      ...WGS84Coordinates,
     }
   }
 
-  // console.log(node)
+  // log(node)
 }
 
 function onCloseTag(tagName) {
   if (tagName === "person") {
-    console.log(`Person ${currentPerson} done`)
+    log(`Person ${currentPerson} done`)
     routeCounter = 0
   }
 
@@ -148,22 +177,30 @@ function onCloseTag(tagName) {
         return
       }
     }
-    console.log(`Adding trip ${currentTrip.id}`)
-    tripsXML.element("trip", {
+    log(`Adding trip ${currentTrip.id}`)
+    const attributes = {
       id: currentTrip.id,
       depart: currentTrip.depart,
-      // fromXY: `${currentTrip.fromCoordinates.x},${currentTrip.fromCoordinates.y}`,
-      // toXY: `${currentTrip.toCoordinates.x},${currentTrip.toCoordinates.y}`,
-      fromLonLat: `${currentTrip.fromCoordinates.longitude},${currentTrip.fromCoordinates.latitude}`,
-      toLonLat: `${currentTrip.toCoordinates.longitude},${currentTrip.toCoordinates.latitude}`,
-    })
+    }
+
+    if (options.mode === outputModes.geo) {
+      attributes.fromLonLat = `${currentTrip.fromCoordinates.longitude},${currentTrip.fromCoordinates.latitude}`
+      attributes.toLonLat = `${currentTrip.toCoordinates.longitude},${currentTrip.toCoordinates.latitude}`
+    }
+
+    if (options.mode === outputModes.matsim) {
+      attributes.from = currentTrip.from
+      attributes.to = currentTrip.to
+    }
+
+    tripsXML.element("trip", attributes)
     parseRoute = false
   }
 }
 
 function onEnd() {
   fs.writeFileSync(options.output, tripsXML.end({ pretty: true }))
-  console.log("Parsing done!")
+  log("Parsing done!")
 }
 
 const saxStream = sax.createStream(true)

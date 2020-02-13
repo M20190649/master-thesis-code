@@ -12,15 +12,15 @@ const optionDefinitions = [
 const options = commandLineArgs(optionDefinitions)
 
 if (options.geojson === undefined) {
-  throw new Error("Error: You must supply a path to a GeoJSON file")
+  throw new Error("You must supply a path to a GeoJSON file")
 }
 
 if (options.network === undefined) {
-  throw new Error("Error: You must supply a path to a SUMO network file")
+  throw new Error("You must supply a path to a SUMO network file")
 }
 
 if (options.output === undefined) {
-  throw new Error("Error: You must supply a path to a file where the output XML should be stored")
+  throw new Error("You must supply a path to a file where the output XML should be stored")
 }
 
 fs.mkdirSync("tmp")
