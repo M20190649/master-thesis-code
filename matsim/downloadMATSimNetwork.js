@@ -2,10 +2,20 @@ const { join } = require("path")
 const fs = require("fs")
 const axios = require("axios")
 
+const parseCLIOptions = require("../shared/parseCLIOptions")
 const { runBash } = require("../shared/helpers")
 
-const networkFile = join(__dirname, "network", "berlin-v5-network.xml")
-const networkZipFile = join(__dirname, "network", "berlin-v5-network.xml.gz")
+const options = parseCLIOptions([
+  {
+    name: "name",
+    type: String,
+    description: "Custom name for the XML network file",
+    defaultValue: "berlin-v5-network.xml",
+  },
+])
+
+const networkFile = join(__dirname, "network", options.name)
+const networkZipFile = `${networkFile}.gz`
 
 async function download() {
   return new Promise((resolve, reject) => {
@@ -35,6 +45,12 @@ async function downloadMATSimNetwork() {
   if (!fs.existsSync(networkFile)) {
     await unzip()
   }
+
+  return networkFile
 }
 
-downloadMATSimNetwork()
+if (options.run) {
+  downloadMATSimNetwork()
+}
+
+module.exports = downloadMATSimNetwork
