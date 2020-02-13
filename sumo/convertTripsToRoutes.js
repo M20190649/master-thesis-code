@@ -11,8 +11,7 @@ const options = commandLineArgs(optionDefinitions)
 
 for (const option of optionDefinitions) {
   if (options[option.name] === undefined) {
-    console.error(`Error: You must supply the "${option.name}" option`)
-    process.exit(0)
+    throw new Error(`You must supply the "${option.name}" option`)
   }
 }
 
