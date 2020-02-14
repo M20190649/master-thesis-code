@@ -210,3 +210,14 @@
 ## 10.02.2020
 
 * Work on automating scripts and trip/route generation
+
+## 11-14.02.2020
+
+* Reorganize a lot of code
+* Rewrite many scripts to function both as CLI script and exported node module
+* Add general prepare script that downloads all necessary input data (takes a few minutes). This simplifies the simulation preparation.
+* Adding support for more config parameters for the simulation
+
+TODO: 
+* Finish the simulation preparation
+* Continue working on TraCI
