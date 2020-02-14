@@ -1,5 +1,7 @@
 {
   "name": "test",
+  "mode": "matsim",
+  "scenario": "1pct",
   "bbox": [
     52.25639,
     12.874603,
