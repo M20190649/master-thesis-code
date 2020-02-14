@@ -1,20 +1,45 @@
-const commandLineArgs = require("command-line-args")
-
-const { runBash } = require("../shared/helpers")
+const fs = require("fs")
+const { join } = require("path")
+const parseCLIOptions = require("../shared/parseCLIOptions")
+const { runBash, validateOptions } = require("../shared/helpers")
 
 const optionDefinitions = [
-  { name: "network", type: String },
-  { name: "output", alias: "o", type: String },
+  { name: "network", type: String, description: "Filepath to the MATSim network", required: true },
+  {
+    name: "output",
+    type: String,
+    description: "Filepath for the converted MATSim network",
+    defaultValue: join(__dirname, "..", "matsim", "network", "berlin-v5-network-converted.net.xml"),
+  },
 ]
-const options = commandLineArgs(optionDefinitions)
 
-if (options.network === undefined) {
-  throw new Error("You must supply an input path to a MATSim network file")
+const CLIOptions = parseCLIOptions(optionDefinitions)
+
+async function convertMATSimNetwork(callerOptions) {
+  const options = { ...CLIOptions, ...callerOptions }
+
+  validateOptions(options, optionDefinitions)
+
+  const log = x => (options.verbose ? console.log(x) : null)
+
+  if (!fs.existsSync(options.output)) {
+    log("Converting MATSim network to the SUMO format...")
+    await runBash([
+      "netconvert",
+      `--matsim ${options.network}`,
+      `--output-file ${options.output}`,
+      "--matsim.lanes-from-capacity=true --matsim.keep-length=true",
+    ])
+    log("Done!")
+  } else {
+    log("Converted MATSim network already exists")
+  }
+
+  return options.output
 }
 
-runBash([
-  "netconvert",
-  `--matsim ${options.network}`,
-  `--output-file ${options.output || "converted-matsim-network.net.xml"}`,
-  "--matsim.lanes-from-capacity=true --matsim.keep-length=true",
-])
+if (CLIOptions.run) {
+  convertMATSimNetwork()
+}
+
+module.exports = convertMATSimNetwork
