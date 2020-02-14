@@ -3,51 +3,46 @@ const { join } = require("path")
 const sax = require("sax")
 const gk = require("gauss-krueger")
 const XMLBuilder = require("xmlbuilder")
-const commandLineArgs = require("command-line-args")
+const parseCLIOptions = require("../shared/parseCLIOptions")
 
+const { validateOptions } = require("../shared/helpers")
 const db = require("../db/matsim/index")
 
 const outputModes = {
-  geo: "GEO",
-  matsim: "MATSIM",
+  geo: "geo",
+  matsim: "matsim",
 }
 
 const optionDefinitions = [
   {
     name: "plans",
     type: String,
-    defaultValue: join(__dirname, "plans", "test-pop.xml"),
-    // defaultValue: join(__dirname, "plans", "berlin-v5.4-1pct.output_plans.xml"),
+    description: "Filepath of the MATSim plans file",
+    required: true,
   },
   {
     name: "output",
     type: String,
-    defaultValue: join(__dirname, "..", "sumo", "matsim-trips.xml"),
+    defaultValue: join(__dirname, "matsim-trips.xml"),
+    description: "Filepath for the output XML file",
   },
   {
     name: "bbox",
     type: bboxString => bboxString.split(",").map(Number),
+    typeLabel: "south,west,north,east",
+    description: "Only parse car rides within this bbox",
   },
   {
     name: "mode",
     type: String,
     defaultValue: "geo",
-  },
-  {
-    name: "verbose",
-    alias: "v",
-    type: Boolean,
-    defaultValue: false,
+    description:
+      "Determines value of 'from' and 'to' attributes of the trips \n ('geo' uses lat/long, 'matsim' uses the MATSim link ids, default is 'geo')",
+    possibleValues: Object.values(outputModes),
   },
 ]
 
-const options = commandLineArgs(optionDefinitions)
-
-if (outputModes[options.mode] === undefined) {
-  throw new Error(`Unknown mode: "${options.mode}"`)
-} else {
-  options.mode = outputModes[options.mode]
-}
+const CLIOptions = parseCLIOptions(optionDefinitions)
 
 let currentTag = ""
 let currentPerson = ""
@@ -76,11 +71,7 @@ const currentTrip = {
   },
 }
 
-const log = (x, isImportant) => {
-  if (options.verbose || isImportant) {
-    console.log(x)
-  }
-}
+let log = x => console.log(x)
 
 const tripsXML = XMLBuilder.create("trips")
 
@@ -123,7 +114,7 @@ function onOpenTag(node) {
   if (currentTag === "leg" && parsePlan) {
     if (node.attributes.mode === "car") {
       if (node.attributes.dep_time === undefined) {
-        log(`Warning: Skipping person ${currentPerson} because departure times are missing`, true)
+        console.log(`Warning: Skipping person ${currentPerson} because departure times are missing`)
         parsePlan = false
         return
       }
@@ -149,7 +140,7 @@ function onOpenTag(node) {
   // log(node)
 }
 
-function onCloseTag(tagName) {
+function onCloseTag(tagName, options) {
   if (tagName === "person") {
     log(`Person ${currentPerson} done`)
     routeCounter = 0
@@ -198,15 +189,31 @@ function onCloseTag(tagName) {
   }
 }
 
-function onEnd() {
+function onEnd(options) {
   fs.writeFileSync(options.output, tripsXML.end({ pretty: true }))
   log("Parsing done!")
 }
 
-const saxStream = sax.createStream(true)
-saxStream.on("error", onError)
-saxStream.on("opentag", onOpenTag)
-saxStream.on("closetag", onCloseTag)
-saxStream.on("end", onEnd)
+async function convertPlans(callerOptions) {
+  const options = { ...CLIOptions, ...callerOptions }
 
-fs.createReadStream(options.plans).pipe(saxStream)
+  validateOptions(options, optionDefinitions)
+
+  if (!options.verbose) {
+    log = () => null
+  }
+
+  const saxStream = sax.createStream(true)
+  saxStream.on("error", onError)
+  saxStream.on("opentag", onOpenTag)
+  saxStream.on("closetag", tagName => onCloseTag(tagName, options))
+  saxStream.on("end", () => onEnd(options))
+
+  fs.createReadStream(options.plans).pipe(saxStream)
+}
+
+if (CLIOptions.run) {
+  convertPlans()
+}
+
+module.exports = convertPlans
