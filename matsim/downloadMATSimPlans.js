@@ -55,19 +55,19 @@ async function downloadMATSimPlans(callerOptions) {
   }
 
   if (!fs.existsSync(plansZipFile)) {
-    log("Downloading plans file...")
+    log(`Downloading ${options.scenario} plans file...`)
     await download(options.scenario, plansZipFile)
-    log("Done")
+    log(`Done`)
   } else {
-    log("Zipped plans file already exists")
+    log(`Zipped ${options.scenario} plans file already exists`)
   }
 
   if (!fs.existsSync(plansFile)) {
-    log("Unzipping plans file...")
+    log(`Unzipping ${options.scenario} plans file...`)
     await unzip(plansZipFile)
-    log("Done!")
+    log(`Done!`)
   } else {
-    log("Unzipped plans file already exists")
+    log(`Unzipped ${options.scenario} plans file already exists`)
   }
 
   return plansFile
