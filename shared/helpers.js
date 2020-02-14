@@ -34,3 +34,22 @@ exports.runBash = (bash, options = defaultOptions) => {
     child.on("close", resolve)
   })
 }
+
+exports.validateOptions = (options, optionDefinitions) => {
+  for (const option of optionDefinitions) {
+    const { name } = option
+    if (option.required && options[name] === undefined) {
+      throw new Error(
+        `Missing required option: "${name}". Run the --help command for more information.`
+      )
+    }
+
+    if (option.possibleValues && options[name] !== undefined) {
+      if (!option.possibleValues.includes(options[name])) {
+        throw new Error(
+          `Option "${name}" must be one of the following: ${option.possibleValues.join(", ")}`
+        )
+      }
+    }
+  }
+}

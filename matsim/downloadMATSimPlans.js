@@ -3,17 +3,20 @@ const fs = require("fs")
 const axios = require("axios")
 
 const parseCLIOptions = require("../shared/parseCLIOptions")
-const { runBash } = require("../shared/helpers")
+const { runBash, validateOptions } = require("../shared/helpers")
 
-const CLIOptions = parseCLIOptions([
+const optionDefinitions = [
   {
     name: "scenario",
     type: String,
     description:
       "The scenario that should be loaded \n (Possible values: 1pct, 10pct, default: 1pct)",
     defaultValue: "1pct",
+    possibleValues: ["1pct", "10pct"],
   },
-])
+]
+
+const CLIOptions = parseCLIOptions(optionDefinitions)
 
 async function download(scenario, zipFile) {
   return new Promise((resolve, reject) => {
@@ -38,10 +41,7 @@ async function unzip(zipFile) {
 async function downloadMATSimPlans(callerOptions) {
   const options = { ...CLIOptions, ...callerOptions }
 
-  const availableScenarios = ["1pct", "10pct"]
-  if (!availableScenarios.includes(options.scenario)) {
-    throw new Error("Unknown scenario")
-  }
+  validateOptions(options, optionDefinitions)
 
   const filename = `berlin-v5.4-${options.scenario}.output_plans.xml`
   const plansDir = join(__dirname, "plans")
