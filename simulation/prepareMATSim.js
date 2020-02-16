@@ -1,8 +1,10 @@
 const { join } = require("path")
 const fs = require("fs")
 
-const { runBash } = require("../shared/helpers")
 const convertMATSimNetwork = require("../sumo/convertMATSimNetwork")
+const convertTripsToRoutes = require("../sumo/convertTripsToRoutes")
+const visualizeRoutes = require("../sumo/visualizeRoutes")
+
 const convertPlansToTrips = require("../matsim/convertPlansToTrips")
 
 const rootDir = join(__dirname, "..", "..")
@@ -56,24 +58,20 @@ module.exports = async (config = {}) => {
 
   // Convert trips into SUMO routes with the SUMO network
   console.log("Converting trips into SUMO routes...")
-  await runBash([
-    "node",
-    join(sumoDir, "convertTripsToRoutes.js"),
-    `--trips=${tripsFile}`,
-    `--network=${networkFile}`,
-    `--output=${routesFile}`,
-  ])
+  await convertTripsToRoutes({
+    trips: tripsFile,
+    network: networkFile,
+    output: routesFile,
+  })
   console.log("Done!\n")
 
   // Create visualization of routes for preview
   console.log("Creating a visualization of SUMO routes...")
-  await runBash([
-    "node",
-    join(sumoDir, "visualizeRoutes.js"),
-    `--routes=${routesFile}`,
-    `--network=${networkFile}`,
-    `--output=${routesVisualizationFile}`,
-  ])
+  await visualizeRoutes({
+    routes: routesFile,
+    network: networkFile,
+    output: routesVisualizationFile,
+  })
   console.log("Done!\n")
 
   // 3. Write SUMO config file

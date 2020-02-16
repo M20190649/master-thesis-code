@@ -1,12 +1,13 @@
 const { join } = require("path")
 const fs = require("fs")
 
-const { runBash } = require("../shared/helpers")
-
-const convertTripsToRoutes = require("../sumo/convertTripsToRoutes")
-const visualizeRoutes = require("../sumo/visualizeRoutes")
+const downloadFromOverpass = require("../osm/downloadFromOverpass")
 
 const convertPlansToTrips = require("../matsim/convertPlansToTrips")
+
+const convertOSMNetwork = require("../sumo/convertOSMNetwork")
+const convertTripsToRoutes = require("../sumo/convertTripsToRoutes")
+const visualizeRoutes = require("../sumo/visualizeRoutes")
 
 const inputDir = join(__dirname, "..", "input")
 const osmDir = join(__dirname, "..", "..", "osm")
@@ -32,22 +33,18 @@ module.exports = async config => {
   console.log("------------ Prepare Network Data ------------")
   // 1.1. Download OSM from config bbox
   console.log("Downloading OSM Bbox...")
-  await runBash([
-    "node",
-    join(osmDir, "downloadFromOverpass.js"),
-    `--bbox=${config.bbox.join(",")}`,
-    `--output=${osmFile}`,
-  ])
+  await downloadFromOverpass({
+    bbox: config.bbox.join(","),
+    output: osmFile,
+  })
   console.log("Done!\n")
 
   // 1.2. Convert OSM network to SUMO network
   console.log("Converting OSM network to SUMO network...")
-  await runBash([
-    "node",
-    join(sumoDir, "convertOSMNetwork.js"),
-    `--input=${osmFile}`,
-    `--output=${networkFile}`,
-  ])
+  await convertOSMNetwork({
+    input: osmFile,
+    output: networkFile,
+  })
   console.log("Done!\n")
 
   // 2. Prepare routes data

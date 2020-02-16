@@ -1,19 +1,22 @@
-const commandLineArgs = require("command-line-args")
-
-const { runBash } = require("../shared/helpers")
+const { runBash, validateOptions } = require("../shared/helpers")
+const parseCLIOptions = require("../shared/parseCLIOptions")
 
 const optionDefinitions = [
-  { name: "input", type: String },
-  { name: "output", alias: "o", type: String },
+  { name: "input", type: String, description: "Filepath to OSM network file", required: true },
+  { name: "output", type: String, description: "Filepath to output XML file", required: true },
 ]
-const options = commandLineArgs(optionDefinitions)
+const CLIOptions = parseCLIOptions(optionDefinitions)
 
-if (options.input === undefined) {
-  throw new Error("You must supply an input path to an OSM file")
+async function convertOSMNetwork(callerOptions) {
+  const options = { ...CLIOptions, ...callerOptions }
+
+  validateOptions(options, optionDefinitions)
+
+  await runBash(`netconvert --osm-files ${options.input} -o ${options.output}`)
 }
 
-if (options.output === undefined) {
-  throw new Error("You must supply an output path")
+if (CLIOptions.run) {
+  convertOSMNetwork()
 }
 
-runBash(`netconvert --osm-files ${options.input} -o ${options.output}`)
+module.exports = convertOSMNetwork
