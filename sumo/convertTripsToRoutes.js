@@ -1,20 +1,35 @@
-const commandLineArgs = require("command-line-args")
-
-const { runBash } = require("../shared/helpers")
+const { runBash, validateOptions } = require("../shared/helpers")
+const parseCLIOptions = require("../shared/parseCLIOptions")
 
 const optionDefinitions = [
-  { name: "trips", alias: "t", type: String },
-  { name: "network", alias: "n", type: String },
-  { name: "output", alias: "o", type: String },
+  { name: "trips", type: String, description: "Filepath to the trip XML file", required: true },
+  {
+    name: "network",
+    type: String,
+    description: "Filepath to the network XML file",
+    required: true,
+  },
+  {
+    name: "output",
+    type: String,
+    description: "Filepath for the output routes file XML file",
+    required: true,
+  },
 ]
-const options = commandLineArgs(optionDefinitions)
+const CLIOptions = parseCLIOptions(optionDefinitions)
 
-for (const option of optionDefinitions) {
-  if (options[option.name] === undefined) {
-    throw new Error(`You must supply the "${option.name}" option`)
-  }
+async function convertTripsToRoutes(callerOptions) {
+  const options = { ...CLIOptions, ...callerOptions }
+
+  validateOptions(options, optionDefinitions)
+
+  await runBash(
+    `duarouter -v --route-files ${options.trips} --net-file ${options.network} --output-file ${options.output}`
+  )
 }
 
-runBash(
-  `duarouter -v --route-files ${options.trips} --net-file ${options.network} --output-file ${options.output}`
-)
+if (CLIOptions.run) {
+  convertTripsToRoutes()
+}
+
+module.exports = convertTripsToRoutes

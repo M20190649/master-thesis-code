@@ -1,31 +1,40 @@
 const { join } = require("path")
-const commandLineArgs = require("command-line-args")
-
-const { runBash } = require("../shared/helpers")
+const { runBash, validateOptions } = require("../shared/helpers")
+const parseCLIOptions = require("../shared/parseCLIOptions")
 
 const optionDefinitions = [
-  { name: "network", type: String },
-  { name: "routes", type: String },
-  { name: "output", type: String },
+  { name: "routes", type: String, description: "Filepath to the routes XML file", required: true },
+  {
+    name: "network",
+    type: String,
+    description: "Filepath to the network XML file",
+    required: true,
+  },
+  {
+    name: "output",
+    type: String,
+    description: "Filepath for the output routes visualization XML file",
+    required: true,
+  },
 ]
-const options = commandLineArgs(optionDefinitions)
+const CLIOptions = parseCLIOptions(optionDefinitions)
 
-if (options.network === undefined) {
-  throw new Error("You must supply a path to a SUMO network file")
+async function visualizeRoutes(callerOptions) {
+  const options = { ...CLIOptions, ...callerOptions }
+
+  validateOptions(options, optionDefinitions)
+
+  await runBash([
+    "py",
+    join(process.env.SUMO_HOME, "tools", "route", "route2poly.py"),
+    options.network,
+    options.routes,
+    `--outfile=${options.output}`,
+  ])
 }
 
-if (options.routes === undefined) {
-  throw new Error("You must supply a path to a SUMO routes file")
+if (CLIOptions.run) {
+  visualizeRoutes()
 }
 
-if (options.output === undefined) {
-  throw new Error("You must supply a path to a file where the output XML should be stored")
-}
-
-runBash([
-  "py",
-  join(process.env.SUMO_HOME, "tools", "route", "route2poly.py"),
-  options.network,
-  options.routes,
-  `--outfile=${options.output}`,
-])
+module.exports = visualizeRoutes

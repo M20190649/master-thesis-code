@@ -3,6 +3,11 @@ const fs = require("fs")
 
 const { runBash } = require("../shared/helpers")
 
+const convertTripsToRoutes = require("../sumo/convertTripsToRoutes")
+const visualizeRoutes = require("../sumo/visualizeRoutes")
+
+const convertPlansToTrips = require("../matsim/convertPlansToTrips")
+
 const inputDir = join(__dirname, "..", "input")
 const osmDir = join(__dirname, "..", "..", "osm")
 const matsimDir = join(__dirname, "..", "..", "matsim")
@@ -49,36 +54,30 @@ module.exports = async config => {
   console.log("------------ Prepare Routes Data ------------")
   // 2.1. Parse all the plans for the bbox and convert them to trips
   console.log("Parsing MATSim plans for given Bbox...")
-  await runBash([
-    "node",
-    join(matsimDir, "planConverter.js"),
-    `--plans=${matsimPlans}`,
-    `--bbox=${config.bbox.join(",")}`,
-    `--mode=geo`,
-    `--output=${tripsFile}`,
-  ])
+  await convertPlansToTrips({
+    bbox: config.bbox.join(","),
+    plans: matsimPlans,
+    mode: "geo",
+    output: tripsFile,
+  })
   console.log("Done!\n")
 
   // 2.2. Convert trips into SUMO routes with the SUMO network
   console.log("Converting trips into SUMO routes...")
-  await runBash([
-    "node",
-    join(sumoDir, "convertTripsToRoutes.js"),
-    `--trips=${tripsFile}`,
-    `--network=${networkFile}`,
-    `--output=${routesFile}`,
-  ])
+  await convertTripsToRoutes({
+    trips: tripsFile,
+    network: networkFile,
+    output: routesFile,
+  })
   console.log("Done!\n")
 
   // 2.3 Create visualization of routes for preview
   console.log("Creating a visualization of SUMO routes...")
-  await runBash([
-    "node",
-    join(sumoDir, "visualizeRoutes.js"),
-    `--routes=${routesFile}`,
-    `--network=${networkFile}`,
-    `--output=${routesVisualizationFile}`,
-  ])
+  await visualizeRoutes({
+    routes: routesFile,
+    network: networkFile,
+    output: routesVisualizationFile,
+  })
   console.log("Done!\n")
 
   // 3. Write SUMO config file
