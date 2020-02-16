@@ -1,7 +1,7 @@
 const { join } = require("path")
 const fs = require("fs")
 
-const { runBash } = require("../../shared/helpers")
+const { runBash } = require("../shared/helpers")
 
 const inputDir = join(__dirname, "..", "input")
 const osmDir = join(__dirname, "..", "..", "osm")

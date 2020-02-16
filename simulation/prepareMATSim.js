@@ -1,9 +1,9 @@
 const { join } = require("path")
 const fs = require("fs")
 
-const { runBash } = require("../../shared/helpers")
-const convertMATSimNetwork = require("../../sumo/convertMATSimNetwork")
-const convertPlansToTrips = require("../../matsim/convertPlansToTrips")
+const { runBash } = require("../shared/helpers")
+const convertMATSimNetwork = require("../sumo/convertMATSimNetwork")
+const convertPlansToTrips = require("../matsim/convertPlansToTrips")
 
 const rootDir = join(__dirname, "..", "..")
 const inputDir = join(rootDir, "simulation", "input")

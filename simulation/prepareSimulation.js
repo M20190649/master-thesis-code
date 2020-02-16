@@ -1,8 +1,8 @@
 const { join } = require("path")
 const fs = require("fs")
 
-const prepareMATSim = require("./helpers/prepareMATSim")
-const prepareOSM = require("./helpers/prepareOSM")
+const prepareMATSim = require("./prepareMATSim")
+const prepareOSM = require("./prepareOSM")
 const { validateOptions } = require("../shared/helpers")
 const parseCLIOptions = require("../shared/parseCLIOptions")
 
