@@ -12,7 +12,9 @@ async function convertOSMNetwork(callerOptions) {
 
   validateOptions(options, optionDefinitions)
 
-  await runBash(`netconvert --osm-files ${options.input} -o ${options.output}`)
+  await runBash(
+    `netconvert --osm-files ${options.input} --output-file ${options.output} --geometry.remove --ramps.guess --junctions.join --tls.guess-signals --tls.discard-simple --tls.join`
+  )
 }
 
 if (CLIOptions.run) {
