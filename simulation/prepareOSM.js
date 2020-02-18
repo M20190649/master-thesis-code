@@ -9,21 +9,18 @@ const convertOSMNetwork = require("../sumo/convertOSMNetwork")
 const convertTripsToRoutes = require("../sumo/convertTripsToRoutes")
 const visualizeRoutes = require("../sumo/visualizeRoutes")
 
-const inputDir = join(__dirname, "..", "input")
-const osmDir = join(__dirname, "..", "..", "osm")
-const matsimDir = join(__dirname, "..", "..", "matsim")
-const sumoDir = join(__dirname, "..", "..", "sumo")
-
-if (!fs.existsSync(inputDir)) {
-  fs.mkdirSync(inputDir)
-}
-
 module.exports = async config => {
+  const rootDir = join(__dirname, "..")
+  const inputDir = join(rootDir, "simulation", config.name || "input")
+  const matsimDir = join(rootDir, "matsim")
+  const sumoDir = join(rootDir, "sumo")
+
   const networkName = `${config.networkName || "osm"}-network`
   const routesName = `${config.routesName || "osm"}-routes`
 
   const osmFile = `${join(inputDir, networkName)}.osm.xml`
   const matsimPlans = join(matsimDir, "plans", "berlin-v5.4-1pct.output_plans.xml")
+  // const matsimPlans = join(matsimDir, "plans", "test-pop.xml")
   const networkFile = `${join(inputDir, networkName)}.net.xml`
   const tripsFile = `${join(inputDir, routesName)}.trips.xml`
   const routesFile = `${join(inputDir, routesName)}.rou.xml`
@@ -34,7 +31,7 @@ module.exports = async config => {
   // 1.1. Download OSM from config bbox
   console.log("Downloading OSM Bbox...")
   await downloadFromOverpass({
-    bbox: config.bbox.join(","),
+    bbox: config.bbox,
     output: osmFile,
   })
   console.log("Done!\n")
@@ -52,10 +49,11 @@ module.exports = async config => {
   // 2.1. Parse all the plans for the bbox and convert them to trips
   console.log("Parsing MATSim plans for given Bbox...")
   await convertPlansToTrips({
-    bbox: config.bbox.join(","),
+    bbox: config.bbox,
     plans: matsimPlans,
     mode: "geo",
     output: tripsFile,
+    // verbose: true,
   })
   console.log("Done!\n")
 
