@@ -1,10 +1,8 @@
 const { join } = require("path")
 const fs = require("fs")
 
-const prepareMATSim = require("./prepareMATSim")
-const prepareOSM = require("./prepareOSM")
-const { validateOptions } = require("../shared/helpers")
 const parseCLIOptions = require("../shared/parseCLIOptions")
+const { validateOptions } = require("../shared/helpers")
 
 const modes = {
   osm: "osm",
@@ -42,11 +40,14 @@ const config = JSON.parse(fs.readFileSync(CLIOptions.config || "config.json"), "
 
 validateOptions(config, optionDefinitions)
 
-const inputDir = join(__dirname, "input")
+const inputDir = join(__dirname, config.name || "input")
 
 if (!fs.existsSync(inputDir)) {
   fs.mkdirSync(inputDir)
 }
+
+const prepareMATSim = require("./prepareMATSim")
+const prepareOSM = require("./prepareOSM")
 
 async function run() {
   // 1. Prepare input data according to mode
