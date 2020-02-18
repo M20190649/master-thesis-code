@@ -89,6 +89,11 @@ exports.getLinksWithId = async linkIdList => {
   return links
 }
 
+exports.getLinkById = async linkId => {
+  const link = await models.MATSimLink.findOne({ where: { id: linkId } })
+  return link
+}
+
 exports.setOSMEdge = async (linkId, OSMEdge) => {
   await models.MATSimLink.update({ osmEdge: OSMEdge }, { where: { id: linkId } })
 }

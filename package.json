@@ -17,6 +17,7 @@
     "command-line-args": "^5.1.1",
     "command-line-usage": "^6.1.0",
     "gauss-krueger": "^1.0.1",
+    "line-by-line": "^0.1.6",
     "p-queue": "^6.2.1",
     "pg": "^7.18.0",
     "pg-hstore": "^2.3.3",

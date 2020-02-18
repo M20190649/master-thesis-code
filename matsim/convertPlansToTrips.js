@@ -3,14 +3,16 @@ const { join } = require("path")
 const sax = require("sax")
 const gk = require("gauss-krueger")
 const XMLBuilder = require("xmlbuilder")
-const parseCLIOptions = require("../shared/parseCLIOptions")
+const LineByLineReader = require("line-by-line")
 
+const parseCLIOptions = require("../shared/parseCLIOptions")
 const { validateOptions } = require("../shared/helpers")
 const db = require("../db/matsim/index")
 
 const outputModes = {
   geo: "geo",
   matsim: "matsim",
+  osm: "osm",
 }
 
 const optionDefinitions = [
@@ -44,6 +46,7 @@ const optionDefinitions = [
 
 const CLIOptions = parseCLIOptions(optionDefinitions)
 
+let lineReader = null
 let currentTag = ""
 let currentPerson = ""
 let personCounter = 0
@@ -70,10 +73,9 @@ const currentTrip = {
     longitude: "longitude to",
   },
 }
+const tripsXML = XMLBuilder.create("trips")
 
 let log = x => console.log(x)
-
-const tripsXML = XMLBuilder.create("trips")
 
 function onError(err) {
   console.error(err)
@@ -140,7 +142,7 @@ function onOpenTag(node) {
   // log(node)
 }
 
-function onCloseTag(tagName, options) {
+async function onCloseTag(tagName, options) {
   if (tagName === "person") {
     log(`Person ${currentPerson} done`)
     routeCounter = 0
@@ -184,32 +186,50 @@ function onCloseTag(tagName, options) {
       attributes.to = currentTrip.to
     }
 
+    if (options.mode === outputModes.osm) {
+      lineReader.pause()
+      await Promise.all([db.getLinkById(currentTrip.from), db.getLinkById(currentTrip.to)]).then(
+        ([fromLink, toLink]) => {
+          attributes.from = fromLink.osmEdge
+          attributes.to = toLink.osmEdge
+        }
+      )
+      lineReader.resume()
+    }
+
     tripsXML.element("trip", attributes)
     parseRoute = false
   }
 }
 
-function onEnd(options) {
-  fs.writeFileSync(options.output, tripsXML.end({ pretty: true }))
-  log("Parsing done!")
-}
-
 async function convertPlans(callerOptions) {
-  const options = { ...CLIOptions, ...callerOptions }
+  await db.init()
+  await db.testConnection()
 
-  validateOptions(options, optionDefinitions)
+  return new Promise((resolve, reject) => {
+    const options = { ...CLIOptions, ...callerOptions }
 
-  if (!options.verbose) {
-    log = () => null
-  }
+    validateOptions(options, optionDefinitions)
 
-  const saxStream = sax.createStream(true)
-  saxStream.on("error", onError)
-  saxStream.on("opentag", onOpenTag)
-  saxStream.on("closetag", tagName => onCloseTag(tagName, options))
-  saxStream.on("end", () => onEnd(options))
+    if (!options.verbose) {
+      log = () => null
+    }
 
-  fs.createReadStream(options.plans).pipe(saxStream)
+    const parser = sax.parser(true)
+    parser.onerror = onError
+    parser.onopentag = onOpenTag
+    parser.onclosetag = tagName => onCloseTag(tagName, options)
+
+    lineReader = new LineByLineReader(options.plans)
+    lineReader.on("line", line => {
+      parser.write(line)
+    })
+    lineReader.on("end", () => {
+      fs.writeFileSync(options.output, tripsXML.end({ pretty: true }))
+      log("Parsing done!")
+      resolve()
+    })
+  })
 }
 
 if (CLIOptions.run) {
