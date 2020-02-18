@@ -1,5 +1,5 @@
 {
-  "name": "test",
+  "name": "matsim",
   "mode": "matsim",
   "scenario": "1pct",
   "bbox": [

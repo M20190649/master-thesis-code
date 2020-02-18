@@ -15,7 +15,7 @@ const scenarios = {
 }
 
 const optionDefinitions = [
-  { name: "config", type: String, description: "Filepath to the config file" },
+  { name: "config", type: String, description: "Filepath to the config file", required: true },
   {
     name: "mode",
     type: String,
@@ -36,7 +36,7 @@ const optionDefinitions = [
 
 const CLIOptions = parseCLIOptions(optionDefinitions)
 
-const config = JSON.parse(fs.readFileSync(CLIOptions.config || "config.json"), "utf8")
+const config = JSON.parse(fs.readFileSync(CLIOptions.config), "utf8")
 
 validateOptions(config, optionDefinitions)
 
