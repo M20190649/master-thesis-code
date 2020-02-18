@@ -29,7 +29,7 @@ async function downloadFromOverpass(callerOptions) {
   // const matsimBbox = [50.819395, 11.227191, 54.321129, 15.241843]
 
   const outputStream = fs.createWriteStream(options.output || "./road-network.osm.xml")
-  axios
+  await axios
     .get("http://overpass-api.de/api/interpreter", {
       responseType: "stream",
       params: {
@@ -37,6 +37,10 @@ async function downloadFromOverpass(callerOptions) {
       },
     })
     .then(res => res.data.pipe(outputStream))
+
+  return new Promise((resolve, reject) => {
+    outputStream.on("close", resolve)
+  })
 }
 
 if (CLIOptions.run) {
