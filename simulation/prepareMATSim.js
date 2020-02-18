@@ -7,7 +7,7 @@ const visualizeRoutes = require("../sumo/visualizeRoutes")
 
 const convertPlansToTrips = require("../matsim/convertPlansToTrips")
 
-const rootDir = join(__dirname, "..", "..")
+const rootDir = join(__dirname, "..")
 const inputDir = join(rootDir, "simulation", "input")
 const matsimDir = join(rootDir, "matsim")
 const sumoDir = join(rootDir, "sumo")
