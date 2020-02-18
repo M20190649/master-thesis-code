@@ -50,7 +50,11 @@ function getCallerFile() {
   return callerfile
 }
 
+let parsedOptions = null
+
 module.exports = (customOptions = []) => {
+  if (parsedOptions !== null) return parsedOptions
+
   const optionDefinitions = [...defaultOptions, ...customOptions]
   const callerFile = basename(getCallerFile())
   const sections = [
@@ -65,6 +69,8 @@ module.exports = (customOptions = []) => {
   const usage = commandLineUsage(sections)
 
   const options = commandLineArgs(optionDefinitions)
+
+  parsedOptions = options
 
   if (options.help) {
     console.log(usage)
