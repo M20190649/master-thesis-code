@@ -15,4 +15,5 @@ airdata/*.cmd
 *.gz
 *.sqlite
 *.sqlite-journal
+*.sumocfg
 *log*
