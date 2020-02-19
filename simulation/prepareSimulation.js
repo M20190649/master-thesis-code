@@ -55,10 +55,10 @@ async function run() {
   let inputFiles = null
   switch (config.mode) {
     case modes.osm:
-      inputFiles = await prepareOSM(config)
+      inputFiles = await prepareOSM(inputDir, config)
       break
     case modes.matsim:
-      inputFiles = await prepareMATSim(config)
+      inputFiles = await prepareMATSim(inputDir, config)
       break
     default:
       break

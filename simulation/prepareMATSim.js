@@ -7,11 +7,9 @@ const visualizeRoutes = require("../sumo/visualizeRoutes")
 
 const convertPlansToTrips = require("../matsim/convertPlansToTrips")
 
-module.exports = async (config = {}) => {
+module.exports = async (inputDir, config) => {
   const rootDir = join(__dirname, "..")
-  const inputDir = join(rootDir, "simulation", config.name || "input")
   const matsimDir = join(rootDir, "matsim")
-  const sumoDir = join(rootDir, "sumo")
 
   const networkName = `matsim-network`
   const routesName = `matsim-routes`
