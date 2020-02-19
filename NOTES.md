@@ -221,3 +221,12 @@
 TODO: 
 * Finish the simulation preparation
 * Continue working on TraCI
+
+## 18.02.2020
+
+* Work on simulation prep
+* Testing if it works better to do trips with MATSim link IDs, LongLat or the converted osmEdge
+  * MATSim scenario takes the least amount of disk space. The network file is a lot smaller than OSM and I think its because a lot of network information is not 100% and info gets lost in the conversion
+  * LongLat works best for OSM bbox. Duarouter finds the closest edge to fromLongLat and calculates the best route to the nearest edge of toLongLat
+  * osmEdge sadly does not really work because when the OSM network gets converted to the SUMO format the OSM ids dont stay the same. There are some suffixes added or a "-" for bi-directional edges
+* Test out multiple duarouter and netconvert options for better conversion and routing results
