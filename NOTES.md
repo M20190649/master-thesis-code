@@ -230,3 +230,26 @@ TODO:
   * LongLat works best for OSM bbox. Duarouter finds the closest edge to fromLongLat and calculates the best route to the nearest edge of toLongLat
   * osmEdge sadly does not really work because when the OSM network gets converted to the SUMO format the OSM ids dont stay the same. There are some suffixes added or a "-" for bi-directional edges
 * Test out multiple duarouter and netconvert options for better conversion and routing results
+
+## 20.02.2020
+
+* Research about rerouting possibilities via TraCI
+* Brainstorming about parameters to tune during simulation:
+  ### Air data
+  * How often do you update the areas? (updateInterval)
+  * Which algorithm is used to interpolate air quality data? (interpolationMethod)
+  * Which algorithm is used to polygonize air quality zone? (polygonizationMethod)
+
+  ### Car data
+  * How many cars are of which emission type? (carEmissionTypeDistribution) (e.g. electro/euro4/etc.) (effects the price they pay)
+  * How many cars are of which car type? (carTypeDistribution) (e.g. small car/suv) (effects the price they pay)
+  * Price sensitivity distribution? 
+    * Mercedes SUV drivers have lower sensitivity than Renault Twingo drivers -> Important for deciding if to reroute the vehicle. 
+    * How many people might even avoid the car at all due to increased travel cost?
+  
+  ### Pricing data
+  * How many zones do you make? (numberOfZones)
+  * Is the number of zones constant or also dynamic depending on levels of pollution? (dynamicZones)
+  * Price per zone? (pricingScheme)
+
+
