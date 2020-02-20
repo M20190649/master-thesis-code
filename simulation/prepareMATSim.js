@@ -4,6 +4,7 @@ const fs = require("fs")
 const convertMATSimNetwork = require("../sumo/convertMATSimNetwork")
 const convertTripsToRoutes = require("../sumo/convertTripsToRoutes")
 const visualizeRoutes = require("../sumo/visualizeRoutes")
+const writeSUMOConfig = require("../sumo/writeSUMOConfig")
 
 const convertPlansToTrips = require("../matsim/convertPlansToTrips")
 
@@ -11,8 +12,8 @@ module.exports = async (inputDir, config) => {
   const rootDir = join(__dirname, "..")
   const matsimDir = join(rootDir, "matsim")
 
-  const networkName = `matsim-network`
-  const routesName = `matsim-routes`
+  // const networkName = `matsim-network`
+  const routesName = `${config.name}-routes`
 
   const matsimNetworkFile = join(matsimDir, "network", "berlin-v5-network.xml")
   const networkFile = join(matsimDir, "network", "berlin-v5-network-converted.net.xml")
@@ -20,6 +21,7 @@ module.exports = async (inputDir, config) => {
   const tripsFile = `${join(inputDir, routesName)}.trips.xml`
   const routesFile = `${join(inputDir, routesName)}.rou.xml`
   const routesVisualizationFile = `${join(inputDir, routesName)}.rou.visualization.xml`
+  const sumoConfigFile = `${join(inputDir, config.name)}.sumocfg`
 
   // 1. Prepare network data
   console.log("------------ Prepare Network Data ------------")
@@ -81,13 +83,19 @@ module.exports = async (inputDir, config) => {
 
   console.log("Done!\n")
 
-  // 3. Write SUMO config file
-
-  // Return object of filepaths for all newly generated input data
-  return {
+  const outputFiles = {
     network: networkFile,
     trips: tripsFile,
     routes: routesFile,
     routesVisualization: routesVisualizationFile,
+    sumoConfig: sumoConfigFile,
   }
+
+  // 3. Write SUMO config file
+  console.log("Writing SUMO config file...")
+  writeSUMOConfig(inputDir, outputFiles)
+  console.log("Done!\n")
+
+  // Return object of filepaths for all newly generated input data
+  return outputFiles
 }
