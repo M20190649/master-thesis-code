@@ -1,0 +1,11 @@
+{
+  "name": "ernst-reuter",
+  "mode": "osm",
+  "scenario": "1pct",
+  "bbox": [
+    52.5056,
+    13.3075,
+    52.5182,
+    13.344
+  ]
+}
