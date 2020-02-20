@@ -4,6 +4,10 @@ const fs = require("fs")
 const parseCLIOptions = require("../shared/parseCLIOptions")
 const { validateOptions } = require("../shared/helpers")
 
+const CLIOptionDefinitions = [
+  { name: "config", type: String, description: "Filepath to the config file", required: true },
+]
+
 const modes = {
   osm: "osm",
   matsim: "matsim",
@@ -14,8 +18,8 @@ const scenarios = {
   "10pct": "10pct",
 }
 
-const optionDefinitions = [
-  { name: "config", type: String, description: "Filepath to the config file", required: true },
+const configOptionDefinitions = [
+  { name: "name", type: String, description: "Name of the simulation", required: true },
   {
     name: "mode",
     type: String,
@@ -34,11 +38,13 @@ const optionDefinitions = [
   },
 ]
 
-const CLIOptions = parseCLIOptions(optionDefinitions)
+const CLIOptions = parseCLIOptions(CLIOptionDefinitions)
+
+validateOptions(CLIOptions, CLIOptionDefinitions)
 
 const config = JSON.parse(fs.readFileSync(CLIOptions.config), "utf8")
 
-validateOptions(config, optionDefinitions)
+validateOptions(config, configOptionDefinitions)
 
 const inputDir = join(__dirname, config.name || "input")
 
