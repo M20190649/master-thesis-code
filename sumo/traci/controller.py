@@ -1,32 +1,27 @@
-import traci
-import traci.constants as tc
+import traci, pprint
 
+from tracker import Tracker
 from listener import StepListener
 
 
 class SimController:
     def __init__(self, config):
         self.config = config
+        self.tracker = Tracker()
+        self.stepListener = StepListener(self.tracker)
 
     def init(self):
         # Add step listener
-        listener = StepListener()
-        traci.addStepListener(listener)
+        traci.addStepListener(self.stepListener)
 
-        # Add subscriptions
-        # traci.vehicle.subscribe("vehicle_0", (tc.VAR_ROAD_ID, tc.VAR_LANEPOSITION))
-        # traci.polygon.subscribeContext(
-        #     "1",
-        #     tc.CMD_GET_VEHICLE_VARIABLE,
-        #     10,
-        #     [tc.VAR_EDGES, tc.VAR_ROUTING_MODE, tc.VAR_ROUTE_INDEX],
-        # )
+        # Load data about existing polygons in the simulation
+        self.tracker.updatePolygons()
 
     def start(self):
         # Connect
         traci.start(self.config["sumoCmd"])
 
-        # Initialize call listeners and subscriptions
+        # Initialize call listeners, subscriptions, etc.
         self.init()
 
         # Run the simulation

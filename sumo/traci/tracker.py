@@ -1,11 +1,28 @@
-import traci
+import traci, pprint
+import traci.constants as tc
 from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
 
 
 class Tracker:
     def __init__(self):
+        self.polygonIds = []
+        self.polygonEdges = {}
         self.vehicleDistances = {}
+
+    def updatePolygons(self):
+        self.polygonIds = traci.polygon.getIDList()
+
+        for pId in self.polygonIds:
+            traci.polygon.subscribeContext(
+                pId, tc.CMD_GET_EDGE_VARIABLE, 0, [tc.VAR_NAME],
+            )
+            edgeSubscription = traci.polygon.getContextSubscriptionResults(pId)
+            # filter out some junction data
+            edgesInPolygon = list(
+                filter(lambda e: not e.startswith(":"), edgeSubscription.keys())
+            )
+            self.polygonEdges[pId] = edgesInPolygon
 
     def trackVehicleDistanceInPolygon(self, vId, pId):
         x, y = traci.vehicle.getPosition(vId)
@@ -13,21 +30,17 @@ class Tracker:
         location = Point(x, y)
         polygon = Polygon(polygonShape)
 
-        distance = traci.vehicle.getDistance(vId)
-        if vId not in self.vehicleDistances:
-            self.vehicleDistances[vId] = {"prevDistance": distance}
+        speed = traci.vehicle.getSpeed(vId)
 
         if polygon.contains(location):
-            if pId in self.vehicleDistances[vId]:
-                self.vehicleDistances[vId][pId] += (
-                    distance - self.vehicleDistances[vId]["prevDistance"]
-                )
-            else:
-                self.vehicleDistances[vId][pId] = (
-                    distance - self.vehicleDistances[vId]["prevDistance"]
-                )
-            print("Vehicle in polygon")
-            print(self.vehicleDistances)
+            if vId not in self.vehicleDistances:
+                self.vehicleDistances[vId] = {}
 
-        self.vehicleDistances[vId]["prevDistance"] = distance
+            if pId in self.vehicleDistances[vId]:
+                self.vehicleDistances[vId][pId] += speed
+            else:
+                self.vehicleDistances[vId][pId] = 0
+
+            print("Vehicle in polygon")
+            pprint.pprint(self.vehicleDistances)
 
