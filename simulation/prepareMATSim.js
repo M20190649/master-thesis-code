@@ -4,7 +4,6 @@ const fs = require("fs")
 const convertMATSimNetwork = require("../sumo/convertMATSimNetwork")
 const convertTripsToRoutes = require("../sumo/convertTripsToRoutes")
 const visualizeRoutes = require("../sumo/visualizeRoutes")
-const writeSUMOConfig = require("../sumo/writeSUMOConfig")
 
 const convertPlansToTrips = require("../matsim/convertPlansToTrips")
 
@@ -21,7 +20,6 @@ module.exports = async (inputDir, config) => {
   const tripsFile = `${join(inputDir, routesName)}.trips.xml`
   const routesFile = `${join(inputDir, routesName)}.rou.xml`
   const routesVisualizationFile = `${join(inputDir, routesName)}.rou.visualization.xml`
-  const sumoConfigFile = `${join(inputDir, config.name)}.sumocfg`
 
   // 1. Prepare network data
   console.log("------------ Prepare Network Data ------------")
@@ -88,13 +86,7 @@ module.exports = async (inputDir, config) => {
     trips: tripsFile,
     routes: routesFile,
     routesVisualization: routesVisualizationFile,
-    sumoConfig: sumoConfigFile,
   }
-
-  // 3. Write SUMO config file
-  console.log("Writing SUMO config file...")
-  writeSUMOConfig(inputDir, outputFiles)
-  console.log("Done!\n")
 
   // Return object of filepaths for all newly generated input data
   return outputFiles

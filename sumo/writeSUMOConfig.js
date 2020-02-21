@@ -4,13 +4,10 @@ const XMLBuilder = require("xmlbuilder")
 
 const guiConfig = join(__dirname, "gui-settings.cfg")
 
-module.exports = (inputDir, { network, routes, routesVisualization, sumoConfig }) => {
-  const outputDir = join(inputDir, "output")
-
-  if (!fs.existsSync(outputDir)) {
-    fs.mkdirSync(outputDir)
-  }
-
+module.exports = (
+  outputDir,
+  { network, routes, routesVisualization, sumoConfigFile, polygonsFile }
+) => {
   const emissionsFile = join(outputDir, "emissions.xml")
   const floatingCarData = join(outputDir, "floating-car-data.xml")
   const vehicleSummary = join(outputDir, "vehicle-summary.xml")
@@ -21,7 +18,8 @@ module.exports = (inputDir, { network, routes, routesVisualization, sumoConfig }
   const inputTag = configXML.element("input")
   inputTag.element("net-file", { value: network })
   inputTag.element("route-files", { value: routes })
-  inputTag.element("additional-files", { value: routesVisualization })
+  // inputTag.element("additional-files", { value: routesVisualization })
+  inputTag.element("additional-files", { value: polygonsFile })
   inputTag.element("gui_only").element("gui-settings-file", { value: guiConfig })
 
   const outputTag = configXML.element("output")
@@ -37,5 +35,5 @@ module.exports = (inputDir, { network, routes, routesVisualization, sumoConfig }
   outputTag.element("vehroute-output.route-length", { value: "true" })
   outputTag.element("vehroute-output.intended-depart", { value: "true" })
 
-  fs.writeFileSync(sumoConfig, configXML.end({ pretty: true }))
+  fs.writeFileSync(sumoConfigFile, configXML.end({ pretty: true }))
 }
