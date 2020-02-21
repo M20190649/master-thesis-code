@@ -252,4 +252,19 @@ TODO:
   * Is the number of zones constant or also dynamic depending on levels of pollution? (dynamicZones)
   * Price per zone? (pricingScheme)
 
+## 21.02.2020
+
+* Thinking about challenges for the TraCI implementation
+  * I need to know all the edges that are within a certain zone
+  * Once a vehicle enters the simulation I need to track its data and once it has left I need to remove it from memory so I don't run into memory overflow issues
+  * I might have to create my own log files with the tracked information
+  * Reroute at insertion or dynamically as soon as vehicle approaches a zone?
+
+* Worked on TraCI implementation
+* Successfully implemented rerouting via artificially increased vehicle-specific travel time on the edges of the zone
+  * Storing list of all polygons
+  * Storing list of all edges for each polygon
+  * Every time a vehicle is inserted into the simulation I look at the route and check if any of the edges are included in any of the polygons
+  * If yes, I set the edge travel time to 999999 for all edges and trigger a reroute
+  
 
