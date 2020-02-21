@@ -21,8 +21,12 @@ async function downloadFromOverpass(callerOptions) {
 
   validateOptions(options, optionDefinitions)
 
-  // const query = `(way["highway"](south,west,north,east);relation["highway"](south,west,north,east);)->.all;(way["highway"~"service|elevator|footway|steps|cycleway|corridor|path|pedestrian|platform"](south,west,north,east);way["highway"~"service"](south,west,north,east);)->.exclude;(.all; - .exclude;);out body;>;out skel qt;`
-  const query = `(way["highway"~"motorway|trunk|primary|secondary|tertiary|residential|living_street|motorway_link|motorway_link|trunk_link|primary_link|secondary_link|tertiary_link|service|road|unclassified"](south,west,north,east);>;);out;`
+  const queryWithoutServiceRoads = `(way["highway"~"motorway|trunk|primary|secondary|tertiary|residential|living_street|motorway_link|motorway_link|trunk_link|primary_link|secondary_link|tertiary_link|road|unclassified"](south,west,north,east);>;);out;`
+
+  // Files are significantly larger with service roads
+  const queryWithServiceRoads = `(way["highway"~"motorway|trunk|primary|secondary|tertiary|residential|living_street|motorway_link|motorway_link|trunk_link|primary_link|secondary_link|tertiary_link|service|road|unclassified"](south,west,north,east);>;);out;`
+
+  const query = queryWithoutServiceRoads
 
   // const testBbox = [52.5056, 13.3075, 52.5182, 13.344] // south,west,north,east
   // const greaterBerlinBbox = [52.25639, 12.874603, 52.778678, 13.932037] // south,west,north,east
