@@ -1,50 +1,56 @@
 const fs = require("fs")
-const commandLineArgs = require("command-line-args")
 const XMLBuilder = require("xmlbuilder")
 
-const { runBash } = require("../shared/helpers")
+const parseCLIOptions = require("../shared/parseCLIOptions")
+const { runBash, validateOptions } = require("../shared/helpers")
 
 const optionDefinitions = [
-  { name: "geojson", type: String },
-  { name: "network", type: String },
-  { name: "output", type: String },
+  { name: "geojson", type: String, description: "Filepath to GeoJSON file", required: true },
+  { name: "network", type: String, description: "Filepath to SUMO network file", required: true },
+  {
+    name: "output",
+    type: String,
+    description: "Filepath to output polygon XML file",
+    required: true,
+  },
 ]
-const options = commandLineArgs(optionDefinitions)
+const CLIOptions = parseCLIOptions(optionDefinitions)
 
-if (options.geojson === undefined) {
-  throw new Error("You must supply a path to a GeoJSON file")
-}
+async function convertGeoJSONToPoly(callerOptions) {
+  const options = { ...CLIOptions, ...callerOptions }
 
-if (options.network === undefined) {
-  throw new Error("You must supply a path to a SUMO network file")
-}
+  validateOptions(options, optionDefinitions)
 
-if (options.output === undefined) {
-  throw new Error("You must supply a path to a file where the output XML should be stored")
-}
+  fs.mkdirSync("tmp")
 
-fs.mkdirSync("tmp")
+  const file = fs.readFileSync(options.geojson, "utf8")
+  const geojson = JSON.parse(file)
+  const { coordinates } = geojson.features[0].geometry
 
-const file = fs.readFileSync(options.input, "utf8")
-const geojson = JSON.parse(file)
-const { coordinates } = geojson.features[0].geometry
+  const coordinateList = []
+  for (const [long, lat] of coordinates[0]) {
+    coordinateList.push(`${long},${lat}`)
+  }
 
-const coordinateList = []
-for (const [long, lat] of coordinates[0]) {
-  coordinateList.push(`${long},${lat}`)
-}
+  const xml = XMLBuilder.begin()
+    .element("poly", {
+      id: 0,
+      shape: coordinateList.join(" "),
+    })
+    .end({ pretty: true })
 
-const xml = XMLBuilder.begin()
-  .element("poly", {
-    id: 0,
-    shape: coordinateList.join(" "),
-  })
-  .end({ pretty: true })
+  fs.writeFileSync("tmp/polygon.xml", xml)
 
-fs.writeFileSync("tmp/polygon.xml", xml)
+  await runBash(
+    `polyconvert --xml-files tmp/polygon.xml --net-file ${options.network} --output-file ${options.output}`
+  )
 
-runBash(
-  `polyconvert --xml-files tmp/polygon.xml --net-file ${options.network} --output-file ${options.output}`
-).then(() => {
+  fs.unlinkSync("tmp/polygon.xml")
   fs.rmdirSync("tmp")
-})
+}
+
+if (CLIOptions.run) {
+  convertGeoJSONToPoly()
+}
+
+module.exports = convertGeoJSONToPoly
