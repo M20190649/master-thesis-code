@@ -1,0 +1,11 @@
+{
+  "name": "Name of your simulation",
+  "mode": "Possible values: osm, matsim",
+  "scenario": "Possible values: 1pct, 10pct",
+  "bbox": [
+    "south",
+    "west",
+    "north",
+    "east"
+  ]
+}
