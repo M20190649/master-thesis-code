@@ -60,7 +60,7 @@ if (!fs.existsSync(outputDir)) {
   fs.mkdirSync(outputDir)
 }
 
-const convertGeoJSONToPoly = require("../sumo/convertGeoJsonToPoly")
+const convertGeoJSONToPoly = require("../sumo/convertGeoJSONToPoly")
 const writeSUMOConfig = require("../sumo/writeSUMOConfig")
 const prepareMATSim = require("./prepareMATSim")
 const prepareOSM = require("./prepareOSM")
