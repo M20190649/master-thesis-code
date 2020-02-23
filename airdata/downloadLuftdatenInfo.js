@@ -1,20 +1,7 @@
 const fs = require("fs")
 const axios = require("axios")
 
-function pad(number) {
-  if (number < 10) {
-    return `0${number}`
-  }
-  return String(number)
-}
-
-const dateToString = date => {
-  return `${String(date.getUTCFullYear()) +
-    pad(date.getUTCMonth() + 1) +
-    pad(date.getUTCDate())}-${pad(date.getUTCHours())}${pad(date.getUTCMinutes())}${pad(
-    date.getUTCSeconds()
-  )}`
-}
+const { getDateString, getTimeString } = require("../shared/helpers")
 
 function downloadFromOpenSenseNetwork(pollutant) {
   const pollutantMapping = {
@@ -39,8 +26,8 @@ function downloadFromOpenSenseNetwork(pollutant) {
 
 function downloadFromLuftdatenInfo(pollutant) {
   const pollutantMapping = {
-    pm10: "P1",
-    pm2_5: "P2",
+    PM10: "P1",
+    "PM2.5": "P2",
   }
   const baseUrl = "http://data.sensor.community/airrohr/v1/filter"
   const berlinBbox = [52.301761, 13.040771, 52.714667, 13.827667]
@@ -54,8 +41,8 @@ function downloadFromLuftdatenInfo(pollutant) {
       const pmMeasurements = measurements
         .filter(m => {
           return m.sensordatavalues.some(v => {
-            // return v.value_type === pollutantMapping[pollutant]
-            return v.value_type === "P1" || v.value_type === "P2"
+            return v.value_type === pollutantMapping[pollutant]
+            // return v.value_type === "P1" || v.value_type === "P2"
           })
         })
         .reduce((uniqueMeasurements, curr) => {
@@ -65,8 +52,8 @@ function downloadFromLuftdatenInfo(pollutant) {
           return uniqueMeasurements
         }, [])
 
-      console.log(`All measurements: ${measurements.length}`)
-      console.log(`PM Measurements: ${pmMeasurements.length}`)
+      // console.log(`All measurements: ${measurements.length}`)
+      // console.log(`PM Measurements: ${pmMeasurements.length}`)
 
       const outputGeojson = {
         type: "FeatureCollection",
@@ -87,18 +74,13 @@ function downloadFromLuftdatenInfo(pollutant) {
         }),
       }
 
-      fs.writeFileSync(
-        `./data/luftinfo_pm_${dateToString(new Date())}.geojson`,
-        JSON.stringify(outputGeojson, null, 2)
-      )
+      // fs.writeFileSync(
+      //   `./data/luftinfo_pm_${getDateString()}T${getTimeString()}.geojson`,
+      //   JSON.stringify(outputGeojson, null, 2)
+      // )
+
+      return outputGeojson
     })
 }
 
-const pollutants = {
-  pm10: "pm10",
-  pm2_5: "pm2_5",
-}
-
-// downloadFromOpenSenseNetwork(pollutants.pm10)
-
-downloadFromLuftdatenInfo(pollutants.pm10)
+module.exports = downloadFromLuftdatenInfo
