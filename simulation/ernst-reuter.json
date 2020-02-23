@@ -7,5 +7,8 @@
     13.3075,
     52.5182,
     13.344
-  ]
+  ],
+  "enableRerouting": true,
+  "dynamicRerouting": true,
+  "dynamicReroutingDistance": 300
 }

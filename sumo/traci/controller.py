@@ -1,32 +1,33 @@
-import traci, pprint
+import os, traci, pprint
 
 from tracker import Tracker
 from listener import StepListener
 
 
 class SimController:
-    def __init__(self, config):
-        self.config = config
-        self.tracker = Tracker()
-        self.stepListener = StepListener(self.tracker)
+    def __init__(self, traciConfig, simConfig):
+        self.traciConfig = traciConfig
+        self.tracker = Tracker(simConfig)
+        self.stepListener = StepListener(self.tracker, simConfig)
 
     def init(self):
         # Add step listener
         traci.addStepListener(self.stepListener)
 
         # Load data about existing polygons in the simulation
+        # Also adds all necessary context subscriptions
         self.tracker.updatePolygons()
 
     def start(self):
         # Connect
-        traci.start(self.config["sumoCmd"])
+        traci.start(self.traciConfig["sumoCmd"])
 
         # Initialize call listeners, subscriptions, etc.
         self.init()
 
         # Run the simulation
         nStep = 0
-        while nStep < self.config["steps"]:
+        while nStep < self.traciConfig["steps"]:
             print("step", nStep)
             traci.simulationStep()
             nStep += 1
