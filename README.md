@@ -42,3 +42,13 @@ node runSimulation.js --config <path to the config file>
 ## Configuration File
 
 TODO: Write all the details about the properties of the configuration file
+
+| Key| Type | Possible Values | Example | Description |
+| - | - | - | - | - |
+| name | String | - | `"Berlin Simulation"` | Name of your simulation |
+| mode | String | `osm, matsim` | `"osm"` | Determines where the input data comes from |
+| scenario | String | `1pct, 10pct` | `"1pct"` | Determines which MATSim scenario is used for input plans (1pct should be the test scenario, 10pct is the full scenario) |
+| bbox | Array | `[south, west, north, east]` | `[52.5056, 13.3075, 52.5182, 13.344]` | Bounding Box for the OSM case and also for limiting the parsed MATSim plans only for the given bbox |
+| enableRerouting | Boolean | - | `true` | Determines if vehicles should be rerouted |
+| dynamicRerouting | Boolean | - | `true` | Determines if vehicles should be rerouted at insertion or dynamically when they approach an air pollution zone |
+| dynamicReroutingDistance | Boolean | - | `true` | Determines the distance to the zones when vehicles should be dynamically rerouted

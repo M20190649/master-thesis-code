@@ -1,11 +1,14 @@
 {
-  "name": "Name of your simulation",
-  "mode": "Possible values: osm, matsim",
-  "scenario": "Possible values: 1pct, 10pct",
+  "name": "Example simulation",
+  "mode": "osm",
+  "scenario": "1pct",
   "bbox": [
-    "south",
-    "west",
-    "north",
-    "east"
-  ]
+    52.5056,
+    13.3075,
+    52.5182,
+    13.344
+  ],
+  "enableRerouting": true,
+  "dynamicRouting": false,
+  "dynamicRoutingDistance": 300
 }
