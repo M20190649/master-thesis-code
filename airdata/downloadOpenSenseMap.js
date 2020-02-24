@@ -13,9 +13,10 @@ async function downloadOpenSenseMap(options) {
   const pollutant = pollutantMapping[options.pollutant]
 
   const baseUrl = "https://api.opensensemap.org"
-  const bbox = [12.874603, 52.25639, 13.932037, 52.778678]
 
-  console.log(options)
+  const [south, west, north, east] = options.bbox
+  const bbox = [west, south, east, north]
+
   const allBoxesURL = [baseUrl, "/boxes", `?bbox=${bbox.join(",")}`, "&format=json"].join("")
   const { data: allBoxes } = await axios.get(allBoxesURL)
   const allPhenomenons = allBoxes.reduce(
@@ -60,7 +61,7 @@ async function downloadOpenSenseMap(options) {
         },
         properties: {
           sensorId: m.sensorId,
-          pollutant,
+          pollutant: options.pollutant,
           timestamp: m.createdAt,
           value: parseFloat(m.value),
         },
@@ -68,10 +69,10 @@ async function downloadOpenSenseMap(options) {
     }),
   }
 
-  fs.writeFileSync(
-    `./data/open-sense-map-${getDateString()}T${getTimeString()}.geojson`,
-    JSON.stringify(outputGeojson, null, 2)
-  )
+  // fs.writeFileSync(
+  //   `./data/open-sense-map-${getDateString()}T${getTimeString()}.geojson`,
+  //   JSON.stringify(outputGeojson, null, 2)
+  // )
 
   return outputGeojson
 }

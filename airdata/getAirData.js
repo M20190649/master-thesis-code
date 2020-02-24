@@ -1,7 +1,7 @@
 const fs = require("fs")
 
 const parseCLIOptions = require("../shared/parseCLIOptions")
-const { validateOptions } = require("../shared/helpers")
+const { validateOptions, getDateString, getTimeString } = require("../shared/helpers")
 const downloadLuftdatenInfo = require("./downloadLuftdatenInfo")
 const downloadOpenSenseMap = require("./downloadOpenSenseMap")
 
@@ -41,8 +41,29 @@ async function getAirData(callerOptions) {
 
   validateOptions(options, optionDefinitions)
 
-  const measurentsGeoJSON = await downloadOpenSenseMap(options)
-  // console.log(measurentsGeoJSON)
+  const filepath = `./data/data_${getDateString(options.datetime)}T${getTimeString(
+    options.datetime
+  )}.geojson`
+
+  if (fs.existsSync(filepath)) {
+    console.log("Data already exists")
+    return
+  }
+
+  const openSenseMapGeoJSON = await downloadOpenSenseMap(options)
+  const luftdatenInfoGeoJSON = await downloadLuftdatenInfo(options)
+
+  console.log(`Measurements from OpenSenseMap: ${openSenseMapGeoJSON.features.length}`)
+  console.log(`Measurements from Luftdaten.info: ${luftdatenInfoGeoJSON.features.length}`)
+
+  const outputGeojson = {
+    type: "FeatureCollection",
+    features: [...openSenseMapGeoJSON.features, ...luftdatenInfoGeoJSON.features],
+  }
+
+  console.log(`Total numbers of measurements: ${outputGeojson.features.length}`)
+
+  fs.writeFileSync(filepath, JSON.stringify(outputGeojson, null, 2))
 }
 
 if (CLIOptions.run) {
