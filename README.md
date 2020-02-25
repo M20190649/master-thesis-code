@@ -8,10 +8,9 @@ A collection of all code used for my master thesis
 
 ### General Requirements
 
-* NodeJS
-* npm
-* Python 64bit
-* pip
+* NodeJS + npm
+* Python (Miniconda/Anaconda)
+* SUMO (Simulation of Urban MObility)
 
 ### SUMO (TraCI)
 
@@ -21,11 +20,22 @@ A collection of all code used for my master thesis
 
 ## Dependencies
 
-Execute all commands in project root
+### NodeJS
+
+1. Install [NodeJS](https://nodejs.org/en/) for your OS
+2. Run the following commands:
 
 ```
-1. npm i
-2. pip install -r requirements.txt
+npm i
+```
+
+### Python/Miniconda/Anaconda
+
+1. Install [Miniconda/Anaconda](https://docs.conda.io/en/latest/index.html) for your OS
+2. Run the following commands:
+
+```
+conda env create -f environment.yml
 ```
 
 ## Running the simulation
