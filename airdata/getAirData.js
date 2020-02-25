@@ -24,7 +24,7 @@ const optionDefinitions = [
   {
     name: "datetime",
     type: ISOString => new Date(ISOString),
-    description: "Filepath for the measurements GeoJSON file",
+    description: "ISO Date-time string",
     required: true,
   },
   {
