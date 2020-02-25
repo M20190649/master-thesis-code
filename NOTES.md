@@ -267,4 +267,23 @@ TODO:
   * Every time a vehicle is inserted into the simulation I look at the route and check if any of the edges are included in any of the polygons
   * If yes, I set the edge travel time to 999999 for all edges and trigger a reroute
   
+## 23.02.2020
+
+* Implemented dynamic routing when vehicle reach a certain distance to a polygon/zone
+* Added more config parameters to config file
+* Discovered *OpenSenseMap* at the Futurium yesterday
+* Start to look into OpenSenseMap API and the data they provide
+* Start building fetching script
+* Added general air data fetching script that combines the measurments from multiple sources (OpenSenseMap and Luftdaten.info)
+
+## 24.02.2020
+
+* Finished writing fetching script for OpenSenseMap
+* Updated Luftdaten.info fetching script to filter data for certain dates + times of day
+* Idea is to set a date of simulation in the config file and then all the air data from this day is being fetched and used in the simulation
+
+## 25.02.2020
+
+* Remake the Python setup and move to Miniconda
+* As alternative to QGIS I start experimenting with python for spatial analysis in a jupyter notebook
 
