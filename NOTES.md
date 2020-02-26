@@ -287,3 +287,9 @@ TODO:
 * Remake the Python setup and move to Miniconda
 * As alternative to QGIS I start experimenting with python for spatial analysis in a jupyter notebook
 
+## 26.02.2020
+
+* Resolve python/conda issues with jupyter and other packages
+* Research on air pollution interpolation
+* Start implementing interpolation methods
+
