@@ -10,6 +10,7 @@ A collection of all code used for my master thesis
 
 * NodeJS + npm
 * Python (Miniconda/Anaconda)
+* GDAL
 * SUMO (Simulation of Urban MObility)
 
 ### SUMO (TraCI)
@@ -62,3 +63,9 @@ TODO: Write all the details about the properties of the configuration file
 | enableRerouting | Boolean | - | `true` | Determines if vehicles should be rerouted |
 | dynamicRerouting | Boolean | - | `true` | Determines if vehicles should be rerouted at insertion or dynamically when they approach an air pollution zone |
 | dynamicReroutingDistance | Boolean | - | `true` | Determines the distance to the zones when vehicles should be dynamically rerouted
+
+## Known Errors
+
+* `RuntimeError: b'no arguments in initialization list'`
+
+  This can occur when running the analysis.py or analysis.ipynb. Try to solve this issue with one of the solutions mentioned [here](https://github.com/pyproj4/pyproj/issues/134)
