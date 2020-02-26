@@ -5,6 +5,7 @@ airdata/data
 .idea
 output
 airdata/*.cmd
+.ipynb_checkpoints
 
 *.pdf
 *.osm.pbf
