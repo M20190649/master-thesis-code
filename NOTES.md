@@ -292,4 +292,18 @@ TODO:
 * Resolve python/conda issues with jupyter and other packages
 * Research on air pollution interpolation
 * Start implementing interpolation methods
+* Implemented nearest neighbor method + created visualizations
 
+Planned interpolation methods:
+* Nearest neighbor with Voronoi diagram
+* Triangulated irregular network with Delauny Triangulation
+* Natural neighbor with Voronoi diagram
+* Inverse distance weighting
+* Radial Basis Function
+* Thin Plate Splines
+* Kriging
+
+Mostly taken from the Athens Spatial Interpolation paper
+I see most success in the last 4 ones
+
+Future Work: Implement ANN for interpolation as tested in the paper
