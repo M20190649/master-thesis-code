@@ -307,3 +307,7 @@ Mostly taken from the Athens Spatial Interpolation paper
 I see most success in the last 4 ones
 
 Future Work: Implement ANN for interpolation as tested in the paper
+
+## 29.02.2020
+
+* Implemented first version of IDW -> Definitely has potential for better performance implementation (I am just a python/numpy/scipy noob)
