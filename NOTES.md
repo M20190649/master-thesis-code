@@ -311,3 +311,8 @@ Future Work: Implement ANN for interpolation as tested in the paper
 ## 29.02.2020
 
 * Implemented first version of IDW -> Definitely has potential for better performance implementation (I am just a python/numpy/scipy noob)
+
+## 01.03.2020
+
+* Experimenting with more interpolators
+* I am not sure how to turn the interpolated date into polygons
