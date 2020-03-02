@@ -316,3 +316,9 @@ Future Work: Implement ANN for interpolation as tested in the paper
 
 * Experimenting with more interpolators
 * I am not sure how to turn the interpolated date into polygons
+
+## 02.03.2020
+
+* Exam learning day
+* Think about how to create polygons from the interpolated data
+* Possibility: pyplot contours
