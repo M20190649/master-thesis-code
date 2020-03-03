@@ -10,6 +10,7 @@ from scipy.spatial import (
     convex_hull_plot_2d,
     KDTree,
     distance_matrix,
+    cKDTree,
 )
 from scipy.spatial.distance import euclidean
 import numpy as np
@@ -19,36 +20,37 @@ import math, time
 def nearestNeighborInterpolator(x, y, points, values):
     xx, yy = np.meshgrid(x, y)
     pointMatrix = np.dstack((xx, yy))
-    result = []
-    nntree = KDTree(points)
-
-    for row in pointMatrix:
-        distances, indices = nntree.query(row)
-        result.append(list(map(lambda idx: values[idx], indices)))
-    return np.array(result)
+    gridValues = interpolate.griddata(points, values, pointMatrix, method="nearest")
+    return gridValues
 
 
-def inverseDistanceWeightingInterpolator(x, y, points, values, p):
+def natural_neighbor(x, y, points, values):
     xx, yy = np.meshgrid(x, y)
     pointMatrix = np.dstack((xx, yy))
-    result = []
+    gridValues = naturalneighbor.griddata(points, values, pointMatrix)
+    return gridValues
 
-    weights = []
-    for row in pointMatrix:
-        resultRow = []
-        for fakePoint in row:
-            inverseDistances = np.array(
-                [
-                    1 / np.power(euclidean(fakePoint, realPoint), p)
-                    for realPoint in points
-                ]
-            )
-            summedInverseDistances = np.sum(inverseDistances)
-            weights = inverseDistances / summedInverseDistances
-            resultRow.append(np.sum(weights * values))
-        result.append(resultRow)
 
-    return np.array(result)
+def inverse_distance_weighting(x, y, points, values, p=2, k=6):
+    # Credits to this guy: https://github.com/paulbrodersen/inverse_distance_weighting/blob/master/idw.py
+    tree = cKDTree(points, leafsize=10)
+    eps = 1e-6
+    regularize_by = 1e-9
+
+    grid = np.meshgrid(x, y)
+    pointMatrix = np.reshape(grid, (2, -1)).T
+
+    distances, idx = tree.query(pointMatrix, k, eps=eps, p=p)
+
+    if len(idx.shape) == 1:
+        distances = np.atleast_2d(distances).reshape((-1, 1))
+        idx = np.atleast_2d(idx).reshape((-1, 1))
+
+    distances += regularize_by
+    neighbor_values = values[idx.ravel()].reshape(idx.shape)
+    summedInverseDistances = np.sum(1 / distances, axis=1)
+    idw_values = np.sum(neighbor_values / distances, axis=1) / summedInverseDistances
+    return idw_values.reshape(grid[0].shape)
 
 
 def radialBaseFunctionInterpolator(x, y, points, values):
@@ -58,8 +60,8 @@ def radialBaseFunctionInterpolator(x, y, points, values):
     return rbfValues
 
 
-def scipyGridDataInterpolator(x, y, points, values):
+def linearBarycentricInterpolation(x, y, points, values):
     xx, yy = np.meshgrid(x, y)
     pointMatrix = np.dstack((xx, yy))
-    gridValues = interpolate.griddata(points, values, pointMatrix)
+    gridValues = interpolate.griddata(points, values, pointMatrix, method="linear")
     return gridValues
