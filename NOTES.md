@@ -328,3 +328,9 @@ Future Work: Implement ANN for interpolation as tested in the paper
 * Work on interpolation
 * Use pyplot contour to create discrete zones
 * Extract the contour polygons from pyplot and convert them into GeoJSON using `shapely` and `geopandas`
+* Performance improvement on IDW 
+
+* List of parameters to adjust regarding interpolation
+  * Number of zones
+  * How to divide the levels of PM (Start at 0 or start the zones at minimum of X)
+  * Equally divided zones? 
