@@ -322,3 +322,9 @@ Future Work: Implement ANN for interpolation as tested in the paper
 * Exam learning day
 * Think about how to create polygons from the interpolated data
 * Possibility: pyplot contours
+
+## 03.03.2020
+
+* Work on interpolation
+* Use pyplot contour to create discrete zones
+* Extract the contour polygons from pyplot and convert them into GeoJSON using `shapely` and `geopandas`
