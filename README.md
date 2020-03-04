@@ -8,10 +8,11 @@ A collection of all code used for my master thesis
 
 ### General Requirements
 
-* NodeJS + npm
-* Python (Miniconda/Anaconda)
-* GDAL
-* SUMO (Simulation of Urban MObility)
+* [NodeJS + npm](https://nodejs.org/en/)
+* [Python (Miniconda/Anaconda)](https://docs.conda.io/en/latest/miniconda.html)
+* [GDAL](https://gdal.org/download.html)
+* [Latest C++ Build Tool for Visual Studio](https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=BuildTools&rel=16)
+* [SUMO (Simulation of Urban MObility)](https://sumo.dlr.de/docs/Downloads.php)
 
 ### SUMO (TraCI)
 
@@ -37,6 +38,12 @@ npm i
 
 ```
 conda env create -f environment.yml
+```
+
+3. Since some of the packages we need are not available on `conda` we must install them seperately via `pip`
+
+````
+pip install -r requirements.txt
 ```
 
 ## Running the simulation
@@ -69,3 +76,7 @@ TODO: Write all the details about the properties of the configuration file
 * `RuntimeError: b'no arguments in initialization list'`
 
   This can occur when running the analysis.py or analysis.ipynb. Try to solve this issue with one of the solutions mentioned [here](https://github.com/pyproj4/pyproj/issues/134)
+
+* `Microsoft Visual C++ 14.0 is required`
+
+  This can occur when installing the `naturalneighbor` package via `pip`. You can resolve this by installing the latest "Build Tools for Visual Studio" from [here](https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=BuildTools&rel=16)
