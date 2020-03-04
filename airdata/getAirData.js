@@ -30,7 +30,7 @@ const optionDefinitions = [
   {
     name: "output",
     type: String,
-    description: "Filepath for the measurements GeoJSON file",
+    description: "Filepath to a directory for the measurements GeoJSON files",
     required: true,
   },
 ]
@@ -41,13 +41,19 @@ async function getAirData(callerOptions) {
 
   validateOptions(options, optionDefinitions)
 
-  const filepath = `./data/data_${getDateString(options.datetime)}T${getTimeString(
+  const outputDir = options.output || "data"
+
+  if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir)
+  }
+
+  const filepath = `${outputDir}/data_${getDateString(options.datetime)}T${getTimeString(
     options.datetime
   )}.geojson`
 
   if (fs.existsSync(filepath)) {
     console.log("Data already exists")
-    return
+    return filepath
   }
 
   const openSenseMapGeoJSON = await downloadOpenSenseMap(options)
@@ -64,6 +70,8 @@ async function getAirData(callerOptions) {
   console.log(`Total numbers of measurements: ${outputGeojson.features.length}`)
 
   fs.writeFileSync(filepath, JSON.stringify(outputGeojson, null, 2))
+
+  return filepath
 }
 
 if (CLIOptions.run) {
