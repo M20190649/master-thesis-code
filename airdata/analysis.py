@@ -1,55 +1,29 @@
-import os
-
 # os.environ[
 #     "PROJ_LIB"
 # ] = r"C:\\ProgamData\\Miniconda3\\envs\\master-thesis\\Library\\share"
 
-import geopandas
+import os, math, time, ntpath
+from argparse import ArgumentParser
+import geopandas as gpd
+import pandas as pd
 from shapely import geometry
 import matplotlib.pyplot as plt
-from scipy import interpolate
-from scipy.spatial import (
-    Voronoi,
-    voronoi_plot_2d,
-    Delaunay,
-    delaunay_plot_2d,
-    ConvexHull,
-    convex_hull_plot_2d,
-    KDTree,
-    distance_matrix,
-)
-from scipy.spatial.distance import euclidean
 import numpy as np
-import math, time
+
 import interpolators
 
-mode = "int"
 
+def get_polygons_from_contour(contour):
+    polygons_per_zone = []
 
-def getMeasurementValue(value):
-    if math.isnan(value):
-        return 0
-
-    if mode == "raw":
-        return value
-
-    if mode == "int":
-        return int(value)
-
-    zones = [[0, 20], [20, 40], [40, 60], [60, math.inf]]
-    for i, zone in enumerate(zones):
-        zoneMin, zoneMax = zone
-        if value >= zoneMin and value < zoneMax:
-            return zoneMin
-
-
-def getPolygonsFromContour(contour):
-    polygons = []
     for col in contour.collections:
+        zone_polygons = []
         # Loop through all polygons that have the same intensity level
         for contour_path in col.get_paths():
+
             # Create the polygon for this intensity level
             # The first polygon in the path is the main one, the following ones are "holes"
+            poly = None
             for idx, poly_coords in enumerate(contour_path.to_polygons()):
                 x = poly_coords[:, 0]
                 y = poly_coords[:, 1]
@@ -57,6 +31,7 @@ def getPolygonsFromContour(contour):
                 new_shape = geometry.Polygon(
                     [(point[0], point[1]) for point in zip(x, y)]
                 )
+
                 if idx == 0:
                     poly = new_shape
                 else:
@@ -64,66 +39,155 @@ def getPolygonsFromContour(contour):
                     poly = poly.difference(new_shape)
                     # Can also be left out if you want to include all rings
 
-            polygons.append(poly)
-    return polygons
+            if poly is not None:
+                zone_polygons.append(poly)
+        polygons_per_zone.append(zone_polygons)
+    return polygons_per_zone
 
 
-berlinDistricts = geopandas.read_file("../shared/berlinDistricts.geojson")
-measurements = geopandas.read_file("data/data_2020-02-20T11-01-00.geojson")
+def interpolate(
+    measurements_fp=None,
+    cellsize=100,
+    method="nearest_neighbor",
+    output="interpolation-data",
+    zones=np.linspace(0, 120, 6),
+    visualize=False,
+):
+    berlin_districts = gpd.read_file("../shared/berlinDistricts.geojson")
+    measurements = gpd.read_file(measurements_fp)
 
-external_crs = "EPSG:4326"
-internal_crs = "EPSG:3068"
+    external_crs = "EPSG:4326"
+    internal_crs = "EPSG:3068"
 
-berlinDistricts = berlinDistricts.to_crs(epsg=3068)
-measurements = measurements.to_crs(epsg=3068)
+    berlin_districts = berlin_districts.to_crs(epsg=3068)
+    measurements = measurements.to_crs(epsg=3068)
 
-x = np.array(measurements.geometry.x)
-y = np.array(measurements.geometry.y)
-values = np.array(measurements.value)
-points = np.column_stack((x, y))
+    x = np.array(measurements.geometry.x)
+    y = np.array(measurements.geometry.y)
+    values = np.array(measurements.value)
+    points = np.column_stack((x, y))
 
-xmin, ymin, xmax, ymax = measurements.total_bounds
-size = 500  # grid cell size in meters
-xnew = np.linspace(xmin, xmax, int((xmax - xmin) / size))
-ynew = np.linspace(ymin, ymax, int((ymax - ymin) / size))
+    xmin, ymin, xmax, ymax = measurements.total_bounds
+    size = int(cellsize)  # grid cell size in meters
+    xnew = np.linspace(xmin, xmax, int((xmax - xmin) / size))
+    ynew = np.linspace(ymin, ymax, int((ymax - ymin) / size))
 
-xgrid, ygrid = np.meshgrid(xnew, ynew)
+    start = time.time()
 
-start = time.time()
+    interpolator = interpolator_functions[method]
+    interpolated_values = interpolator(xnew, ynew, points, values)
 
-# iValues = interpolator.nearestNeighborInterpolator(xnew, ynew, points, values)
-iValues = interpolators.scipyGridDataInterpolator(xnew, ynew, points, values)
-iValues = np.array([list(map(getMeasurementValue, row)) for row in iValues])
-print(iValues)
+    end = time.time()
+    print(end - start)
 
-end = time.time()
-print(end - start)
+    contour = plt.contourf(xnew, ynew, interpolated_values, zones)
+    # plt.show()
 
-plt.rcParams["figure.figsize"] = 30, 20
-plt.rcParams["font.size"] = 20
-plt.rcParams["axes.titlesize"] = 50
-plt.rcParams["axes.titlepad"] = 80
+    polygons = gpd.GeoDataFrame()
 
-fig, ax = plt.subplots()
+    # Skip first zone because it covers the whole area with holes where the actual zones are
+    polygons_per_zone = get_polygons_from_contour(contour)[1:]
+    for zone, zone_polygons in enumerate(polygons_per_zone):
+        for polygon in zone_polygons:
+            polygon_df = gpd.GeoDataFrame({"zone": [zone], "geometry": [polygon]})
+            polygons = pd.concat([polygons, polygon_df])
 
-berlinDistricts.boundary.plot(ax=ax, edgecolor="black")
+    polygons.crs = internal_crs
+    polygons = polygons.to_crs(external_crs)
 
-# xx, yy = np.meshgrid(xnew, ynew)
-# ax.scatter(xx, yy)
+    if not os.path.isdir(output):
+        os.mkdir(output)
 
-plot = ax.contour(xnew, ynew, iValues, [0, 20, 40, 60, 80])
+    filename = "".join(ntpath.basename(measurements_fp).split(".")[0:-1])
+    polygons.to_file(f"{output}/zones_{filename}.geojson", driver="GeoJSON")
 
-print(len(plot.collections))
+    if visualize:
+        plt.rcParams["figure.figsize"] = 30, 20
+        plt.rcParams["font.size"] = 20
+        plt.rcParams["axes.titlesize"] = 50
+        plt.rcParams["axes.titlepad"] = 80
+
+        fig, ax = plt.subplots()
+        berlin_districts.boundary.plot(ax=ax, edgecolor="black")
+        plot = ax.contourf(xnew, ynew, interpolated_values, zones, cmap="winter_r")
+        plot.cmap.set_under("w")
+        plot.set_clim(zones[1])
+        fig.colorbar(plot, ax=ax)
+
+        plt.savefig(f"{output}/zones_{filename}.png")
+
+        # plt.show()
+        # plt.close()
 
 
-# plot = ax.pcolormesh(xnew, ynew, iValues)
+interpolator_functions = {
+    "nearest_neighbor": interpolators.nearest_neighbor,
+    "natural_neighbor": interpolators.natural_neighbor,
+    "idw": interpolators.inverse_distance_weighting,
+    "linear_barycentric": interpolators.linear_barycentric,
+}
 
-# fig.colorbar(plot, ax=ax)
-# plt.show()
+parser = ArgumentParser()
+parser.add_argument(
+    "--measurements",
+    dest="measurements_fp",
+    help="Filepath to the GeoJSON measurements file",
+    metavar="FILE",
+)
+parser.add_argument(
+    "--cellsize",
+    dest="cellsize",
+    help="Width/Height of the interpolated cell in meters",
+    metavar="INTEGER",
+)
 
-# skip first because it covers all areas with zones as holes
-polygons = getPolygonsFromContour(plot)[1:]
-polygons = geopandas.GeoSeries(polygons)
-polygons.crs = internal_crs
-polygons = polygons.to_crs(external_crs)
-polygons.to_file("test.geojson", driver="GeoJSON")
+possible_methods = ", ".join(interpolator_functions.keys())
+parser.add_argument(
+    "--method",
+    dest="method",
+    help=f"Interpolation method to use. Possible values are {possible_methods}",
+    metavar="STRING",
+)
+parser.add_argument(
+    "--zones",
+    dest="zones",
+    help="CSV that determine the different pollutant levels for each zone. Example: zones=0,20,40,60,80,100",
+    metavar="CSV",
+)
+parser.add_argument(
+    "--output", dest="output", help="Filepath for output files", metavar="FILE",
+)
+parser.add_argument(
+    "--visualize",
+    dest="visualize",
+    help="Create visualizations of the interpolated data",
+    metavar="BOOLEAN",
+)
+
+args = parser.parse_args()
+
+args.measurements_fp = "data/data_2020-02-20T11-01-00.geojson"
+args.visualize = True
+args.output = "test"
+
+# Filter None arguments
+args = {k: v for k, v in vars(args).items() if v is not None}
+
+print(args)
+
+if "measurements_fp" not in args:
+    raise ValueError("Filepath to GeoJSON measurements file must be given")
+
+if "method" in args:
+    if args["method"] not in interpolator_functions.keys():
+        raise ValueError(
+            f"Unknown interpolation method: {args['method']}. Available methods are {possible_methods}."
+        )
+
+if "zones" in args:
+    args["zones"] = list(map(int, args["zones"].split(",")))
+
+if "visualize" in args:
+    args["visualize"] = bool(args["visualize"])
+
+interpolate(**args)
