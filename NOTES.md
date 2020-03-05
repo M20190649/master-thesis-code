@@ -334,3 +334,34 @@ Future Work: Implement ANN for interpolation as tested in the paper
   * Number of zones
   * How to divide the levels of PM (Start at 0 or start the zones at minimum of X)
   * Equally divided zones? 
+
+## 04.03.2020
+
+* Clean up interpolation code
+* Add CLI options to the interpolation code so I can automatically run it from node scripts
+* I built a test script that downloads all data for every hour of a day and runs every interpolation method on every hourly data collection. It outputs the visualizations of the different zones
+  * Problem: There are some sensors that obviously have wrong data so I might have to filter sensors whose values are above a certain max value
+  * Visualizations look interesting and I seem to be on the right track
+
+## 05.03.2020
+
+* Another problem: SUMO can't handle polygons with holes so in order to track the movements within the single zones we need to calculate it somehow by subtracting the distances from inner zones from the distances in the outer zones
+  * These calculations can be done after the simulation has finished as well as applying different pricing schemes to the zones
+
+TODO: 
+  * Add interpolation config parameters to simulation config file
+  * Add more interpolation methods (Kriging and Spline)
+  * Rewrite air data fetching script to accept a date range instead of a single datetime
+  * Filter extreme/wrong sensor values and do more visual validation on the data/zones
+  * Integrate air data fetching + interpolation into automatic simulation flow
+    * Add polygons to SUMO
+    * Track vehicles according to polygons/zones
+    * Update polygons and continue tracking
+
+* For the air data: should I take the moment values or hourly/x-minutely averages?
+* Should I do the air data fetching + interpolation before the simulation runs or on the fly?
+  * I think before hand would be better
+
+* How should I go about validation and evaluation?
+  * Do one simulation run without any toll system and then compare this data to the simulations with the toll system
+  * Do some brainstorming on metrics to collect, implement them and run the simulation
