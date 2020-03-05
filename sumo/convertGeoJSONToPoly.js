@@ -27,15 +27,12 @@ async function convertGeoJSONToPoly(callerOptions) {
   const geojson = JSON.parse(file)
   const { coordinates } = geojson.features[0].geometry
 
-  const coordinateList = []
-  for (const [long, lat] of coordinates[0]) {
-    coordinateList.push(`${long},${lat}`)
-  }
-
+  // Since SUMO can't handle polygons with holes we can only take the first polygon in the coordinates array
+  const coordinatesString = coordinates[0].map(([long, lat]) => `${long},${lat}`).join(" ")
   const xml = XMLBuilder.begin()
     .element("poly", {
       id: 0,
-      shape: coordinateList.join(" "),
+      shape: coordinatesString,
     })
     .end({ pretty: true })
 
