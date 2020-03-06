@@ -2,8 +2,11 @@ const fs = require("fs")
 
 const parseCLIOptions = require("../shared/parseCLIOptions")
 const { validateOptions, getDateString, getTimeString } = require("../shared/helpers")
-const downloadLuftdatenInfo = require("./downloadLuftdatenInfo")
-const downloadOpenSenseMap = require("./downloadOpenSenseMap")
+const {
+  downloadLuftdatenInfo,
+  downloadFromLuftdatenInfoArchive,
+} = require("./downloadLuftdatenInfo")
+const { downloadOpenSenseMap, downloadOpenSenseMapArchive } = require("./downloadOpenSenseMap")
 
 const optionDefinitions = [
   {
@@ -22,15 +25,27 @@ const optionDefinitions = [
     required: true,
   },
   {
-    name: "datetime",
+    name: "from",
     type: ISOString => new Date(ISOString),
     description: "ISO Date-time string",
     required: true,
   },
   {
+    name: "to",
+    type: ISOString => new Date(ISOString),
+    description: "ISO Date-time string",
+    required: true,
+  },
+  {
+    name: "timestep",
+    type: Number,
+    description: "Determines the interval of the averaged values",
+    required: true,
+  },
+  {
     name: "output",
     type: String,
-    description: "Filepath to a directory for the measurements GeoJSON files",
+    description: "Filepath to a directory for all the measurements GeoJSON files",
     required: true,
   },
 ]
@@ -41,37 +56,67 @@ async function getAirData(callerOptions) {
 
   validateOptions(options, optionDefinitions)
 
+  if (options.from && options.to && options.from > options.to) {
+    throw new Error("'from' date must be smaller than 'to' date")
+  }
+
+  if (getDateString(options.from) !== getDateString(options.to)) {
+    throw new Error("'from' and 'to' date must be on the same day")
+  }
+
   const outputDir = options.output || "data"
 
   if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir)
+  } else {
+    return fs
+      .readdirSync(outputDir)
+      .filter(file => {
+        return file.endsWith(".geojson")
+      })
+      .map(file => {
+        return `${outputDir}/${file}`
+      })
   }
 
-  const filepath = `${outputDir}/data_${getDateString(options.datetime)}T${getTimeString(
-    options.datetime
-  )}.geojson`
+  const luftdatenInfoMeasurements = await downloadFromLuftdatenInfoArchive(options)
+  const openSenseMapMeasurements = await downloadOpenSenseMapArchive(options)
 
-  if (fs.existsSync(filepath)) {
-    console.log("Data already exists")
-    return filepath
+  const allOutputFiles = []
+  for (const timestep of Object.keys(luftdatenInfoMeasurements)) {
+    const allMeasurements = [
+      ...openSenseMapMeasurements[timestep],
+      ...luftdatenInfoMeasurements[timestep],
+    ]
+
+    const outputGeojson = {
+      type: "FeatureCollection",
+      features: allMeasurements.map(m => {
+        return {
+          type: "Feature",
+          geometry: {
+            type: "Point",
+            coordinates: [m.location.longitude, m.location.latitude],
+          },
+          properties: {
+            sensorId: m.id,
+            pollutant: options.pollutant,
+            timestep,
+            value: m.value,
+          },
+        }
+      }),
+    }
+
+    console.log(`Total numbers of measurements for ${timestep}: ${outputGeojson.features.length}`)
+
+    const tsDate = new Date(timestep)
+    const filepath = `${outputDir}/data_${getDateString(tsDate)}T${getTimeString(tsDate)}.geojson`
+    fs.writeFileSync(filepath, JSON.stringify(outputGeojson, null, 2))
+    allOutputFiles.push(filepath)
   }
 
-  const openSenseMapGeoJSON = await downloadOpenSenseMap(options)
-  const luftdatenInfoGeoJSON = await downloadLuftdatenInfo(options)
-
-  console.log(`Measurements from OpenSenseMap: ${openSenseMapGeoJSON.features.length}`)
-  console.log(`Measurements from Luftdaten.info: ${luftdatenInfoGeoJSON.features.length}`)
-
-  const outputGeojson = {
-    type: "FeatureCollection",
-    features: [...openSenseMapGeoJSON.features, ...luftdatenInfoGeoJSON.features],
-  }
-
-  console.log(`Total numbers of measurements: ${outputGeojson.features.length}`)
-
-  fs.writeFileSync(filepath, JSON.stringify(outputGeojson, null, 2))
-
-  return filepath
+  return allOutputFiles
 }
 
 if (CLIOptions.run) {
