@@ -4,15 +4,15 @@ exports.pad = n => (n < 10 ? `0${n}` : n)
 
 exports.getDateString = customDate => {
   const date = customDate || new Date()
-  return `${this.pad(date.getFullYear())}-${this.pad(date.getMonth() + 1)}-${this.pad(
-    date.getDate()
+  return `${this.pad(date.getUTCFullYear())}-${this.pad(date.getUTCMonth() + 1)}-${this.pad(
+    date.getUTCDate()
   )}`
 }
 
 exports.getTimeString = customDate => {
   const date = customDate || new Date()
-  return `${this.pad(date.getHours())}-${this.pad(date.getMinutes())}-${this.pad(
-    date.getSeconds()
+  return `${this.pad(date.getUTCHours())}-${this.pad(date.getUTCMinutes())}-${this.pad(
+    date.getUTCSeconds()
   )}`
 }
 
