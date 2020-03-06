@@ -89,23 +89,30 @@ async function getAirData(callerOptions) {
       ...luftdatenInfoMeasurements[timestep],
     ]
 
+    const geoJSONFeatures = []
+    allMeasurements.forEach(m => {
+      if (m.value > 250) {
+        return
+      }
+
+      geoJSONFeatures.push({
+        type: "Feature",
+        geometry: {
+          type: "Point",
+          coordinates: [m.location.longitude, m.location.latitude],
+        },
+        properties: {
+          sensorId: m.id,
+          pollutant: options.pollutant,
+          timestep,
+          value: m.value,
+        },
+      })
+    })
+
     const outputGeojson = {
       type: "FeatureCollection",
-      features: allMeasurements.map(m => {
-        return {
-          type: "Feature",
-          geometry: {
-            type: "Point",
-            coordinates: [m.location.longitude, m.location.latitude],
-          },
-          properties: {
-            sensorId: m.id,
-            pollutant: options.pollutant,
-            timestep,
-            value: m.value,
-          },
-        }
-      }),
+      features: geoJSONFeatures,
     }
 
     console.log(`Total numbers of measurements for ${timestep}: ${outputGeojson.features.length}`)
