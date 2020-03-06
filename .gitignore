@@ -6,6 +6,7 @@ airdata/data
 output
 airdata/*.cmd
 .ipynb_checkpoints
+**test
 
 *.pdf
 *.osm.pbf
