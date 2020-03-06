@@ -2,17 +2,16 @@ const { pad, runBash } = require("../shared/helpers")
 const getAirData = require("./getAirData")
 
 async function run() {
-  const filenames = []
+  const filenames = await getAirData({
+    pollutant: "PM10",
+    bbox: "52.25639,12.874603,52.778678,13.932037".split(",").map(Number),
+    from: new Date(`2020-02-20T00:00:00.000Z`),
+    to: new Date(`2020-02-20T01:00:00.000Z`),
+    timestep: 30,
+    output: "test",
+  })
 
-  for (let i = 0; i < 24; i++) {
-    const filename = await getAirData({
-      pollutant: "PM10",
-      bbox: "52.25639,12.874603,52.778678,13.932037".split(",").map(Number),
-      datetime: new Date(`2020-02-20T${pad(i)}:00:00.000Z`),
-      output: "test",
-    })
-    filenames.push(filename)
-  }
+  console.log(filenames)
 
   const methods = ["nearest_neighbor", "natural_neighbor", "idw", "linear_barycentric"]
 
