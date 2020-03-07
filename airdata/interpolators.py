@@ -69,3 +69,10 @@ def linear_barycentric(x, y, points, values):
     point_matrix = np.dstack((xx, yy))
     grid_values = interpolate.griddata(points, values, point_matrix, method="linear")
     return grid_values
+
+
+def clough_tocher(x, y, points, values):
+    xx, yy = np.meshgrid(x, y)
+    point_matrix = np.dstack((xx, yy))
+    grid_values = interpolate.griddata(points, values, point_matrix, method="cubic")
+    return grid_values
