@@ -50,7 +50,7 @@ def interpolate(
     cellsize=100,
     method="nearest_neighbor",
     output="interpolation-data",
-    zones=np.linspace(0, 120, 6),
+    zones=[0, 20, 40, 100, 200, 400],  # Took these values for PM10 from Umweltbundesamt
     visualize=False,
 ):
     berlin_districts = gpd.read_file("../shared/berlinDistricts.geojson")
