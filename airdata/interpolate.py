@@ -166,10 +166,6 @@ parser.add_argument(
 
 args = parser.parse_args()
 
-args.measurements_fp = "data/data_2020-02-20T11-01-00.geojson"
-args.visualize = True
-args.output = "test"
-
 # Filter None arguments
 args = {k: v for k, v in vars(args).items() if v is not None}
 
