@@ -365,3 +365,12 @@ TODO:
 * How should I go about validation and evaluation?
   * Do one simulation run without any toll system and then compare this data to the simulations with the toll system
   * Do some brainstorming on metrics to collect, implement them and run the simulation
+
+## 06.03.2020
+
+* Rewrite air data fetching script to accept a date range instead of a single datetime
+* Filter extreme/wrong sensor values and do more visual validation on the data/zones
+
+## 07.03.2020 + 08.03.2020
+
+* Experiment with other interpolation methods
