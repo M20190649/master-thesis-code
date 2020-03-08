@@ -12,7 +12,7 @@ from scipy.spatial import (
     distance_matrix,
     cKDTree,
 )
-from scipy.spatial.distance import euclidean
+from scipy.spatial.distance import euclidean, cdist
 import numpy as np
 import math, time
 import naturalneighbor
@@ -76,3 +76,55 @@ def clough_tocher(x, y, points, values):
     point_matrix = np.dstack((xx, yy))
     grid_values = interpolate.griddata(points, values, point_matrix, method="cubic")
     return grid_values
+
+
+def rbf(x, y, points, values):
+    x_point_dup = [
+        item for item, count in collections.Counter(points[:, 0]).items() if count > 1
+    ]
+    y_point_dup = [
+        item for item, count in collections.Counter(points[:, 1]).items() if count > 1
+    ]
+    fixed_x = list(
+        map(
+            lambda x: x + random.uniform(-0.00001, 0.00001) if x in x_point_dup else x,
+            points[:, 0],
+        )
+    )
+    fixed_y = list(
+        map(
+            lambda y: y + random.uniform(-0.00001, 0.00001) if y in y_point_dup else y,
+            points[:, 1],
+        )
+    )
+
+    fixed_points = np.column_stack((fixed_x, fixed_y))
+
+    method = "linear"
+    c = 0.1  # shape parameter
+
+    rbf_functions = {
+        "linear": lambda r: r,
+        "cubic": lambda r: np.power(r, 3),
+        "gaussian": lambda r: np.exp(-(np.power(c * r, 2))),
+        "multiquadric": lambda r: np.sqrt(1 + np.power(c * r, 2)),
+        "inverse-quadratic": lambda r: 1 / (1 + np.power(c * r, 2)),
+        "inverse-multiquadric": lambda r: 1 / np.sqrt(1 + np.power(c * r, 2)),
+    }
+
+    pair_distances = cdist(fixed_points, fixed_points, "euclidean")
+    pair_distances = rbf_functions[method](pair_distances)
+    weights = np.linalg.solve(pair_distances, values)
+
+    grid = np.meshgrid(x, y)
+    new_points = np.reshape(grid, (2, -1)).T
+    point_distances = cdist(new_points, points)
+    point_distances = rbf_functions[method](point_distances)
+    result = np.dot(point_distances, weights).reshape(grid[0].shape)
+    # print(result)
+    # print(points.shape)
+    # print(pair_distances.shape)
+    # print(weights.shape)
+
+    # TODO: Something is still wrong...
+    return result
