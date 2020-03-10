@@ -374,3 +374,16 @@ TODO:
 ## 07.03.2020 + 08.03.2020
 
 * Experiment with other interpolation methods
+
+# 09.03.2020
+
+* Update SNET Latex Template because I need to start writing!!!
+
+# 10.03.2020
+
+* Make GeoJSON to Polygon conversion script handle multiple polygons
+* First time that I converted the GeoJSON zones files from the interpolated data into SUMO polygons and imported them
+* Researching more libraries for interpolation methods 
+  * Found MetPy which seems promising for natural neighbor
+
+TODO: Investigate MetPy library
