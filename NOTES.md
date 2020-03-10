@@ -386,4 +386,7 @@ TODO:
 * Researching more libraries for interpolation methods 
   * Found MetPy which seems promising for natural neighbor
 
-TODO: Investigate MetPy library
+TODO: 
+* Investigate MetPy library for natural neighbor and other IDW implementations
+* Investigate scipy for Spline interpolation
+* Investigate sklearn for Kriging/Gaussian Process interpolation
