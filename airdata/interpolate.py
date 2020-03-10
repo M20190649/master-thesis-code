@@ -34,10 +34,10 @@ def get_polygons_from_contour(contour):
 
                 if idx == 0:
                     poly = new_shape
-                # else:
-                #     # Remove the holes if there are any
-                #     poly = poly.difference(new_shape)
-                #     # Can also be left out if you want to include all rings
+                else:
+                    # Remove the holes if there are any
+                    poly = poly.difference(new_shape)
+                    # Can also be left out if you want to include all rings
 
             if poly is not None:
                 zone_polygons.append(poly)
@@ -165,10 +165,6 @@ parser.add_argument(
 )
 
 args = parser.parse_args()
-
-# args.measurements_fp = "data/data_2020-02-20T11-01-00.geojson"
-# args.visualize = True
-# args.output = "test"
 
 # Filter None arguments
 args = {k: v for k, v in vars(args).items() if v is not None}
