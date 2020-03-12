@@ -16,16 +16,21 @@ from scipy.spatial.distance import euclidean, cdist
 import numpy as np
 import math, time
 import naturalneighbor
+import metpy.interpolate as metpy_interpolate
 
 
-def nearest_neighbor(x, y, points, values):
-    xx, yy = np.meshgrid(x, y)
-    point_matrix = np.dstack((xx, yy))
+def nearest_neighbor(x, y, points, values, grid=True):
+    if grid:
+        xx, yy = np.meshgrid(x, y)
+        point_matrix = np.dstack((xx, yy))
+    else:
+        point_matrix = np.column_stack((x, y))
+
     grid_values = interpolate.griddata(points, values, point_matrix, method="nearest")
     return grid_values
 
 
-def natural_neighbor(x, y, points, values):
+def discrete_natural_neighbor(x, y, points, values):
     x_step_width = (x[-1] - x[0]) / x.shape[0]
     y_step_width = (y[-1] - y[0]) / y.shape[0]
     grid_ranges = [[x[0], x[-1], x_step_width], [y[0], y[-1], y_step_width], [0, 1, 1]]
@@ -35,14 +40,17 @@ def natural_neighbor(x, y, points, values):
     return np.squeeze(grid_values).T
 
 
-def inverse_distance_weighting(x, y, points, values, p=2, k=6):
+def inverse_distance_weighting(x, y, points, values, p=2, k=6, grid=True):
     # Credits to this guy: https://github.com/paulbrodersen/inverse_distance_weighting/blob/master/idw.py
     tree = cKDTree(points, leafsize=10)
     eps = 1e-6
     regularize_by = 1e-9
 
-    grid = np.meshgrid(x, y)
-    point_matrix = np.reshape(grid, (2, -1)).T
+    if grid:
+        meshgrid = np.meshgrid(x, y)
+        point_matrix = np.reshape(meshgrid, (2, -1)).T
+    else:
+        point_matrix = np.column_stack((x, y))
 
     distances, idx = tree.query(point_matrix, k, eps=eps, p=p)
 
@@ -54,28 +62,60 @@ def inverse_distance_weighting(x, y, points, values, p=2, k=6):
     neighbor_values = values[idx.ravel()].reshape(idx.shape)
     summed_inverse_distances = np.sum(1 / distances, axis=1)
     idw_values = np.sum(neighbor_values / distances, axis=1) / summed_inverse_distances
-    return idw_values.reshape(grid[0].shape)
+
+    if grid:
+        return idw_values.reshape(meshgrid[0].shape)
+    else:
+        return idw_values
 
 
-def radial_base_function(x, y, points, values):
-    rbfInterpolator = interpolate.Rbf(x, y, values, function="linear")
-    xx, yy = np.meshgrid(x, y)
-    rbfValues = rbfInterpolator(xx, yy)
-    return rbfValues
+def linear_barycentric(x, y, points, values, grid=True):
+    if grid:
+        xx, yy = np.meshgrid(x, y)
+        point_matrix = np.dstack((xx, yy))
+    else:
+        point_matrix = np.column_stack((x, y))
 
-
-def linear_barycentric(x, y, points, values):
-    xx, yy = np.meshgrid(x, y)
-    point_matrix = np.dstack((xx, yy))
     grid_values = interpolate.griddata(points, values, point_matrix, method="linear")
     return grid_values
 
 
-def clough_tocher(x, y, points, values):
-    xx, yy = np.meshgrid(x, y)
-    point_matrix = np.dstack((xx, yy))
+def clough_tocher(x, y, points, values, grid=True):
+    if grid:
+        xx, yy = np.meshgrid(x, y)
+        point_matrix = np.dstack((xx, yy))
+    else:
+        point_matrix = np.column_stack((x, y))
+
     grid_values = interpolate.griddata(points, values, point_matrix, method="cubic")
     return grid_values
+
+
+def radial_base_function(x, y, points, values):
+    x_point_dup = [
+        item for item, count in collections.Counter(points[:, 0]).items() if count > 1
+    ]
+    y_point_dup = [
+        item for item, count in collections.Counter(points[:, 1]).items() if count > 1
+    ]
+    fixed_x = list(
+        map(
+            lambda x: x + random.uniform(-0.00001, 0.00001) if x in x_point_dup else x,
+            points[:, 0],
+        )
+    )
+    fixed_y = list(
+        map(
+            lambda y: y + random.uniform(-0.00001, 0.00001) if y in y_point_dup else y,
+            points[:, 1],
+        )
+    )
+    rbfInterpolator = interpolate.Rbf(
+        fixed_x, fixed_y, values, function="gaussian", epsilon=50
+    )
+    xx, yy = np.meshgrid(x, y)
+    rbfValues = rbfInterpolator(xx, yy)
+    return rbfValues
 
 
 def rbf(x, y, points, values):
@@ -128,3 +168,29 @@ def rbf(x, y, points, values):
 
     # TODO: Something is still wrong...
     return result
+
+
+def natural_neighbor(x, y, points, values, grid=True):
+    if grid:
+        xx, yy = np.meshgrid(x, y)
+        point_matrix = np.dstack((xx, yy))
+        new_points = point_matrix.reshape(-1, point_matrix.shape[-1])
+    else:
+        new_points = np.column_stack((x, y))
+
+    result = metpy_interpolate.natural_neighbor_to_points(points, values, new_points)
+
+    if grid:
+        return result.reshape(y.shape[0], x.shape[0])
+    else:
+        return result
+
+
+def metpy_idw(x, y, points, values):
+    xx, yy = np.meshgrid(x, y)
+    point_matrix = np.dstack((xx, yy))
+    new_points = point_matrix.reshape(-1, point_matrix.shape[-1])
+    result = metpy_interpolate.inverse_distance_to_points(
+        points, values, new_points, 1000, kind="cressman", min_neighbors=50
+    )
+    return result.reshape(y.shape[0], x.shape[0])
