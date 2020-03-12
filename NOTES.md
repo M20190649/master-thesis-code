@@ -390,3 +390,12 @@ TODO:
 * Investigate MetPy library for natural neighbor and other IDW implementations
 * Investigate scipy for Spline interpolation
 * Investigate sklearn for Kriging/Gaussian Process interpolation
+
+# 12.03.2020
+
+* Added metpy natural neighbor
+* Still troubles with Spline and Kriging
+
+TODO: 
+* Add more config parameters to config file
+* Make simulation run with all the created zone files
