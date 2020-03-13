@@ -12,17 +12,27 @@ const visualizeRoutes = require("../sumo/visualizeRoutes")
 module.exports = async (inputDir, config) => {
   const rootDir = join(__dirname, "..")
   const matsimDir = join(rootDir, "matsim")
+  const networkDir = join(inputDir, "network")
+  const demandDir = join(inputDir, "demand")
+
+  if (!fs.existsSync(networkDir)) {
+    fs.mkdirSync(networkDir)
+  }
+
+  if (!fs.existsSync(demandDir)) {
+    fs.mkdirSync(demandDir)
+  }
 
   const networkName = `${config.name}-network`
   const routesName = `${config.name}-routes`
 
-  const osmNetworkFile = `${join(inputDir, networkName)}.osm.xml`
+  const osmNetworkFile = `${join(networkDir, networkName)}.osm.xml`
   const matsimPlansFile = join(matsimDir, "plans", "berlin-v5.4-1pct.output_plans.xml")
   // const matsimPlansFile = join(matsimDir, "plans", "test-pop.xml")
-  const networkFile = `${join(inputDir, networkName)}.net.xml`
-  const tripsFile = `${join(inputDir, routesName)}.trips.xml`
-  const routesFile = `${join(inputDir, routesName)}.rou.xml`
-  const routesVisualizationFile = `${join(inputDir, routesName)}.rou.visualization.xml`
+  const networkFile = `${join(networkDir, networkName)}.net.xml`
+  const tripsFile = `${join(demandDir, routesName)}.trips.xml`
+  const routesFile = `${join(demandDir, routesName)}.rou.xml`
+  const routesVisualizationFile = `${join(demandDir, routesName)}.rou.visualization.xml`
 
   // 1. Prepare network data
   console.log("------------ Prepare Network Data ------------")
