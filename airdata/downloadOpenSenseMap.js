@@ -2,9 +2,11 @@
 
 const fs = require("fs")
 const axios = require("axios")
+
+const Measurement = require("./Measurement")
 const { getDateString, getTimeString } = require("../shared/helpers")
 
-async function downloadOpenSenseMap(options) {
+async function downloadOpenSenseMapAPI(options) {
   const pollutantMapping = {
     PM10: "PM10",
     "PM2.5": "PM2.5",
@@ -109,33 +111,9 @@ async function downloadOpenSenseMapArchive(options) {
     return b.sensors.some(s => s.title === pollutant)
   })
 
-  /*
-  Measurements object will contain a list of sensors with averages values for every timestep
-  {
-    '2020-02-20T00:00:30.000Z': [ 
-      { 
-        id: '582473be40198a001010e1a3',
-        value: 9.844444444444445,
-        location: {
-          latitude: Y,
-          longitude: X
-        }
-      },
-      ...
-    ]
-    '2020-02-20T01:00:00.000Z': [ 
-      { 
-        id: '58fb1549635722001156933b',
-        value: 8.335,
-        location: {
-          latitude: Y,
-          longitude: X
-        }
-      },
-      ...
-    ]
-  }
-  */
+  // fs.writeFileSync("stations.json", JSON.stringify(pmBoxes, null, 2))
+
+  // Measurements object will contain a list of sensors with averages values for every timestep
   const measurements = {}
 
   for (const box of pmBoxes) {
@@ -158,26 +136,17 @@ async function downloadOpenSenseMapArchive(options) {
           // We reached the end of the time step
           // Calculate the average and add it to the result object
           if (sum > 0 && counter > 0) {
+            const measurementObj = new Measurement(
+              box._id,
+              sum / counter,
+              "openSenseMap",
+              parseFloat(box.currentLocation.coordinates[1]),
+              parseFloat(box.currentLocation.coordinates[0])
+            )
             if (measurements[currentTimeStep.toISOString()]) {
-              measurements[currentTimeStep.toISOString()].push({
-                id: box._id,
-                value: sum / counter,
-                location: {
-                  latitude: parseFloat(box.currentLocation.coordinates[1]),
-                  longitude: parseFloat(box.currentLocation.coordinates[0]),
-                },
-              })
+              measurements[currentTimeStep.toISOString()].push(measurementObj)
             } else {
-              measurements[currentTimeStep.toISOString()] = [
-                {
-                  id: box._id,
-                  value: sum / counter,
-                  location: {
-                    latitude: parseFloat(box.currentLocation.coordinates[1]),
-                    longitude: parseFloat(box.currentLocation.coordinates[0]),
-                  },
-                },
-              ]
+              measurements[currentTimeStep.toISOString()] = [measurementObj]
             }
           }
 
@@ -197,15 +166,22 @@ async function downloadOpenSenseMapArchive(options) {
   }
 
   // console.log(measurements)
-  console.log(`Measurements from OpenSenseMap: ~${Object.values(measurements)[0].length}`)
+  console.log("OpenSenseMap")
+  console.log(`All sensors: ${senseBoxes.length}`)
+  console.log(`PM sensors: ${pmBoxes.length}`)
+  console.log(
+    `Available PM measurements: ${
+      Object.values(measurements)[0] ? Object.values(measurements)[0].length : 0
+    }`
+  )
   console.log()
 
   return measurements
 }
 
-// downloadOpenSenseMap()
+// downloadOpenSenseMapAPI()
 
 module.exports = {
-  downloadOpenSenseMap,
+  downloadOpenSenseMapAPI,
   downloadOpenSenseMapArchive,
 }

@@ -1,6 +1,7 @@
 const fs = require("fs")
 const axios = require("axios")
 
+const Measurement = require("./Measurement")
 const { getDateString, getTimeString } = require("../shared/helpers")
 
 async function downloadFromOpenSenseNetwork(pollutant) {
@@ -24,7 +25,7 @@ async function downloadFromOpenSenseNetwork(pollutant) {
     })
 }
 
-async function downloadFromLuftdatenInfo(options) {
+async function downloadFromLuftdatenInfoAPI(options) {
   const pollutantMapping = {
     PM10: "P1",
     "PM2.5": "P2",
@@ -83,8 +84,8 @@ async function downloadFromLuftdatenInfo(options) {
           })
           return data
         })
-        .filter(measurement => {
-          const timestamp = new Date(measurement.timestamp)
+        .filter(x => {
+          const timestamp = new Date(x.timestamp)
           return timestamp < options.datetime
         })
         .pop()
@@ -182,36 +183,12 @@ async function downloadFromLuftdatenInfoArchive(options) {
       return uniqueMeasurements
     }, [])
 
+  // fs.writeFileSync("luftdatenInfoExampleStations.json", JSON.stringify(pmMeasurements, null, 2))
+
   // Now we know which sensors report PM values in the given bbox
   // Now we access the archives for all of these sensors for the given data
 
-  /*
-  Measurements object will contain a list of sensors with averages values for every timestep
-  {
-    '2020-02-20T00:00:30.000Z': [ 
-      { 
-        id: '582473be40198a001010e1a3',
-        value: 9.844444444444445,
-        location: {
-          latitude: Y,
-          longitude: X
-        }
-      },
-      ...
-    ]
-    '2020-02-20T01:00:00.000Z': [ 
-      { 
-        id: '58fb1549635722001156933b',
-        value: 8.335,
-        location: {
-          latitude: Y,
-          longitude: X
-        }
-      },
-      ...
-    ]
-  }
-  */
+  // Measurements object will contain a list of sensors with averages values for every timestep
   const measurements = {}
 
   for (const m of pmMeasurements) {
@@ -247,26 +224,17 @@ async function downloadFromLuftdatenInfoArchive(options) {
           // We reached the end of the time step
           // Calculate the average and add it to the result object
           if (sum > 0 && counter > 0) {
+            const measurementObj = new Measurement(
+              m.sensor.id,
+              sum / counter,
+              "luftdaten.info",
+              parseFloat(m.location.latitude),
+              parseFloat(m.location.longitude)
+            )
             if (measurements[currentTimeStep.toISOString()]) {
-              measurements[currentTimeStep.toISOString()].push({
-                id: m.sensor.id,
-                value: sum / counter,
-                location: {
-                  latitude: parseFloat(m.location.latitude),
-                  longitude: parseFloat(m.location.longitude),
-                },
-              })
+              measurements[currentTimeStep.toISOString()].push(measurementObj)
             } else {
-              measurements[currentTimeStep.toISOString()] = [
-                {
-                  id: m.sensor.id,
-                  value: sum / counter,
-                  location: {
-                    latitude: parseFloat(m.location.latitude),
-                    longitude: parseFloat(m.location.longitude),
-                  },
-                },
-              ]
+              measurements[currentTimeStep.toISOString()] = [measurementObj]
             }
           }
 
@@ -285,15 +253,18 @@ async function downloadFromLuftdatenInfoArchive(options) {
     }
   }
 
+  console.log(Object.values(measurements).values(measurements)[0])
   console.log("Luftdaten.info")
-  console.log(`All measurements in bbox: ${allLatestMeasurements.length}`)
-  console.log(`PM Measurements in bbox: ${pmMeasurements.length}`)
+  console.log(`All sensors: ${allLatestMeasurements.length}`)
+  console.log(`PM sensors: ${pmMeasurements.length}`)
   console.log(
-    `Available PM Measurements in bbox at given time: ${Object.values(measurements)[0].length}`
+    `Available PM measurements: ${
+      Object.values(measurements)[0] ? Object.values(measurements)[0].length : 0
+    }`
   )
   console.log()
 
   return measurements
 }
 
-module.exports = { downloadFromLuftdatenInfo, downloadFromLuftdatenInfoArchive }
+module.exports = { downloadFromLuftdatenInfoAPI, downloadFromLuftdatenInfoArchive }

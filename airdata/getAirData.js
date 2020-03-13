@@ -68,7 +68,9 @@ async function getAirData(callerOptions) {
 
   if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir)
-  } else {
+  }
+
+  if (fs.readdirSync(outputDir).length > 0) {
     return fs
       .readdirSync(outputDir)
       .filter(file => {
@@ -82,16 +84,27 @@ async function getAirData(callerOptions) {
   const luftdatenInfoMeasurements = await downloadFromLuftdatenInfoArchive(options)
   const openSenseMapMeasurements = await downloadOpenSenseMapArchive(options)
 
+  const [south, west, north, east] = options.bbox
+
   const allOutputFiles = []
   for (const timestep of Object.keys(luftdatenInfoMeasurements)) {
     const allMeasurements = [
-      ...openSenseMapMeasurements[timestep],
-      ...luftdatenInfoMeasurements[timestep],
+      ...(openSenseMapMeasurements[timestep] || []),
+      ...(luftdatenInfoMeasurements[timestep] || []),
     ]
 
     const geoJSONFeatures = []
     allMeasurements.forEach(m => {
-      if (m.value > 250) {
+      if (m.properties.value > 250) {
+        return
+      }
+
+      if (
+        m.location.latitude < south ||
+        m.location.latitude > north ||
+        m.location.longitude < west ||
+        m.location.longitude > east
+      ) {
         return
       }
 
@@ -102,10 +115,9 @@ async function getAirData(callerOptions) {
           coordinates: [m.location.longitude, m.location.latitude],
         },
         properties: {
-          sensorId: m.id,
-          pollutant: options.pollutant,
+          ...m.properties,
           timestep,
-          value: m.value,
+          pollutant: options.pollutant,
         },
       })
     })
