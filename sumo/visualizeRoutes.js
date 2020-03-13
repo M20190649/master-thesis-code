@@ -25,7 +25,7 @@ async function visualizeRoutes(callerOptions) {
   validateOptions(options, optionDefinitions)
 
   await runBash([
-    "py",
+    "python",
     join(process.env.SUMO_HOME, "tools", "route", "route2poly.py"),
     options.network,
     options.routes,

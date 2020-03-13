@@ -98,7 +98,7 @@ async function run() {
 
   console.log("Starting simulation...")
   await runBash([
-    `py ${join(__dirname, "..", "sumo", "traci", "index.py")}`,
+    `python ${join(__dirname, "..", "sumo", "traci", "index.py")}`,
     `--config ${CLIOptions.config}`,
     `--sumo-config ${sumoConfigFile}`,
   ])
