@@ -1,4 +1,4 @@
-const { join } = require("path")
+const { join, basename } = require("path")
 const fs = require("fs")
 
 const parseCLIOptions = require("../shared/parseCLIOptions")
@@ -47,9 +47,8 @@ const config = JSON.parse(fs.readFileSync(CLIOptions.config), "utf8")
 validateOptions(config, configOptionDefinitions)
 
 const inputDir = join(__dirname, config.name || "input")
+const airDataInput = join(inputDir, "airdata")
 const outputDir = join(inputDir, "output")
-const airQualityZonesGeoJSONFile = join(__dirname, "air-quality-test-zones.geojson")
-const airQualityZonesPolygonFile = join(inputDir, "air-quality-zones-polygons.xml")
 const sumoConfigFile = `${join(inputDir, config.name)}.sumocfg`
 
 if (!fs.existsSync(inputDir)) {
@@ -60,6 +59,7 @@ if (!fs.existsSync(outputDir)) {
   fs.mkdirSync(outputDir)
 }
 
+const getAirData = require("../airdata/getAirData")
 const convertGeoJSONToPoly = require("../sumo/convertGeoJSONToPoly")
 const writeSUMOConfig = require("../sumo/writeSUMOConfig")
 const prepareMATSim = require("./prepareMATSim")
@@ -80,19 +80,49 @@ async function run() {
       break
   }
 
-  // 2. Prepare air quality zone polygons
-  await convertGeoJSONToPoly({
-    geojson: airQualityZonesGeoJSONFile,
-    network: inputFiles.network,
-    output: airQualityZonesPolygonFile,
+  // 2. Download air data and prepare air quality zone polygons
+  const simDate = config.simulationDate
+    .split(".")
+    .reverse()
+    .join("-")
+  // Download air data
+  console.log("Downloading air data...")
+  const airDataFiles = await getAirData({
+    pollutant: config.pollutant,
+    bbox: config.bbox,
+    from: new Date(`${simDate}T00:00:00.000Z`),
+    to: new Date(`${simDate}T23:59:00.000Z`),
+    timestep: config.zoneUpdateFrequency,
+    output: airDataInput,
   })
+  console.log("Done!")
+
+  // There will be a measurements file for every timestep
+  console.log("Creating air quality zones...")
+  for (const airDataFile of airDataFiles) {
+    // Interpolate measurements
+    await runBash([
+      `python ${join(__dirname, "..", "airdata", "interpolate.py")}`,
+      `--measurements=${airDataFile}`,
+      `--method=${config.interpolationMethod}`,
+      `--output=${airDataInput}`,
+      `${config.visualizeZones ? `--visualize=true` : ""}`,
+    ])
+
+    // Convert the resulting zones into SUMO poly format
+    await convertGeoJSONToPoly({
+      geojson: join(airDataInput, `zones_${basename(airDataFile)}`),
+      network: inputFiles.network,
+      output: join(airDataInput, `zones_${basename(airDataFile).replace(".geojson", ".xml")}`),
+    })
+  }
+  console.log("Done!")
 
   // 3. Write SUMO config file
   console.log("Writing SUMO config file...")
   writeSUMOConfig(outputDir, {
     ...inputFiles,
     sumoConfigFile,
-    polygonsFile: airQualityZonesPolygonFile,
   })
   console.log("Done!\n")
 
