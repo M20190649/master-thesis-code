@@ -399,3 +399,14 @@ TODO:
 TODO: 
 * Add more config parameters to config file
 * Make simulation run with all the created zone files
+
+# 13.03.2020
+
+* Added airdata interpolation config parameters to config file
+* Testing on inner berlin scenario
+* Simulation preparation successfully runs from start to finish and opens up SUMO
+
+TODO: 
+* Make TraCI import the zone polygons and change them on every timestep
+* Do an actual test run
+* Figure out how to calculate the distances in the zones because the SUMO polygons don't have holes in them
