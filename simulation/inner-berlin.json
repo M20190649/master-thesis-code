@@ -1,0 +1,19 @@
+{
+  "name": "inner-berlin",
+  "mode": "osm",
+  "scenario": "1pct",
+  "bbox": [
+    52.4607,
+    13.2526,
+    52.5611,
+    13.5441
+  ],
+  "pollutant": "PM10",
+  "simulationDate": "02.02.2020",
+  "zoneUpdateFrequency": 60,
+  "interpolationMethod": "idw",
+  "visualizeZones": true,
+  "enableRerouting": true,
+  "dynamicRouting": false,
+  "dynamicRoutingDistance": 300
+}
