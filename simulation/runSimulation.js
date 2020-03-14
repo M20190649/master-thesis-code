@@ -95,28 +95,31 @@ async function run() {
     timestep: config.zoneUpdateFrequency,
     output: airDataInput,
   })
-  console.log("Done!")
+  console.log("Done!\n")
 
   // There will be a measurements file for every timestep
   console.log("Creating air quality zones...")
-  for (const airDataFile of airDataFiles) {
-    // Interpolate measurements
-    await runBash([
-      `python ${join(__dirname, "..", "airdata", "interpolate.py")}`,
-      `--measurements=${airDataFile}`,
-      `--method=${config.interpolationMethod}`,
-      `--output=${airDataInput}`,
-      `${config.visualizeZones ? `--visualize=true` : ""}`,
-    ])
+  if (fs.readdirSync(airDataInput).length === 0) {
+    for (const airDataFile of airDataFiles) {
+      // Interpolate measurements
+      await runBash([
+        `python ${join(__dirname, "..", "airdata", "interpolate.py")}`,
+        `--measurements=${airDataFile}`,
+        `--method=${config.interpolationMethod}`,
+        `--output=${airDataInput}`,
+        `${config.visualizeZones ? `--visualize=true` : ""}`,
+      ])
 
-    // Convert the resulting zones into SUMO poly format
-    await convertGeoJSONToPoly({
-      geojson: join(airDataInput, `zones_${basename(airDataFile)}`),
-      network: inputFiles.network,
-      output: join(airDataInput, `zones_${basename(airDataFile).replace(".geojson", ".xml")}`),
-    })
+      // Convert the resulting zones into SUMO poly format
+      await convertGeoJSONToPoly({
+        geojson: join(airDataInput, `zones_${basename(airDataFile)}`),
+        network: inputFiles.network,
+        output: join(airDataInput, `zones_${basename(airDataFile).replace(".geojson", ".xml")}`),
+      })
+    }
   }
-  console.log("Done!")
+
+  console.log("Done!\n")
 
   // 3. Write SUMO config file
   console.log("Writing SUMO config file...")
