@@ -74,7 +74,7 @@ async function getAirData(callerOptions) {
     return fs
       .readdirSync(outputDir)
       .filter(file => {
-        return file.endsWith(".geojson")
+        return file.startsWith("data") && file.endsWith(".geojson")
       })
       .map(file => {
         return `${outputDir}/${file}`
