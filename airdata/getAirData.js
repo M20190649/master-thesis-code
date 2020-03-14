@@ -71,6 +71,7 @@ async function getAirData(callerOptions) {
   }
 
   if (fs.readdirSync(outputDir).length > 0) {
+    console.log("Air data already exists")
     return fs
       .readdirSync(outputDir)
       .filter(file => {
