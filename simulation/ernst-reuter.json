@@ -10,7 +10,7 @@
   ],
   "pollutant": "PM10",
   "simulationDate": "02.02.2020",
-  "zoneUpdateFrequency": 720,
+  "zoneUpdateInterval": 720,
   "interpolationMethod": "idw",
   "visualizeZones": true,
   "enableRerouting": true,
