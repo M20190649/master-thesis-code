@@ -28,21 +28,33 @@ async function convertGeoJSONToPoly(callerOptions) {
 
   validateOptions(options, optionDefinitions)
 
+  if (fs.existsSync("tmp")) {
+    fs.rmdirSync("tmp")
+  }
+
   fs.mkdirSync("tmp")
 
   const file = fs.readFileSync(options.geojson, "utf8")
   const geojson = JSON.parse(file)
 
   const xml = XMLBuilder.create("additional")
-  geojson.features.forEach((f, i) => {
+  const zonePolygonCounter = {}
+  geojson.features.forEach(f => {
     const { coordinates } = f.geometry
     const { zone } = f.properties
+
+    if (zonePolygonCounter[zone] !== undefined) {
+      zonePolygonCounter[zone]++
+    } else {
+      zonePolygonCounter[zone] = 0
+    }
+
     // Since SUMO can't handle polygons with holes we can only take the first polygon in the coordinates array
     const coordinatesString = coordinates[0].map(([long, lat]) => `${long},${lat}`).join(" ")
     xml.element("poly", {
-      id: pad(i),
+      id: `${pad(zone)}_${pad(zonePolygonCounter[zone])}`,
       shape: coordinatesString,
-      color: `${zoneColours[zone]},0.8`,
+      color: `${zoneColours[zone - 1]},0.8`,
       layer: zone,
     })
   })
