@@ -87,9 +87,9 @@ def interpolate(
 
     # Skip first zone because it covers the whole area with holes where the actual zones are
     polygons_per_zone = get_polygons_from_contour(contour)[1:]
-    for zone, zone_polygons in enumerate(polygons_per_zone):
+    for idx, zone_polygons in enumerate(polygons_per_zone):
         for polygon in zone_polygons:
-            polygon_df = gpd.GeoDataFrame({"zone": [zone], "geometry": [polygon]})
+            polygon_df = gpd.GeoDataFrame({"zone": [idx + 1], "geometry": [polygon]})
             polygons = pd.concat([polygons, polygon_df])
 
     polygons.crs = internal_crs
@@ -98,8 +98,10 @@ def interpolate(
     if not os.path.isdir(output):
         os.mkdir(output)
 
+    # Filename without file type ending
     filename = "".join(ntpath.basename(measurements_fp).split(".")[0:-1])
-    polygons.to_file(f"{output}/zones_{filename}.geojson", driver="GeoJSON")
+    filename = filename.replace("data", "zones")
+    polygons.to_file(f"{output}/{filename}.geojson", driver="GeoJSON")
 
     if visualize:
         plt.rcParams["figure.figsize"] = 30, 20
@@ -114,7 +116,7 @@ def interpolate(
         plot.set_clim(zones[1])
         fig.colorbar(plot, ax=ax)
 
-        plt.savefig(f"{output}/zones_{filename}.png")
+        plt.savefig(f"{output}/{filename}.png")
 
         # plt.show()
         # plt.close()
@@ -169,7 +171,7 @@ args = parser.parse_args()
 # Filter None arguments
 args = {k: v for k, v in vars(args).items() if v is not None}
 
-print(args)
+# print(args)
 
 if "measurements_fp" not in args:
     raise ValueError("Filepath to GeoJSON measurements file must be given")
