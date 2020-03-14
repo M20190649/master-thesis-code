@@ -1,4 +1,4 @@
-const { join, basename } = require("path")
+const { join, basename, resolve } = require("path")
 const fs = require("fs")
 
 const parseCLIOptions = require("../shared/parseCLIOptions")
@@ -92,14 +92,15 @@ async function run() {
     bbox: config.bbox,
     from: new Date(`${simDate}T00:00:00.000Z`),
     to: new Date(`${simDate}T23:59:00.000Z`),
-    timestep: config.zoneUpdateFrequency,
+    timestep: config.zoneUpdateInterval,
     output: airDataInput,
   })
   console.log("Done!\n")
 
   // There will be a measurements file for every timestep
   console.log("Creating air quality zones...")
-  if (fs.readdirSync(airDataInput).length === 0) {
+  const zonesFiles = fs.readdirSync(airDataInput).filter(f => f.startsWith("zones"))
+  if (zonesFiles.length === 0) {
     for (const airDataFile of airDataFiles) {
       // Interpolate measurements
       await runBash([
@@ -112,11 +113,18 @@ async function run() {
 
       // Convert the resulting zones into SUMO poly format
       await convertGeoJSONToPoly({
-        geojson: join(airDataInput, `zones_${basename(airDataFile)}`),
+        geojson: join(airDataInput, `${basename(airDataFile).replace("data", "zones")}`),
         network: inputFiles.network,
-        output: join(airDataInput, `zones_${basename(airDataFile).replace(".geojson", ".xml")}`),
+        output: join(
+          airDataInput,
+          basename(airDataFile)
+            .replace("data", "zones")
+            .replace(".geojson", ".xml")
+        ),
       })
     }
+  } else {
+    console.log("Interpolation data already exist")
   }
 
   console.log("Done!\n")
@@ -132,7 +140,7 @@ async function run() {
   console.log("Starting simulation...")
   await runBash([
     `python ${join(__dirname, "..", "sumo", "traci", "index.py")}`,
-    `--config ${CLIOptions.config}`,
+    `--config ${resolve(CLIOptions.config)}`,
     `--sumo-config ${sumoConfigFile}`,
   ])
   console.log("Done!\n")
