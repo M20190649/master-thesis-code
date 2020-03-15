@@ -41,22 +41,24 @@ class Tracker:
             traci.polygon.subscribeContext(
                 pId, tc.CMD_GET_EDGE_VARIABLE, 0, [tc.VAR_NAME],
             )
-            edgeSubscription = traci.polygon.getContextSubscriptionResults(pId)
+            polygonContext = traci.polygon.getContextSubscriptionResults(pId)
             # Remove context subscription because we don't need it anymore
             traci.polygon.unsubscribeContext(pId, tc.CMD_GET_EDGE_VARIABLE, 0)
 
-            if edgeSubscription is None:
-                # print(f"No edge subscription for polygon {pId}")
+            if polygonContext is None:
+                print(
+                    f"Polygon {pId} will be removed because it is not covering any edges."
+                )
                 # Edges subscription can be None when the polygon doesn't cover any edges
                 # Since it doesn't cover any edges it can be removed
                 traci.polygon.remove(pId)
                 continue
 
-            # filter out some junction data
-            edgesInPolygon = list(
-                filter(lambda e: not e.startswith(":"), edgeSubscription.keys())
-            )
-            # print(f"{len(edgesInPolygon)} edges in polygon {pId}")
+            # Filter out edge data
+            edgeIds = traci.edge.getIDList()
+            edgeContext = {k: v for (k, v) in polygonContext.items() if k in edgeIds}
+            edgesInPolygon = edgeContext.keys()
+            print(f"Found {len(edgesInPolygon)} edges in polygon {pId}")
             self.polygonEdges[pId] = edgesInPolygon
 
             # Add all other necessary context subscriptions
@@ -83,6 +85,6 @@ class Tracker:
             else:
                 self.vehicleDistances[timestep][vId][pId] = 0
 
-            print("Vehicle in polygon")
-            pprint.pprint(self.vehicleDistances)
+            # print("Vehicle in polygon")
+            # pprint.pprint(self.vehicleDistances)
 
