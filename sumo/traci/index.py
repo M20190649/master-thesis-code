@@ -1,4 +1,4 @@
-import os, sys, getopt, json, math
+import os, sys, getopt, json, math, re
 
 from argparse import ArgumentParser
 
@@ -30,7 +30,8 @@ with open(args.config) as configPath:
 
 # Add some additional data to simulation config dictionary
 simDir = os.path.dirname(os.path.realpath(args.config))
-simConfig["sim_airDataDir"] = os.path.join(simDir, simConfig["name"], "airdata")
+simName = re.search(".*(?=\.)", os.path.basename(args.config)).group(0)
+simConfig["sim_airDataDir"] = os.path.join(simDir, simName, "airdata")
 
 # sumoBinary = os.environ["SUMO_HOME"] + "/bin/sumo"
 sumoBinary = os.environ["SUMO_HOME"] + "/bin/sumo-gui"
