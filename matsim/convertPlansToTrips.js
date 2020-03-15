@@ -6,7 +6,7 @@ const XMLBuilder = require("xmlbuilder")
 const LineByLineReader = require("line-by-line")
 
 const parseCLIOptions = require("../shared/parseCLIOptions")
-const { validateOptions } = require("../shared/helpers")
+const { validateOptions, getTimeString } = require("../shared/helpers")
 const db = require("../db/matsim/index")
 
 const outputModes = {
@@ -39,7 +39,7 @@ const optionDefinitions = [
     type: String,
     defaultValue: "geo",
     description:
-      "Determines value of 'from' and 'to' attributes of the trips \n ('geo' uses lat/long, 'matsim' uses the MATSim link ids, default is 'geo')",
+      "Determines value of 'from' and 'to' attributes of the trips (default: 'geo') \n ('geo' uses lat/long, 'matsim' uses the MATSim link ids)",
     possibleValues: Object.values(outputModes),
   },
 ]
@@ -73,6 +73,7 @@ const currentTrip = {
     longitude: "longitude to",
   },
 }
+let timeTracker = 0
 const tripsXML = XMLBuilder.create("trips")
 
 let log = x => console.log(x)
@@ -92,11 +93,29 @@ function onOpenTag(node) {
     // currentPerson.color = `${randomR},${randomG},${randomB}`
 
     personCounter++
+    timeTracker = 0
     log(`New person: ${currentPerson}`)
   }
 
   if (currentTag === "plan") {
     parsePlan = node.attributes.selected === "yes"
+  }
+
+  if (parsePlan) {
+    if (node.attributes.end_time) {
+      const [hour, minute, second] = node.attributes.end_time.split(":").map(parseFloat)
+      timeTracker = hour * 60 * 60 + minute * 60 + second
+    }
+
+    if (node.attributes.trav_time) {
+      const [hour, minute, second] = node.attributes.trav_time.split(":").map(parseFloat)
+      timeTracker += hour * 60 * 60 + minute * 60 + second
+    }
+
+    if (node.attributes.max_dur) {
+      const [hour, minute, second] = node.attributes.max_dur.split(":").map(parseFloat)
+      timeTracker += hour * 60 * 60 + minute * 60 + second
+    }
   }
 
   if (currentTag === "activity") {
@@ -116,12 +135,15 @@ function onOpenTag(node) {
   if (currentTag === "leg" && parsePlan) {
     if (node.attributes.mode === "car") {
       if (node.attributes.dep_time === undefined) {
-        console.log(`Warning: Skipping person ${currentPerson} because departure times are missing`)
-        parsePlan = false
-        return
+        console.log(`Warning: Person ${currentPerson} is missing departure times.`)
+        const timeString = getTimeString(new Date(timeTracker * 1000), ":")
+        console.log(`Using time tracker value (${timeTracker}s = ${timeString}) instead.`)
+        currentTrip.depart = timeTracker
+      } else {
+        const [hour, minute, second] = node.attributes.dep_time.split(":").map(parseFloat)
+        currentTrip.depart = hour * 60 * 60 + minute * 60 + second
       }
-      const [hour, minute, second] = node.attributes.dep_time.split(":").map(parseFloat)
-      currentTrip.depart = hour * 60 * 60 + minute * 60 + second
+
       parseRoute = true
       routeCounter++
     }
