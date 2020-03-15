@@ -28,8 +28,7 @@ class SimController:
         # Run the simulation
         nStep = 0
         while nStep < self.traciConfig["steps"]:
-            print("step", nStep)
-            traci.simulationStep()
+            traci.simulationStep(nStep)
             nStep += 1
 
         # Finish and clean up
