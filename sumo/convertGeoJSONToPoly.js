@@ -52,7 +52,7 @@ async function convertGeoJSONToPoly(callerOptions) {
     // Since SUMO can't handle polygons with holes we can only take the first polygon in the coordinates array
     const coordinatesString = coordinates[0].map(([long, lat]) => `${long},${lat}`).join(" ")
     xml.element("poly", {
-      id: `${pad(zone)}_${pad(zonePolygonCounter[zone])}`,
+      id: `${pad(zone)}-${pad(zonePolygonCounter[zone])}`,
       shape: coordinatesString,
       color: `${zoneColours[zone - 1]},0.8`,
       layer: zone,
