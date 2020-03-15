@@ -2,18 +2,26 @@ const { spawn } = require("child_process")
 
 exports.pad = n => (n < 10 ? `0${n}` : n)
 
-exports.getDateString = customDate => {
+exports.getDateString = (customDate, separator = "-") => {
   const date = customDate || new Date()
-  return `${this.pad(date.getUTCFullYear())}-${this.pad(date.getUTCMonth() + 1)}-${this.pad(
-    date.getUTCDate()
-  )}`
+  return [
+    this.pad(date.getUTCFullYear()),
+    separator,
+    this.pad(date.getUTCMonth() + 1),
+    separator,
+    this.pad(date.getUTCDate()),
+  ].join("")
 }
 
-exports.getTimeString = customDate => {
+exports.getTimeString = (customDate, separator = "-") => {
   const date = customDate || new Date()
-  return `${this.pad(date.getUTCHours())}-${this.pad(date.getUTCMinutes())}-${this.pad(
-    date.getUTCSeconds()
-  )}`
+  return [
+    this.pad(date.getUTCHours()),
+    separator,
+    this.pad(date.getUTCMinutes()),
+    separator,
+    this.pad(date.getUTCSeconds()),
+  ].join("")
 }
 
 const defaultOptions = {
