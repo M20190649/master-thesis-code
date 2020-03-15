@@ -42,7 +42,7 @@ conda env create -f environment.yml
 
 3. Since some of the packages we need are not available on `conda` we must install them seperately via `pip`
 
-````
+```
 pip install -r requirements.txt
 ```
 
@@ -63,10 +63,14 @@ TODO: Write all the details about the properties of the configuration file
 
 | Key| Type | Possible Values | Example | Description |
 | - | - | - | - | - |
-| name | String | - | `"Berlin Simulation"` | Name of your simulation |
-| mode | String | `osm, matsim` | `"osm"` | Determines where the input data comes from |
-| scenario | String | `1pct, 10pct` | `"1pct"` | Determines which MATSim scenario is used for input plans (1pct should be the test scenario, 10pct is the full scenario) |
+| mode | String | `osm`, `matsim` | `"osm"` | Determines where the input data comes from |
+| scenario | String | `1pct`, `10pct` | `"1pct"` | Determines which MATSim scenario is used for input plans (1pct should be the test scenario, 10pct is the full scenario) |
 | bbox | Array | `[south, west, north, east]` | `[52.5056, 13.3075, 52.5182, 13.344]` | Bounding Box for the OSM case and also for limiting the parsed MATSim plans only for the given bbox |
+| pollutant | String | `PM10`, `PM2.5` | `"PM10"` | Determines which pollutant measurements is being fetched |
+| simulationDate | String | - | `"02.02.2020"` | Determines from which day the pollutant measurements should be fetched |
+| zoneUpdateInterval | Number | - | `60` | Determines in which interval (in minutes) the zones should be updated. For example every 60 minutes. |
+| interpolationMethod | String | `"idw"`, `"nearest-neighbor"`, `"natural-neighbor"`, `"linear_barycentric"` | `"idw"` | Determined the interpolation method to be used to create the air quality zones |
+| visualizeZones | Boolean | - | `true` | Determines if the simulation should create images of the interpolated air quality zones |
 | enableRerouting | Boolean | - | `true` | Determines if vehicles should be rerouted |
 | dynamicRerouting | Boolean | - | `true` | Determines if vehicles should be rerouted at insertion or dynamically when they approach an air pollution zone |
 | dynamicReroutingDistance | Boolean | - | `true` | Determines the distance to the zones when vehicles should be dynamically rerouted
