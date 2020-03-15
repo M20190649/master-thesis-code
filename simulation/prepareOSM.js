@@ -1,4 +1,4 @@
-const { join } = require("path")
+const { join, basename } = require("path")
 const fs = require("fs")
 
 const downloadFromOverpass = require("../osm/downloadFromOverpass")
@@ -23,8 +23,8 @@ module.exports = async (inputDir, config) => {
     fs.mkdirSync(demandDir)
   }
 
-  const networkName = `${config.name}-network`
-  const routesName = `${config.name}-routes`
+  const networkName = `${basename(inputDir)}-network`
+  const routesName = `${basename(inputDir)}-routes`
 
   const osmNetworkFile = `${join(networkDir, networkName)}.osm.xml`
   const matsimPlansFile = join(matsimDir, "plans", "berlin-v5.4-1pct.output_plans.xml")

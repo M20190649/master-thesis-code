@@ -19,7 +19,6 @@ const scenarios = {
 }
 
 const configOptionDefinitions = [
-  { name: "name", type: String, description: "Name of the simulation", required: true },
   {
     name: "mode",
     type: String,
@@ -44,12 +43,14 @@ validateOptions(CLIOptions, CLIOptionDefinitions)
 
 const config = JSON.parse(fs.readFileSync(CLIOptions.config), "utf8")
 
+const simName = basename(CLIOptions.config).match(/.*(?=\.)/)[0]
+
 validateOptions(config, configOptionDefinitions)
 
-const inputDir = join(__dirname, config.name || "input")
+const inputDir = join(__dirname, simName)
 const airDataInput = join(inputDir, "airdata")
 const outputDir = join(inputDir, "output")
-const sumoConfigFile = `${join(inputDir, config.name)}.sumocfg`
+const sumoConfigFile = `${join(inputDir, simName)}.sumocfg`
 
 if (!fs.existsSync(inputDir)) {
   fs.mkdirSync(inputDir)

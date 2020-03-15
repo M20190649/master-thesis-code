@@ -1,4 +1,4 @@
-const { join } = require("path")
+const { join, basename } = require("path")
 const fs = require("fs")
 
 const convertMATSimNetwork = require("../sumo/convertMATSimNetwork")
@@ -22,7 +22,7 @@ module.exports = async (inputDir, config) => {
   }
 
   // const networkName = `matsim-network`
-  const routesName = `${config.name}-routes`
+  const routesName = `${basename(inputDir)}-routes`
 
   const matsimNetworkFile = join(matsimDir, "network", "berlin-v5-network.xml")
   const networkFile = join(matsimDir, "network", "berlin-v5-network-converted.net.xml")
