@@ -26,7 +26,7 @@ exports.runBash = (bash, options = defaultOptions) => {
   }
 
   return new Promise((resolve, reject) => {
-    console.log(`Executing: ${bashCommand}`)
+    console.log(`\nExecuting: ${bashCommand}`)
     const [command, ...args] = bashCommand.split(" ")
     const child = spawn(command, args, {
       cwd: options.cwd,
