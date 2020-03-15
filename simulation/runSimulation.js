@@ -131,10 +131,15 @@ async function run() {
 
   // 3. Write SUMO config file
   console.log("Writing SUMO config file...")
-  writeSUMOConfig(outputDir, {
-    ...inputFiles,
-    sumoConfigFile,
-  })
+  if (!fs.existsSync(sumoConfigFile)) {
+    writeSUMOConfig(outputDir, {
+      ...inputFiles,
+      sumoConfigFile,
+    })
+  } else {
+    console.log("SUMO config file already exists")
+  }
+
   console.log("Done!\n")
 
   console.log("Starting simulation...")
