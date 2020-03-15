@@ -425,3 +425,9 @@ TODO:
 * Updating polygons throughout the whole simulation works
 
 FIXME: There is no data for the start of the simulation... I would need the data from the previous day
+
+* Problem: Some plans in MATSim don't have departure times for `<leg mode="car">`
+  * I solved it by calculating the depature time through tracking `trav_time`, `max_dur` and `end_time`
+
+* Fixed many bugs in the rerouting
+* Make sure dynamic rerouting also checks the newly inserted vehicles if they are spawned within a zone
