@@ -135,9 +135,10 @@ function onOpenTag(node) {
   if (currentTag === "leg" && parsePlan) {
     if (node.attributes.mode === "car") {
       if (node.attributes.dep_time === undefined) {
-        console.log(`Warning: Person ${currentPerson} is missing departure times.`)
         const timeString = getTimeString(new Date(timeTracker * 1000), ":")
-        console.log(`Using time tracker value (${timeTracker}s = ${timeString}) instead.`)
+        console.log(
+          `Warning: Person ${currentPerson} is missing departure times. Using time tracker value (${timeTracker}s = ${timeString}) instead.`
+        )
         currentTrip.depart = timeTracker
       } else {
         const [hour, minute, second] = node.attributes.dep_time.split(":").map(parseFloat)
