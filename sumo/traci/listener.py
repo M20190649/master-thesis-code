@@ -1,5 +1,9 @@
-import traci, pprint
+import traci, pprint, datetime, os
+import xml.etree.ElementTree as et
 import traci.constants as tc
+from shapely.geometry import Polygon, MultiPolygon, mapping
+from shapely.geometry import box
+import geopandas as gpd
 
 
 class StepListener(traci.StepListener):
@@ -67,8 +71,105 @@ class StepListener(traci.StepListener):
                 print(f"Rerouting vehicle {vId}")
                 traci.vehicle.rerouteTraveltime(vId, False)
 
+    def splitPolygon(self, shape, parts=2):
+        polygon = Polygon(shape)
+        (minx, miny, maxx, maxy) = polygon.bounds
+        partWidth = (maxx - minx) / parts
+        partShapes = []
+        for i in range(parts):
+            partBbox = box(minx + i * partWidth, miny, minx + (i + 1) * partWidth, maxy)
+            partPoly = gpd.GeoSeries(polygon.intersection(partBbox))
+
+            shapelyObj = partPoly[0]
+            if type(shapelyObj) == MultiPolygon:
+                geojson = mapping(shapelyObj)
+                for p in geojson["coordinates"]:
+                    partShapes.append(list(p[0]))
+
+            if type(shapelyObj) == Polygon:
+                geojson = mapping(shapelyObj)
+                partShapes.append(list(geojson["coordinates"][0]))
+
+        for i in range(len(partShapes)):
+            s = partShapes.pop(0)
+            if len(s) > 255:
+                print(
+                    "Part is still too big (more than 255 points)! Splitting again..."
+                )
+                splittedParts = self.splitPolygon(s)
+                partShapes.extend(splittedParts)
+            else:
+                partShapes.append(s)
+
+        return partShapes
+
+    def loadPolygons(self, t):
+        # Remove all old polygons
+        print("Removing old polygons")
+        for pId in traci.polygon.getIDList():
+            print(pId)
+            self.tracker.removePolygonSubscriptions(pId)
+            traci.polygon.remove(pId)
+
+        # Add all new polygons
+        dateString = "-".join(self.simConfig["simulationDate"].split(".")[::-1])
+        utc = datetime.datetime.utcfromtimestamp(t)
+        pad = lambda n: f"0{n}" if n < 10 else n
+        timeString = f"{pad(utc.hour)}-{pad(utc.minute)}-{pad(utc.second)}"
+        zoneFile = f"zones_{dateString}T{timeString}.xml"
+        # zoneFile = f"zones_{dateString}T10-00-00.xml"
+        print(f"Loading {zoneFile}")
+        xmlTree = et.parse(os.path.join(self.simConfig["sim_airDataDir"], zoneFile))
+
+        print("Adding new polygons")
+        for child in xmlTree.getroot():
+            if child.tag == "poly":
+                polyId = child.attrib["id"]
+                shape = list(
+                    map(
+                        lambda pair: tuple(map(float, pair.split(","))),
+                        child.attrib["shape"].split(" "),
+                    )
+                )
+                color = list(map(int, child.attrib["color"].split(",")))
+                layer = int(float(child.attrib["layer"]))
+                if len(shape) > 255:
+                    print(
+                        f"Warning: Zone polygon is too large ({len(shape)} points) (SUMO can't handle polygons with more than 255 points)"
+                    )
+                    print("Splitting zone polygon into multiple parts...")
+                    shapeParts = self.splitPolygon(shape)
+                    print(f"Split zone polygon into {len(shapeParts)} parts")
+
+                    for idx, shapePart in enumerate(shapeParts):
+                        partPolyId = f"{polyId}-{idx}"
+                        traci.polygon.add(
+                            partPolyId, shapePart, color, fill=True, layer=layer,
+                        )
+                        traci.polygon.setParameter(partPolyId, "zone", str(layer))
+                        traci.polygon.setParameter(partPolyId, "timestep", timeString)
+                else:
+                    traci.polygon.add(
+                        polyId, shape, color, fill=True, layer=layer,
+                    )
+                    traci.polygon.setParameter(polyId, "zone", str(layer))
+                    traci.polygon.setParameter(polyId, "timestep", timeString)
+
+        # Make tracker update it's polygons
+        self.tracker.updatePolygons()
+
     def step(self, t):
         # Do something at every simulaton step
+        # print("step", t)
+        # if nStep % 5000 == 0:
+        #     print("step", nStep)
+
+        if t > 0 and t % (self.simConfig["zoneUpdateInterval"] * 60) == 0:
+            # if t > 0 and t % 40 == 0:
+            print("New timestep! Zones will be updated...")
+            self.loadPolygons(t)
+            print("Done")
+
         if self.simConfig["enableRerouting"]:
             if self.simConfig["dynamicRerouting"]:
                 self.doDynamicRerouting()
