@@ -7,7 +7,7 @@ class StepListener(traci.StepListener):
         self.simConfig = simConfig
         self.tracker = tracker
 
-    def __doStaticRerouting(self):
+    def doStaticRerouting(self):
         # Rerouting for vehicles whose route crosses through air quality zones
         newlyInsertedVehicles = traci.simulation.getDepartedIDList()
         for vId in newlyInsertedVehicles:
@@ -33,7 +33,7 @@ class StepListener(traci.StepListener):
                 # print(f"Rerouting vehicle {vId}")
                 traci.vehicle.rerouteTraveltime(vId, False)
 
-    def __doDynamicRerouting(self):
+    def doDynamicRerouting(self):
         for pId in self.tracker.polygonEdges:
             vehicleContext = traci.polygon.getContextSubscriptionResults(pId)
 
@@ -71,9 +71,9 @@ class StepListener(traci.StepListener):
         # Do something at every simulaton step
         if self.simConfig["enableRerouting"]:
             if self.simConfig["dynamicRerouting"]:
-                self.__doDynamicRerouting()
+                self.doDynamicRerouting()
             else:
-                self.__doStaticRerouting()
+                self.doStaticRerouting()
 
         # Track all distances driven in each polygon
         vehicleIds = traci.vehicle.getIDList()
