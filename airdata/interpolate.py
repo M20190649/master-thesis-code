@@ -2,7 +2,7 @@
 #     "PROJ_LIB"
 # ] = r"C:\\ProgamData\\Miniconda3\\envs\\master-thesis\\Library\\share"
 
-import os, math, time, ntpath
+import os, math, time, ntpath, pprint, json
 from argparse import ArgumentParser
 import geopandas as gpd
 import pandas as pd
@@ -92,8 +92,9 @@ def interpolate(
             polygon_df = gpd.GeoDataFrame({"zone": [idx + 1], "geometry": [polygon]})
             polygons = pd.concat([polygons, polygon_df])
 
-    polygons.crs = internal_crs
-    polygons = polygons.to_crs(external_crs)
+    if len(polygons) != 0:
+        polygons.crs = internal_crs
+        polygons = polygons.to_crs(external_crs)
 
     if not os.path.isdir(output):
         os.mkdir(output)
@@ -101,7 +102,16 @@ def interpolate(
     # Filename without file type ending
     filename = "".join(ntpath.basename(measurements_fp).split(".")[0:-1])
     filename = filename.replace("data", "zones")
-    polygons.to_file(f"{output}/{filename}.geojson", driver="GeoJSON")
+    if len(polygons) != 0:
+        polygons.to_file(f"{output}/{filename}.geojson", driver="GeoJSON")
+    else:
+        with open(f"{output}/{filename}.geojson", "w", encoding="utf-8") as f:
+            json.dump(
+                {"type": "FeatureCollection", "features": []},
+                f,
+                ensure_ascii=False,
+                indent=4,
+            )
 
     if visualize:
         plt.rcParams["figure.figsize"] = 30, 20
