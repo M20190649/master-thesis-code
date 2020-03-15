@@ -410,3 +410,18 @@ TODO:
 * Make TraCI import the zone polygons and change them on every timestep
 * Do an actual test run
 * Figure out how to calculate the distances in the zones because the SUMO polygons don't have holes in them
+
+# 14.03.2020
+
+* TraCI is successfully importing the zone polygon data and exchanging them as the simulation runs
+* Problem:
+  * The maximum amounts of coordinates for a polygons in SUMO is 255
+  * I need to find a way to split too big polygons
+  * I am thinking of taking the boundary, halve it, calculate the intersection with each half and create a new polygon from each intersection
+
+# 15.03.2020
+
+* Fixed the problem of too big polygons by splitting them dynamically into smaller parts that are always smaller than 255
+* Updating polygons throughout the whole simulation works
+
+FIXME: There is no data for the start of the simulation... I would need the data from the previous day
