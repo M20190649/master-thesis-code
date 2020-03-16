@@ -431,3 +431,11 @@ FIXME: There is no data for the start of the simulation... I would need the data
 
 * Fixed many bugs in the rerouting
 * Make sure dynamic rerouting also checks the newly inserted vehicles if they are spawned within a zone
+
+# 16.03.2020
+
+* Awesome meeting with Sandro!!!
+* He was super impressed by my progress and what I have achieved <333
+* Got an email from TU Berlin with information about the Corona situation and the consequences for students 
+
+**Due to closed libraries every deadline for any thesis will be extended for one month 🎉**
