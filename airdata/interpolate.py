@@ -137,6 +137,8 @@ interpolator_functions = {
     "natural_neighbor": interpolators.natural_neighbor,
     "idw": interpolators.inverse_distance_weighting,
     "linear_barycentric": interpolators.linear_barycentric,
+    "discrete_natural_neighbor": interpolators.discrete_natural_neighbor,
+    "clough_tocher": interpolators.clough_tocher,
 }
 
 parser = ArgumentParser()
