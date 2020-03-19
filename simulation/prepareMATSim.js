@@ -1,6 +1,8 @@
 const { join, basename } = require("path")
 const fs = require("fs")
 
+const { logSection } = require("../shared/helpers")
+
 const convertMATSimNetwork = require("../sumo/convertMATSimNetwork")
 const convertTripsToRoutes = require("../sumo/convertTripsToRoutes")
 const visualizeRoutes = require("../sumo/visualizeRoutes")
@@ -32,8 +34,7 @@ module.exports = async (inputDir, config) => {
   const routesVisualizationFile = `${join(demandDir, routesName)}.rou.visualization.xml`
 
   // 1. Prepare network data
-  console.log("------------ Prepare Network Data ------------")
-
+  logSection("Prepare Network Data")
   // Convert MATSim network to SUMO network
   console.log("Converting MATSim network to SUMO network...")
   if (fs.existsSync(networkFile)) {
@@ -48,7 +49,7 @@ module.exports = async (inputDir, config) => {
   console.log("Done!\n")
 
   // 2. Prepare routes data
-  console.log("------------ Prepare Routes Data ------------")
+  logSection("Prepare Demand Data")
   // Parse all the plans for the bbox and convert them to trips
   console.log("Converting the MATSim plans...")
   if (fs.existsSync(tripsFile)) {

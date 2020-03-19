@@ -1,6 +1,8 @@
 const { join, basename } = require("path")
 const fs = require("fs")
 
+const { logSection } = require("../shared/helpers")
+
 const downloadFromOverpass = require("../osm/downloadFromOverpass")
 
 const convertPlansToTrips = require("../matsim/convertPlansToTrips")
@@ -35,7 +37,7 @@ module.exports = async (inputDir, config) => {
   const routesVisualizationFile = `${join(demandDir, routesName)}.rou.visualization.xml`
 
   // 1. Prepare network data
-  console.log("------------ Prepare Network Data ------------")
+  logSection("Prepare Network Data")
   // 1.1. Download OSM from config bbox
   console.log("Downloading OSM Bbox...")
   if (fs.existsSync(osmNetworkFile)) {
@@ -62,8 +64,8 @@ module.exports = async (inputDir, config) => {
 
   console.log("Done!\n")
 
-  // 2. Prepare routes data
-  console.log("------------ Prepare Routes Data ------------")
+  // 2. Prepare demand data
+  logSection("Prepare Demand Data")
   // 2.1. Parse all the plans for the bbox and convert them to trips
   console.log("Parsing MATSim plans for given Bbox...")
   if (fs.existsSync(tripsFile)) {
