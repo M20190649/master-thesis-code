@@ -1,4 +1,7 @@
-import geopandas
+import math, time
+from collections import defaultdict
+import numpy as np
+import geopandas as gpd
 import matplotlib.pyplot as pyplot
 from scipy import interpolate
 from scipy.spatial import (
@@ -13,8 +16,8 @@ from scipy.spatial import (
     cKDTree,
 )
 from scipy.spatial.distance import euclidean, cdist
-import numpy as np
-import math, time
+from shapely.geometry import Polygon, Point, box
+from shapely.strtree import STRtree
 import naturalneighbor
 import metpy.interpolate as metpy_interpolate
 
@@ -31,6 +34,8 @@ def nearest_neighbor(x, y, points, values, grid=True):
 
 
 def discrete_natural_neighbor(x, y, points, values):
+    # Natural neighbor implementation taken from Python package "naturalneighbor"
+    # FASTEST IMPLEMENTATION (because it is discrete)
     x_step_width = (x[-1] - x[0]) / x.shape[0]
     y_step_width = (y[-1] - y[0]) / y.shape[0]
     grid_ranges = [[x[0], x[-1], x_step_width], [y[0], y[-1], y_step_width], [0, 1, 1]]
@@ -170,7 +175,9 @@ def rbf(x, y, points, values):
     return result
 
 
-def natural_neighbor(x, y, points, values, grid=True):
+def metpy_natural_neighbor(x, y, points, values, grid=True):
+    # Natural neighbor implementation taken from Python package "MetPy"
+    # FASTER THAN scipy_natural_neighbor BUT MUCH SLOWER THAN discrete_natural_neighbor
     if grid:
         xx, yy = np.meshgrid(x, y)
         point_matrix = np.dstack((xx, yy))
@@ -184,6 +191,114 @@ def natural_neighbor(x, y, points, values, grid=True):
         return result.reshape(y.shape[0], x.shape[0])
     else:
         return result
+
+
+def voronoi_polygons(voronoi, boundary, diameter=1000000):
+    """Generate shapely.geometry.Polygon objects corresponding to the
+    regions of a scipy.spatial.Voronoi object, in the order of the
+    input points. The polygons for the infinite regions are large
+    enough that all points within a distance 'diameter' of a Voronoi
+    vertex are contained in one of the infinite polygons.
+
+    """
+    polygons = []
+
+    centroid = voronoi.points.mean(axis=0)
+
+    # Mapping from (input point index, Voronoi point index) to list of
+    # unit vectors in the directions of the infinite ridges starting
+    # at the Voronoi point and neighbouring the input point.
+    ridge_direction = defaultdict(list)
+    for (p, q), rv in zip(voronoi.ridge_points, voronoi.ridge_vertices):
+        u, v = sorted(rv)
+        if u == -1:
+            # Infinite ridge starting at ridge point with index v,
+            # equidistant from input points with indexes p and q.
+            t = voronoi.points[q] - voronoi.points[p]  # tangent
+            n = np.array([-t[1], t[0]]) / np.linalg.norm(t)  # normal
+            midpoint = voronoi.points[[p, q]].mean(axis=0)
+            direction = np.sign(np.dot(midpoint - centroid, n)) * n
+            ridge_direction[p, v].append(direction)
+            ridge_direction[q, v].append(direction)
+
+    for i, r in enumerate(voronoi.point_region):
+        region = voronoi.regions[r]
+        if -1 not in region:
+            # Finite region.
+            polygons.append(Polygon(voronoi.vertices[region]).intersection(boundary))
+            continue
+        # Infinite region.
+        inf = region.index(-1)  # Index of vertex at infinity.
+        j = region[(inf - 1) % len(region)]  # Index of previous vertex.
+        k = region[(inf + 1) % len(region)]  # Index of next vertex.
+        if j == k:
+            # Region has one Voronoi vertex with two ridges.
+            dir_j, dir_k = ridge_direction[i, j]
+        else:
+            # Region has two Voronoi vertices, each with one ridge.
+            (dir_j,) = ridge_direction[i, j]
+            (dir_k,) = ridge_direction[i, k]
+
+        # Length of ridges needed for the extra edge to lie at least
+        # 'diameter' away from all Voronoi vertices.
+        length = 2 * diameter / np.linalg.norm(dir_j + dir_k)
+
+        # Polygon consists of finite part plus an extra edge.
+        finite_part = voronoi.vertices[region[inf + 1 :] + region[:inf]]
+        extra_edge = [
+            voronoi.vertices[j] + dir_j * length,
+            voronoi.vertices[k] + dir_k * length,
+        ]
+        polygons.append(
+            Polygon(np.concatenate((finite_part, extra_edge))).intersection(boundary)
+        )
+
+    return polygons
+
+
+def scipy_natural_neighbor(x, y, points, values, grid=True):
+    # This natural neighbor implementation based on spatial voronoi region intersections
+    # THIS IS VERY SLOW!!!
+    if grid:
+        xx, yy = np.meshgrid(x, y)
+        point_matrix = np.dstack((xx, yy))
+        new_points = point_matrix.reshape(-1, point_matrix.shape[-1])
+    else:
+        new_points = np.column_stack((x, y))
+
+    gs = gpd.GeoSeries([Point(p) for p in points])
+    boundary = box(*gs.total_bounds)
+
+    voronoi = Voronoi(points)
+    voronoi_poly = voronoi_polygons(voronoi, boundary)
+
+    tree = STRtree(voronoi_poly)
+    poly_index_by_id = dict((id(p), i) for i, p in enumerate(voronoi_poly))
+
+    def interpolate_point(new_point):
+        new_voronoi = Voronoi([new_point, *points])
+        new_voronoi_poly = voronoi_polygons(new_voronoi, boundary)
+        new_point_poly = new_voronoi_poly[0]
+
+        intersecting_polygons = tree.query(new_point_poly)
+        weights = np.array(
+            [
+                p.intersection(new_point_poly).area / new_point_poly.area
+                for p in intersecting_polygons
+            ]
+        )
+        intersecting_values = np.array(
+            [values[poly_index_by_id[id(p)]] for p in intersecting_polygons]
+        )
+        interpolated_value = intersecting_values.dot(weights.T)
+        return interpolated_value
+
+    interpolated_values = []
+    for new_point in new_points:
+        interpolated_value = interpolate_point(new_point)
+        interpolated_values.append(interpolated_value)
+
+    return np.array(interpolated_values).reshape(y.shape[0], x.shape[0])
 
 
 def metpy_idw(x, y, points, values):

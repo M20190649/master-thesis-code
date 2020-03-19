@@ -126,7 +126,7 @@ def interpolate(
         plot.set_clim(zones[1])
         fig.colorbar(plot, ax=ax)
 
-        plt.savefig(f"{output}/{filename}.png")
+        fig.savefig(f"{output}/{filename}.png")
 
         # plt.show()
         # plt.close()
@@ -134,11 +134,11 @@ def interpolate(
 
 interpolator_functions = {
     "nearest_neighbor": interpolators.nearest_neighbor,
-    "natural_neighbor": interpolators.natural_neighbor,
+    "discrete_natural_neighbor": interpolators.discrete_natural_neighbor,
+    "metpy_natural_neighbor": interpolators.metpy_natural_neighbor,
+    "scipy_natural_neighbor": interpolators.scipy_natural_neighbor,
     "idw": interpolators.inverse_distance_weighting,
     "linear_barycentric": interpolators.linear_barycentric,
-    "discrete_natural_neighbor": interpolators.discrete_natural_neighbor,
-    "clough_tocher": interpolators.clough_tocher,
 }
 
 parser = ArgumentParser()
