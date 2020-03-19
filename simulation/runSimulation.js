@@ -1,52 +1,51 @@
 const { join, basename, resolve } = require("path")
 const fs = require("fs")
+const commandLineUsage = require("command-line-usage")
 
 const parseCLIOptions = require("../shared/parseCLIOptions")
-const { validateOptions, runBash } = require("../shared/helpers")
-
-const CLIOptionDefinitions = [
-  { name: "config", type: String, description: "Filepath to the config file", required: true },
-]
+const configOptionDefinition = require("./configOptionDefinition")
+const { validateOptions, runBash, logSection } = require("../shared/helpers")
 
 const modes = {
   osm: "osm",
   matsim: "matsim",
 }
 
-const scenarios = {
-  "1pct": "1pct",
-  "10pct": "10pct",
-}
-
-const configOptionDefinitions = [
+// Parse and validate CLI options
+const CLIOptionDefinitions = [
   {
-    name: "mode",
+    name: "config",
+    alias: "c",
     type: String,
-    description: "Decides from which source the input data is generated",
+    description: "Filepath to the config file",
     required: true,
-    possibleValues: Object.values(modes),
   },
   {
-    name: "scenario",
+    name: "config-info",
+    alias: "i",
     type: String,
-    description:
-      "The scenario that should be loaded \n (Possible values: 1pct, 10pct, default: 1pct)",
-    required: true,
-    defaultValue: "1pct",
-    possibleValues: Object.values(scenarios),
+    description: "Print a usage guide for all config parameters",
   },
 ]
-
 const CLIOptions = parseCLIOptions(CLIOptionDefinitions)
-
+if (CLIOptions["config-info"] !== undefined) {
+  const sections = [
+    {
+      header: `Explanation of all config parameters`,
+      optionList: configOptionDefinition,
+    },
+  ]
+  console.log(commandLineUsage(sections))
+  process.exit(0)
+}
 validateOptions(CLIOptions, CLIOptionDefinitions)
 
+// Parse and validate config.json file
 const config = JSON.parse(fs.readFileSync(CLIOptions.config), "utf8")
+validateOptions(config, configOptionDefinition)
 
+// File and directory names
 const simName = basename(CLIOptions.config).match(/.*(?=\.)/)[0]
-
-validateOptions(config, configOptionDefinitions)
-
 const inputDir = join(__dirname, simName)
 const airDataInput = join(inputDir, "airdata")
 const outputDir = join(inputDir, "output")
@@ -60,6 +59,8 @@ if (!fs.existsSync(outputDir)) {
   fs.mkdirSync(outputDir)
 }
 
+// Importing necessary helper scripts
+// I import them here because I need to call "parseCLIOptions" first to make my generalized CLI printing work correctly
 const getAirData = require("../airdata/getAirData")
 const convertGeoJSONToPoly = require("../sumo/convertGeoJSONToPoly")
 const writeSUMOConfig = require("../sumo/writeSUMOConfig")
@@ -68,7 +69,6 @@ const prepareOSM = require("./prepareOSM")
 
 async function run() {
   // 1. Prepare network and demand input data according to mode
-  // console.log("------------ Prepare Input Data ------------")
   let inputFiles = null
   switch (config.mode) {
     case modes.osm:
@@ -82,12 +82,13 @@ async function run() {
   }
 
   // 2. Download air data and prepare air quality zone polygons
+  logSection("Prepare Air Data")
   const simDate = config.simulationDate
     .split(".")
     .reverse()
     .join("-")
   // Download air data
-  console.log("Downloading air data...")
+  console.log("Downloading air pollution data...")
   const airDataFiles = await getAirData({
     pollutant: config.pollutant,
     bbox: config.bbox,
@@ -99,7 +100,7 @@ async function run() {
   console.log("Done!\n")
 
   // There will be a measurements file for every timestep
-  console.log("Creating air quality zones...")
+  console.log("Creating air pollution zones...")
   const zonesFiles = fs.readdirSync(airDataInput).filter(f => f.startsWith("zones"))
   if (zonesFiles.length === 0) {
     for (const airDataFile of airDataFiles) {
@@ -126,12 +127,13 @@ async function run() {
       })
     }
   } else {
-    console.log("Interpolation data already exist")
+    console.log("Air pollution zones already exist")
   }
 
   console.log("Done!\n")
 
   // 3. Write SUMO config file
+  logSection("Prepare SUMO Simulation")
   console.log("Writing SUMO config file...")
   if (!fs.existsSync(sumoConfigFile)) {
     writeSUMOConfig(outputDir, {
@@ -144,6 +146,7 @@ async function run() {
 
   console.log("Done!\n")
 
+  // 4. Start the SUMO simulation
   console.log("Starting simulation...")
   await runBash([
     `python ${join(__dirname, "..", "sumo", "traci", "index.py")}`,
