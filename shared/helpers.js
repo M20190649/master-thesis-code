@@ -50,6 +50,7 @@ exports.runBash = (bash, options = defaultOptions) => {
 exports.validateOptions = (options, optionDefinitions) => {
   for (const option of optionDefinitions) {
     const { name } = option
+
     if (option.required && options[name] === undefined) {
       throw new Error(
         `Missing required option: "${name}". Run the --help command for more information.`
@@ -64,4 +65,12 @@ exports.validateOptions = (options, optionDefinitions) => {
       }
     }
   }
+}
+
+exports.logSection = sectionName => {
+  const maxLength = 60
+  const restSpaceLength = maxLength - sectionName.length - 2
+  const n1 = Math.floor(restSpaceLength / 2)
+  const n2 = restSpaceLength % 2 === 0 ? n1 : n1 + 1
+  console.log(`${"-".repeat(n1)} ${sectionName} ${"-".repeat(n2)}\n`)
 }
