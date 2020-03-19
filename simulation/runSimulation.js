@@ -108,6 +108,7 @@ async function run() {
         `python ${join(__dirname, "..", "airdata", "interpolate.py")}`,
         `--measurements=${airDataFile}`,
         `--method=${config.interpolationMethod}`,
+        `--zones=${config.zones.join(",")}`,
         `--output=${airDataInput}`,
         `${config.visualizeZones ? `--visualize=true` : ""}`,
       ])

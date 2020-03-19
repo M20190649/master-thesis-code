@@ -11,6 +11,14 @@
   "simulationDate": "02.02.2020",
   "zoneUpdateInterval": 60,
   "interpolationMethod": "idw",
+  "zones": [
+    0,
+    20,
+    40,
+    100,
+    200,
+    400
+  ],
   "visualizeZones": true,
   "enableRerouting": true,
   "dynamicRerouting": false,
