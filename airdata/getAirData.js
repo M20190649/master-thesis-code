@@ -127,8 +127,8 @@ async function getAirData(callerOptions) {
   console.log("\nDone!\n")
 
   const lastTimestepData = [
-    ...Object.values(luftdatenInfoMeasurements).pop(),
-    ...Object.values(openSenseMapMeasurements).pop(),
+    ...(Object.values(luftdatenInfoMeasurements).pop() || []),
+    ...(Object.values(openSenseMapMeasurements).pop() || []),
   ]
 
   writeMeasurements(lastTimestepData, options.date.toISOString())
