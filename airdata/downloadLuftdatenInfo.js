@@ -4,26 +4,13 @@ const axios = require("axios")
 const Measurement = require("./Measurement")
 const { getDateString, getTimeString } = require("../shared/helpers")
 
-async function downloadFromOpenSenseNetwork(pollutant) {
-  const pollutantMapping = {
-    PM10: 11,
-    "PM2.5": 12,
-  }
-  const baseUrl = "https://www.opensense.network/beta/api/v1.0/sensors"
-  const berlinBbox = [52.301761, 13.040771, 52.714667, 13.827667]
-  const url =
-    `${baseUrl}?measurandId=${pollutantMapping[pollutant]}` +
-    `&boundingBox=%5B${berlinBbox.join("%2C")}%5D`
-
-  axios
-    .get(url)
-    .then(res => {
-      return res.data
-    })
-    .then(berlinSensors => {
-      // const
-    })
+const pollutantMapping = {
+  PM10: "P1",
+  "PM2.5": "P2",
 }
+
+// These sensors were handpicked from http://deutschland.maps.sensor.community/
+const malfunctioningSensors = [2115, 12695, 24509]
 
 async function downloadFromLuftdatenInfoAPI(options) {
   const pollutantMapping = {
@@ -154,11 +141,6 @@ async function downloadFromLuftdatenInfoAPI(options) {
 }
 
 async function downloadFromLuftdatenInfoArchive(options) {
-  const pollutantMapping = {
-    PM10: "P1",
-    "PM2.5": "P2",
-  }
-
   const pollutant = pollutantMapping[options.pollutant]
 
   // API does not allow to filter the data for timestamps
@@ -173,7 +155,6 @@ async function downloadFromLuftdatenInfoArchive(options) {
     .filter(m => {
       return m.sensordatavalues.some(v => {
         return v.value_type === pollutant
-        // return v.value_type === "P1" || v.value_type === "P2"
       })
     })
     .reduce((uniqueMeasurements, curr) => {
@@ -182,6 +163,7 @@ async function downloadFromLuftdatenInfoArchive(options) {
       }
       return uniqueMeasurements
     }, [])
+    .filter(m => !malfunctioningSensors.includes(m.sensor.id))
 
   // fs.writeFileSync("luftdatenInfoExampleStations.json", JSON.stringify(pmMeasurements, null, 2))
 
