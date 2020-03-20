@@ -83,17 +83,12 @@ async function run() {
 
   // 2. Download air data and prepare air quality zone polygons
   logSection("Prepare Air Data")
-  const simDate = config.simulationDate
-    .split(".")
-    .reverse()
-    .join("-")
   // Download air data
   console.log("Downloading air pollution data...")
   const airDataFiles = await getAirData({
     pollutant: config.pollutant,
     bbox: config.bbox,
-    from: new Date(`${simDate}T00:00:00.000Z`),
-    to: new Date(`${simDate}T23:59:00.000Z`),
+    date: config.simulationDate,
     timestep: config.zoneUpdateInterval,
     output: airDataInput,
   })
