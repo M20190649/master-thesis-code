@@ -172,14 +172,14 @@ async function downloadFromLuftdatenInfoArchive(options) {
 
   // Measurements object will contain a list of sensors with averages values for every timestep
   const measurements = {}
-
+  let errorCounter = 0
   for (const m of pmMeasurements) {
     let requestURL = ""
     try {
       requestURL = [
         "http://archive.luftdaten.info/",
-        `${getDateString(options.from)}/`,
-        `${getDateString(options.from)}_`,
+        `${getDateString(options.date)}/`,
+        `${getDateString(options.date)}_`,
         `${m.sensor.sensor_type.name.toLowerCase()}_sensor_${m.sensor.id}.csv`,
       ].join("")
       // Archives return CSV data
@@ -188,14 +188,14 @@ async function downloadFromLuftdatenInfoArchive(options) {
       const rows = csv.split("\n")
       const header = rows.shift().split(";")
 
-      let currentTimeStep = new Date(options.from.getTime() + options.timestep * 60 * 1000)
+      let currentTimeStep = new Date(options.date.getTime() + options.timestep * 60 * 1000)
       let sum = 0
       let counter = 0
       for (const row of rows) {
-        const rowData = {}
-        row.split(";").forEach((value, i) => {
-          rowData[header[i]] = value
-        })
+        const rowData = row.split(";").reduce((data, value, i) => {
+          data[header[i]] = value
+          return data
+        }, {})
 
         const tsDate = new Date(`${rowData.timestamp}Z`)
         if (tsDate <= currentTimeStep) {
@@ -223,28 +223,20 @@ async function downloadFromLuftdatenInfoArchive(options) {
           currentTimeStep = new Date(currentTimeStep.getTime() + options.timestep * 60 * 1000)
           sum = 0
           counter = 0
-
-          if (currentTimeStep > options.to) {
-            break
-          }
         }
       }
     } catch (error) {
+      errorCounter++
       // console.log(requestURL)
       // console.log(error.message)
     }
   }
 
-  console.log(Object.values(measurements).values(measurements)[0])
+  // console.log(Object.values(measurements)[0])
   console.log("Luftdaten.info")
   console.log(`All sensors: ${allLatestMeasurements.length}`)
   console.log(`PM sensors: ${pmMeasurements.length}`)
-  console.log(
-    `Available PM measurements: ${
-      Object.values(measurements)[0] ? Object.values(measurements)[0].length : 0
-    }`
-  )
-  console.log()
+  console.log(`Archive sensor data errors: ${errorCounter} `)
 
   return measurements
 }

@@ -34,8 +34,8 @@ async function downloadOpenSenseMapAPI(options) {
     "/boxes/data",
     `?bbox=${bbox.join(",")}`,
     `&phenomenon=${pollutant}`,
-    `&from-date=${options.from.toISOString()}`,
-    `&to-date=${options.to.toISOString()}`,
+    `&from-date=${options.date.toISOString()}`,
+    `&to-date=${options.date.toISOString()}`,
     "&format=json",
   ].join("")
 
@@ -81,11 +81,11 @@ async function downloadOpenSenseMapAPI(options) {
 
 function getArchiveURLFromSenseBox(options, pollutant, box) {
   let url = `https://uni-muenster.sciebo.de/index.php/s/HyTbguBP4EkqBcp/download?path=/data/`
-  url += `${getDateString(options.from)}/`
+  url += `${getDateString(options.date)}/`
   const name = box.name.replace(/ |,|'/gi, "_").replace(/ß|ö|ä|ü/gi, "__")
   url += `${box._id}-${name}/`
   const sensorId = box.sensors.find(s => s.title === pollutant)._id
-  url += `${sensorId}-${getDateString(options.from)}.csv`
+  url += `${sensorId}-${getDateString(options.date)}.csv`
   return url
 }
 
@@ -115,14 +115,14 @@ async function downloadOpenSenseMapArchive(options) {
 
   // Measurements object will contain a list of sensors with averages values for every timestep
   const measurements = {}
-
+  let errorCounter = 0
   for (const box of pmBoxes) {
     try {
       const { data: csv } = await axios.get(getArchiveURLFromSenseBox(options, pollutant, box))
       const rows = csv.split("\n")
       const header = rows.shift().split(",")
 
-      let currentTimeStep = new Date(options.from.getTime() + options.timestep * 60 * 1000)
+      let currentTimeStep = new Date(options.date.getTime() + options.timestep * 60 * 1000)
       let sum = 0
       let counter = 0
       for (const row of rows) {
@@ -153,15 +153,11 @@ async function downloadOpenSenseMapArchive(options) {
           currentTimeStep = new Date(currentTimeStep.getTime() + options.timestep * 60 * 1000)
           sum = 0
           counter = 0
-
-          if (currentTimeStep > options.to) {
-            break
-          }
         }
       }
     } catch (error) {
       // Some will fail because they are not available
-      continue
+      errorCounter++
     }
   }
 
@@ -169,17 +165,10 @@ async function downloadOpenSenseMapArchive(options) {
   console.log("OpenSenseMap")
   console.log(`All sensors: ${senseBoxes.length}`)
   console.log(`PM sensors: ${pmBoxes.length}`)
-  console.log(
-    `Available PM measurements: ${
-      Object.values(measurements)[0] ? Object.values(measurements)[0].length : 0
-    }`
-  )
-  console.log()
+  console.log(`Archive sensor data errors: ${errorCounter} `)
 
   return measurements
 }
-
-// downloadOpenSenseMapAPI()
 
 module.exports = {
   downloadOpenSenseMapAPI,
