@@ -75,8 +75,8 @@
   * Problem: OSM file is extremely large. Import takes like 30 minutes. 
   * Maybe try to find a smaller version (only roads) of the OSM network
 * TODO:
-  * Find smaller OSM network version
-  * Apply DUAROUTER to trips and check the outcome
+  * ~~Find smaller OSM network version~~
+  * ~~Apply DUAROUTER to trips and check the outcome~~
 
 ## 20.01.2020
 
@@ -124,8 +124,8 @@
 * Realized that there is a `<activity type="car interaction">` before every `<leg mode="car">`
 * All coordinates are in GK4
 * TODO:
-  * Test conversion of GK4 coordinates to WGS84 and see where it is located on the OSM map
-  * Check if it is a valid approach
+  * ~~Test conversion of GK4 coordinates to WGS84 and see where it is located on the OSM map~~
+  * ~~Check if it is a valid approach~~
 
 ## 26.01.2020
 
@@ -219,8 +219,8 @@
 * Adding support for more config parameters for the simulation
 
 TODO: 
-* Finish the simulation preparation
-* Continue working on TraCI
+* ~~Finish the simulation preparation~~
+* ~~Continue working on TraCI~~
 
 ## 18.02.2020
 
@@ -349,14 +349,14 @@ Future Work: Implement ANN for interpolation as tested in the paper
   * These calculations can be done after the simulation has finished as well as applying different pricing schemes to the zones
 
 TODO: 
-  * Add interpolation config parameters to simulation config file
+  * ~~Add interpolation config parameters to simulation config file~~
   * Add more interpolation methods (Kriging and Spline)
-  * Rewrite air data fetching script to accept a date range instead of a single datetime
-  * Filter extreme/wrong sensor values and do more visual validation on the data/zones
-  * Integrate air data fetching + interpolation into automatic simulation flow
-    * Add polygons to SUMO
-    * Track vehicles according to polygons/zones
-    * Update polygons and continue tracking
+  * ~~Rewrite air data fetching script to accept a date range instead of a single datetime~~ -> Went back to single date to simplify things. Its all for internal use anyway.
+  * ~~Filter extreme/wrong sensor values and do more visual validation on the data/zones~~ -> Filter malfunctioning sensors by hand (look at the map and filter the IDs)
+  * ~~Integrate air data fetching + interpolation into automatic simulation flow~~
+    * ~~Add polygons to SUMO~~
+    * ~~Track vehicles according to polygons/zones~~
+    * ~~Update polygons and continue tracking~~
 
 * For the air data: should I take the moment values or hourly/x-minutely averages?
 * Should I do the air data fetching + interpolation before the simulation runs or on the fly?
@@ -387,9 +387,9 @@ TODO:
   * Found MetPy which seems promising for natural neighbor
 
 TODO: 
-* Investigate MetPy library for natural neighbor and other IDW implementations
-* Investigate scipy for Spline interpolation
-* Investigate sklearn for Kriging/Gaussian Process interpolation
+* ~~Investigate MetPy library for natural neighbor and other IDW implementations~~
+* ~~Investigate scipy for Spline interpolation~~
+* ~~Investigate sklearn for Kriging/Gaussian Process interpolation~~
 
 # 12.03.2020
 
@@ -397,8 +397,8 @@ TODO:
 * Still troubles with Spline and Kriging
 
 TODO: 
-* Add more config parameters to config file
-* Make simulation run with all the created zone files
+* ~~Add more config parameters to config file~~
+* ~~Make simulation run with all the created zone files~~
 
 # 13.03.2020
 
@@ -407,9 +407,8 @@ TODO:
 * Simulation preparation successfully runs from start to finish and opens up SUMO
 
 TODO: 
-* Make TraCI import the zone polygons and change them on every timestep
-* Do an actual test run
-* Figure out how to calculate the distances in the zones because the SUMO polygons don't have holes in them
+* ~~Make TraCI import the zone polygons and change them on every timestep~~
+* ~~Do an actual test run~~
 
 # 14.03.2020
 
@@ -424,7 +423,7 @@ TODO:
 * Fixed the problem of too big polygons by splitting them dynamically into smaller parts that are always smaller than 255
 * Updating polygons throughout the whole simulation works
 
-FIXME: There is no data for the start of the simulation... I would need the data from the previous day
+~~FIXME: There is no data for the start of the simulation... I would need the data from the previous day~~
 
 * Problem: Some plans in MATSim don't have departure times for `<leg mode="car">`
   * I solved it by calculating the depature time through tracking `trav_time`, `max_dur` and `end_time`
@@ -439,3 +438,21 @@ FIXME: There is no data for the start of the simulation... I would need the data
 * Got an email from TU Berlin with information about the Corona situation and the consequences for students 
 
 **Due to closed libraries every deadline for any thesis will be extended for one month 🎉**
+
+# 19.03.2020
+
+* Add python script to compare different grid cell sizes
+  * Result: No real visible difference in zone shape after 100m cell size
+* Add python script to compare different natural neighbor methods
+  * Result: They all look quite similar so I will just use the fastest (discrete)
+
+# 20.03.2020
+
+* Identified malfunctioning sensors via the interactive map of Luftdaten.info
+  * Filter these to avoid false data
+* Fix missing data for 00:00:00 timestep by fetching data on the previous day of the simulation date
+
+TODO: 
+* Figure out how to calculate the distances in the zones because the SUMO polygons don't have holes in them
+  * Does it make sense to calculate distance with in the single polygons or already add them up to the zone? I think the first option.
+* Invest more time into Kriging and Spline?
