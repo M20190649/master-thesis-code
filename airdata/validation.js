@@ -5,22 +5,15 @@ async function run() {
   const options = {
     pollutant: "PM10",
     bbox: "52.25639,12.874603,52.778678,13.932037".split(",").map(Number),
-    from: new Date(`2020-03-02T00:00:00.000Z`),
-    to: new Date(`2020-03-02T23:59:00.000Z`),
+    date: "12.2.2020",
     timestep: 60,
-    output: "meeting",
+    output: "raw-test",
   }
   const filenames = await getAirData(options)
 
   console.log(filenames)
 
-  const methods = [
-    "nearest_neighbor",
-    "discrete_natural_neighbor",
-    "idw",
-    "linear_barycentric",
-    "clough_tocher",
-  ]
+  const methods = ["nearest_neighbor", "discrete_natural_neighbor", "idw", "linear_barycentric"]
 
   for (const method of methods) {
     for (const file of filenames) {
