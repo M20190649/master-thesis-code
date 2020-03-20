@@ -2,11 +2,8 @@ const fs = require("fs")
 
 const parseCLIOptions = require("../shared/parseCLIOptions")
 const { validateOptions, getDateString, getTimeString } = require("../shared/helpers")
-const {
-  downloadLuftdatenInfo,
-  downloadFromLuftdatenInfoArchive,
-} = require("./downloadLuftdatenInfo")
-const { downloadOpenSenseMap, downloadOpenSenseMapArchive } = require("./downloadOpenSenseMap")
+const { downloadFromLuftdatenInfoArchive } = require("./downloadLuftdatenInfo")
+const { downloadOpenSenseMapArchive } = require("./downloadOpenSenseMap")
 
 const optionDefinitions = [
   {
@@ -96,10 +93,7 @@ async function getAirData(callerOptions) {
 
     const geoJSONFeatures = []
     allMeasurements.forEach(m => {
-      if (m.properties.value > 250) {
-        return
-      }
-
+      // Another extra boundary check
       if (
         m.location.latitude < south ||
         m.location.latitude > north ||
