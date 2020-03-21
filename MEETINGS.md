@@ -112,12 +112,16 @@
   * Prechecking raw/averaged measurements
   * Take 10 closest neighbors and check how much their values differ
   * f(distance) = threshold
+  * **Determing such a function is difficult. The spatial distribution of air pollutants can vary by significant amounts within a small radius.**
+  * **Solution: Averaging and filtering of handpicked malfunctioning sensors**
 
 * How to validate the choice of interpolation parameters?
   * Grid density
     * Take different densities and apply them with one interpolation method to measurement values of one hour of some day
+    * **Result: No significant changes for the zones after a cell size of 100m**
   * Interpolation method
     * Take small part of map and do cross validation
+    * **Result: idk lel**
   * Zones
     * Use UBA (easy to argument/justify)
     * Experiment with 2-10 zones
