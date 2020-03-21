@@ -12,6 +12,11 @@ import numpy as np
 
 import interpolators
 
+plt.rcParams["figure.figsize"] = 30, 20
+plt.rcParams["font.size"] = 20
+plt.rcParams["axes.titlesize"] = 50
+plt.rcParams["axes.titlepad"] = 80
+
 
 def get_polygons_from_contour(contour):
     polygons_per_zone = []
@@ -72,19 +77,21 @@ def interpolate(
     xnew = np.linspace(xmin, xmax, int((xmax - xmin) / size))
     ynew = np.linspace(ymin, ymax, int((ymax - ymin) / size))
 
+    interpolator = interpolator_functions[method]
+
+    print("Interpolating grid...")
+    start = time.time()
+    interpolated_values = interpolator(xnew, ynew, points, values)
+    end = time.time()
+    print(f"Done! ({format(end - start, '.3f')}s)")
+
+    print("Extracting zone polygons...")
     start = time.time()
 
-    interpolator = interpolator_functions[method]
-    interpolated_values = interpolator(xnew, ynew, points, values)
-
-    end = time.time()
-    print(end - start)
-
-    contour = plt.contourf(xnew, ynew, interpolated_values, zones)
-    # plt.show()
+    fig, ax = plt.subplots()
+    contour = ax.contourf(xnew, ynew, interpolated_values, zones, cmap="winter_r")
 
     polygons = gpd.GeoDataFrame()
-
     # Skip first zone because it covers the whole area with holes where the actual zones are
     polygons_per_zone = get_polygons_from_contour(contour)[1:]
     for idx, zone_polygons in enumerate(polygons_per_zone):
@@ -95,6 +102,12 @@ def interpolate(
     if len(polygons) != 0:
         polygons.crs = internal_crs
         polygons = polygons.to_crs(external_crs)
+
+    end = time.time()
+    print(f"Done! ({format(end - start, '.3f')}s)")
+
+    print("Writing polygons into GeoJSON file...")
+    start = time.time()
 
     if not os.path.isdir(output):
         os.mkdir(output)
@@ -113,20 +126,20 @@ def interpolate(
                 indent=4,
             )
 
+    end = time.time()
+    print(f"Done! ({format(end - start, '.3f')}s)")
+
     if visualize:
-        plt.rcParams["figure.figsize"] = 30, 20
-        plt.rcParams["font.size"] = 20
-        plt.rcParams["axes.titlesize"] = 50
-        plt.rcParams["axes.titlepad"] = 80
-
-        fig, ax = plt.subplots()
+        print("Creating visualization...")
+        start = time.time()
         berlin_districts.boundary.plot(ax=ax, edgecolor="black")
-        plot = ax.contourf(xnew, ynew, interpolated_values, zones, cmap="winter_r")
-        plot.cmap.set_under("w")
-        plot.set_clim(zones[1])
-        fig.colorbar(plot, ax=ax)
-
+        contour.cmap.set_under("w")
+        contour.set_clim(zones[1])
+        fig.colorbar(contour, ax=ax)
         fig.savefig(f"{output}/{filename}.png")
+
+        end = time.time()
+        print(f"Done! ({format(end - start, '.3f')}s)")
 
         # plt.show()
         # plt.close()
