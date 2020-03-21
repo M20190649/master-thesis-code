@@ -125,7 +125,7 @@ async function run() {
     console.log("Air pollution zones already exist")
   }
 
-  console.log("Done!\n")
+  console.log("\nDone!\n")
 
   // 3. Write SUMO config file
   logSection("Prepare SUMO Simulation")

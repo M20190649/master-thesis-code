@@ -134,7 +134,7 @@ async function getAirData(callerOptions) {
   writeMeasurements(lastTimestepData, options.date.toISOString())
 
   // Get measurements from actual date
-  console.log("Fetching data from specified day...\n")
+  console.log("\nFetching data from specified day...\n")
   luftdatenInfoMeasurements = await downloadFromLuftdatenInfoArchive(options)
   console.log("\n")
   openSenseMapMeasurements = await downloadOpenSenseMapArchive(options)
