@@ -456,3 +456,10 @@ TODO:
 * Figure out how to calculate the distances in the zones because the SUMO polygons don't have holes in them
   * Does it make sense to calculate distance with in the single polygons or already add them up to the zone? I think the first option.
 * Invest more time into Kriging and Spline?
+
+# 21.03.2020
+
+* Make all python code align with recommended code style (mainly use underscores instead of camelCase)
+* Break apart the listener.py file into multiple different files with different responsibilities
+  * Make use of the TraCI StepListener class
+  * Use Publish/Subscribe design pattern to inform certain controllers when the zones have updated
