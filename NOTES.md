@@ -463,3 +463,6 @@ TODO:
 * Break apart the listener.py file into multiple different files with different responsibilities
   * Make use of the TraCI StepListener class
   * Use Publish/Subscribe design pattern to inform certain controllers when the zones have updated
+
+TODO: 
+* What to do during static rerouting when zones change? Reroute all vehicles in the simulation or let their route stay as it is?
