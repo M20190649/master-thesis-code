@@ -33,12 +33,14 @@ sim_dir = os.path.dirname(os.path.realpath(args.config))
 sim_name = re.search(".*(?=\.)", os.path.basename(args.config)).group(0)
 sim_config["sim_airDataDir"] = os.path.join(sim_dir, sim_name, "airdata")
 
-# sumoBinary = os.environ["SUMO_HOME"] + "/bin/sumo"
+# sumo_binary = os.environ["SUMO_HOME"] + "/bin/sumo"
 sumo_binary = os.environ["SUMO_HOME"] + "/bin/sumo-gui"
 sumo_cmd = [sumo_binary, "--configuration-file", args.sumo_config]
 
-from controller import SimController
+from simulation_controller import SimulationController
 
-traci_config = {"sumo_cmd": sumo_cmd, "steps": math.inf}
-controller = SimController(traci_config, sim_config)
+# steps = 10
+steps = math.inf
+traci_config = {"sumo_cmd": sumo_cmd, "steps": steps}
+controller = SimulationController(traci_config, sim_config)
 controller.start()
