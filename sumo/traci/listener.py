@@ -7,157 +7,157 @@ import geopandas as gpd
 
 
 class StepListener(traci.StepListener):
-    def __init__(self, tracker, simConfig):
-        self.simConfig = simConfig
+    def __init__(self, tracker, sim_config):
+        self.sim_config = sim_config
         self.tracker = tracker
         self.t = 0
-        self.reroutedVehicles = []
+        self.rerouted_vehicles = []
 
-    def rerouteVehicle(self, vId):
-        print(f"Rerouting vehicle {vId}")
-        traci.vehicle.rerouteTraveltime(vId, False)
-        traci.vehicle.setColor(vId, (255, 0, 0))
-        self.reroutedVehicles.append(vId)
+    def reroute_vehicle(self, vid):
+        print(f"Rerouting vehicle {vid}")
+        traci.vehicle.rerouteTraveltime(vid, False)
+        traci.vehicle.setColor(vid, (255, 0, 0))
+        self.rerouted_vehicles.append(vid)
 
-    def doStaticRerouting(self):
+    def static_rerouting(self):
         # Rerouting for vehicles whose route crosses through air quality zones
-        newlyInsertedVehicles = traci.simulation.getDepartedIDList()
-        for vId in newlyInsertedVehicles:
+        newly_inserted_vehicles = traci.simulation.getDepartedIDList()
+        for vid in newly_inserted_vehicles:
             # TODO: Do some meta info check like price sensitivity or randomly avoid rerouting
 
             # Check if route includes edges that are within air quality zone polygons
-            route = traci.vehicle.getRoute(vId)
-            edgesToAvoid = []
+            route = traci.vehicle.getRoute(vid)
+            edges_to_avoid = []
 
             # If any edge is within any polygon avoid all polygon edges
-            for pId in self.tracker.polygonEdges:
-                for eId in route:
-                    if eId in self.tracker.polygonEdges[pId]:
-                        edgesToAvoid.extend(self.tracker.polygonEdges[pId])
+            for pid in self.tracker.polygon_edges:
+                for eid in route:
+                    if eid in self.tracker.polygon_edges[pid]:
+                        edges_to_avoid.extend(self.tracker.polygon_edges[pid])
                         break
 
             # If the route crosses one or more polygon we need to reroute the vehicle to avoid these edges
-            if len(edgesToAvoid) != 0:
+            if len(edges_to_avoid) != 0:
                 # Check if destination is within polygon
-                if route[-1] in edgesToAvoid:
+                if route[-1] in edges_to_avoid:
                     # If yes, don't reroute (or maybe find the "cheapest" way to destination?)
                     print("Destination is in polygon")
 
-                for eId in edgesToAvoid:
+                for eid in edges_to_avoid:
                     # Set travel times for all edges to very high value
-                    traci.vehicle.setAdaptedTraveltime(vId, eId, time=99999999)
+                    traci.vehicle.setAdaptedTraveltime(vid, eid, time=99999999)
 
                 # Reroute
-                self.rerouteVehicle(vId)
+                self.reroute_vehicle(vid)
 
-    def doDynamicRerouting(self):
+    def dynamic_rerouting(self):
         # TODO: Do some meta info check like price sensitivity or randomly avoid rerouting
-        newlyInsertedVehicles = traci.simulation.getDepartedIDList()
-        for pId in self.tracker.polygonEdges:
-            polygonEdges = self.tracker.polygonEdges[pId]
+        newly_inserted_vehicles = traci.simulation.getDepartedIDList()
+        for pid in self.tracker.polygon_edges:
+            polygon_edges = self.tracker.polygon_edges[pid]
 
             # Check all the newly spawned vehicles if any of them are located within the zone
             # If yes reroute them immediately
-            for vId in newlyInsertedVehicles:
-                route = traci.vehicle.getRoute(vId)
+            for vid in newly_inserted_vehicles:
+                route = traci.vehicle.getRoute(vid)
                 # Check if starting edge is within the polygon
-                if route[0] in polygonEdges:
-                    print(f"New vehicle was inserted inside polygon {pId}.")
-                    for eId in polygonEdges:
+                if route[0] in polygon_edges:
+                    print(f"New vehicle was inserted inside polygon {pid}.")
+                    for eid in polygon_edges:
                         # Set travel times for all edges to very high value
-                        traci.vehicle.setAdaptedTraveltime(vId, eId, time=99999999)
+                        traci.vehicle.setAdaptedTraveltime(vid, eid, time=99999999)
 
-                    self.rerouteVehicle(vId)
+                    self.reroute_vehicle(vid)
 
             # Go through all polygons and get all vehicles within dynamic rerouting range
-            polygonContext = traci.polygon.getContextSubscriptionResults(pId)
-            if polygonContext is None:
+            polygon_context = traci.polygon.getContextSubscriptionResults(pid)
+            if polygon_context is None:
                 continue
 
-            vehicleIds = traci.vehicle.getIDList()
-            vehicleContext = {
-                k: v for (k, v) in polygonContext.items() if k in vehicleIds
+            vehicle_ids = traci.vehicle.getIDList()
+            vehicle_context = {
+                k: v for (k, v) in polygon_context.items() if k in vehicle_ids
             }
-            for vId in vehicleContext:
-                if vId in self.reroutedVehicles:
+            for vid in vehicle_context:
+                if vid in self.rerouted_vehicles:
                     # Don't reroute vehicles that already have been rerouted
                     continue
 
-                vehicleData = polygonContext[vId]
-                route = traci.vehicle.getRoute(vId)
-                upcomingEdges = route[vehicleData[tc.VAR_ROUTE_INDEX] :]
+                vehicle_data = polygon_context[vid]
+                route = traci.vehicle.getRoute(vid)
+                upcoming_edges = route[vehicle_data[tc.VAR_ROUTE_INDEX] :]
                 # Check if any edge of vehicle route goes through polygon
-                routeInPolygon = any(eId in polygonEdges for eId in upcomingEdges)
-                if not routeInPolygon:
+                route_in_polygon = any(eid in polygon_edges for eid in upcoming_edges)
+                if not route_in_polygon:
                     # If no, continue with next vehicle
                     continue
 
                 # Check if destination is within polygon
-                if upcomingEdges[-1] in polygonEdges:
+                if upcoming_edges[-1] in polygon_edges:
                     # If yes, don't reroute (or maybe find the "cheapest" way to destination?)
-                    print(f"Destination is in polygon {pId}")
+                    print(f"Destination is in polygon {pid}")
 
                 # If no, reroute
-                for eId in polygonEdges:
+                for eid in polygon_edges:
                     # Set travel times for all edges to very high value
-                    traci.vehicle.setAdaptedTraveltime(vId, eId, time=99999999)
+                    traci.vehicle.setAdaptedTraveltime(vid, eid, time=99999999)
 
-                self.rerouteVehicle(vId)
+                self.reroute_vehicle(vid)
 
-    def splitPolygon(self, shape, parts=2):
+    def split_polygon(self, shape, parts=2):
         polygon = Polygon(shape)
         (minx, miny, maxx, maxy) = polygon.bounds
-        partWidth = (maxx - minx) / parts
-        partShapes = []
+        part_width = (maxx - minx) / parts
+        part_shapes = []
         for i in range(parts):
-            partBbox = box(minx + i * partWidth, miny, minx + (i + 1) * partWidth, maxy)
-            partPoly = gpd.GeoSeries(polygon.intersection(partBbox))
+            part_bbox = box(minx + i * part_width, miny, minx + (i + 1) * part_width, maxy)
+            part_poly = gpd.GeoSeries(polygon.intersection(part_bbox))
 
-            shapelyObj = partPoly[0]
-            if type(shapelyObj) == MultiPolygon:
-                geojson = mapping(shapelyObj)
+            shapely_obj = part_poly[0]
+            if type(shapely_obj) == MultiPolygon:
+                geojson = mapping(shapely_obj)
                 for p in geojson["coordinates"]:
-                    partShapes.append(list(p[0]))
+                    part_shapes.append(list(p[0]))
 
-            if type(shapelyObj) == Polygon:
-                geojson = mapping(shapelyObj)
-                partShapes.append(list(geojson["coordinates"][0]))
+            if type(shapely_obj) == Polygon:
+                geojson = mapping(shapely_obj)
+                part_shapes.append(list(geojson["coordinates"][0]))
 
-        for i in range(len(partShapes)):
-            s = partShapes.pop(0)
+        for i in range(len(part_shapes)):
+            s = part_shapes.pop(0)
             if len(s) > 255:
                 print(
                     "Part is still too big (more than 255 points)! Splitting again..."
                 )
-                splittedParts = self.splitPolygon(s)
-                partShapes.extend(splittedParts)
+                splitted_parts = self.split_polygon(s)
+                part_shapes.extend(splitted_parts)
             else:
-                partShapes.append(s)
+                part_shapes.append(s)
 
-        return partShapes
+        return part_shapes
 
-    def loadPolygons(self, t):
+    def load_polygons(self, t):
         # Remove all old polygons
         print("Removing old polygons")
         for pId in traci.polygon.getIDList():
             # print(pId)
-            self.tracker.removePolygonSubscriptions(pId)
+            self.tracker.remove_polygon_subscriptions(pId)
             traci.polygon.remove(pId)
 
         # Add all new polygons
-        dateString = "-".join(self.simConfig["simulationDate"].split(".")[::-1])
+        date_string = "-".join(self.sim_config["simulationDate"].split(".")[::-1])
         utc = datetime.datetime.utcfromtimestamp(t)
         pad = lambda n: f"0{n}" if n < 10 else n
-        timeString = f"{pad(utc.hour)}-{pad(utc.minute)}-{pad(utc.second)}"
-        zoneFile = f"zones_{dateString}T{timeString}.xml"
-        # zoneFile = f"zones_{dateString}T10-00-00.xml"
-        print(f"Loading {zoneFile}")
-        xmlTree = et.parse(os.path.join(self.simConfig["sim_airDataDir"], zoneFile))
+        time_string = f"{pad(utc.hour)}-{pad(utc.minute)}-{pad(utc.second)}"
+        zone_file = f"zones_{date_string}T{time_string}.xml"
+        # zone_file = f"zones_{date_string}T10-00-00.xml"
+        print(f"Loading {zone_file}")
+        xml_tree = et.parse(os.path.join(self.sim_config["sim_airDataDir"], zone_file))
 
         print("Adding new polygons")
-        for child in xmlTree.getroot():
+        for child in xml_tree.getroot():
             if child.tag == "poly":
-                polyId = child.attrib["id"]
+                poly_id = child.attrib["id"]
                 shape = list(
                     map(
                         lambda pair: tuple(map(float, pair.split(","))),
@@ -171,25 +171,25 @@ class StepListener(traci.StepListener):
                         f"Warning: Zone polygon is too large ({len(shape)} points) (SUMO can't handle polygons with more than 255 points)"
                     )
                     print("Splitting zone polygon into multiple parts...")
-                    shapeParts = self.splitPolygon(shape)
-                    print(f"Split zone polygon into {len(shapeParts)} parts")
+                    shape_parts = self.split_polygon(shape)
+                    print(f"Split zone polygon into {len(shape_parts)} parts")
 
-                    for idx, shapePart in enumerate(shapeParts):
-                        partPolyId = f"{polyId}-{idx}"
+                    for idx, shape_part in enumerate(shape_parts):
+                        part_poly_id = f"{poly_id}-{idx}"
                         traci.polygon.add(
-                            partPolyId, shapePart, color, fill=True, layer=layer,
+                            part_poly_id, shape_part, color, fill=True, layer=layer,
                         )
-                        traci.polygon.setParameter(partPolyId, "zone", str(layer))
-                        traci.polygon.setParameter(partPolyId, "timestep", timeString)
+                        traci.polygon.setParameter(part_poly_id, "zone", str(layer))
+                        traci.polygon.setParameter(part_poly_id, "timestep", time_string)
                 else:
                     traci.polygon.add(
-                        polyId, shape, color, fill=True, layer=layer,
+                        poly_id, shape, color, fill=True, layer=layer,
                     )
-                    traci.polygon.setParameter(polyId, "zone", str(layer))
-                    traci.polygon.setParameter(polyId, "timestep", timeString)
+                    traci.polygon.setParameter(poly_id, "zone", str(layer))
+                    traci.polygon.setParameter(poly_id, "timestep", time_string)
 
         # Make tracker update it's polygons
-        self.tracker.updatePolygons()
+        self.tracker.update_polygons()
 
     def step(self, t):
         # Do something at every simulaton step
@@ -197,28 +197,27 @@ class StepListener(traci.StepListener):
         # if nStep % 5000 == 0:
         #     print("step", nStep)
         self.t = t
-        if t > 0 and t % (self.simConfig["zoneUpdateInterval"] * 60) == 0:
+        if t > 0 and t % (self.sim_config["zoneUpdateInterval"] * 60) == 0:
             # if t > 0 and t % 40 == 0:
             print("New timestep! Zones will be updated...")
-            self.loadPolygons(t)
+            self.load_polygons(t)
             print("Done")
 
-        if self.simConfig["enableRerouting"]:
-            if self.simConfig["dynamicRerouting"]:
-                self.doDynamicRerouting()
+        if self.sim_config["enableRerouting"]:
+            if self.sim_config["dynamicRerouting"]:
+                self.dynamic_rerouting()
             else:
-                self.doStaticRerouting()
+                self.static_rerouting()
 
         # Track all distances driven in each polygon
-        vehicleIds = traci.vehicle.getIDList()
-        polygonIds = traci.polygon.getIDList()
-        for vId in vehicleIds:
-            for pId in polygonIds:
-                self.tracker.trackVehicleDistanceInPolygon(vId, pId)
+        vehicle_ids = traci.vehicle.getIDList()
+        polygon_ids = traci.polygon.getIDList()
+        for vid in vehicle_ids:
+            for pid in polygon_ids:
+                self.tracker.track_vehicle_distance_in_polygon(vid, pid)
 
         # Return true to indicate that the step listener should stay active in the next step
         return True
 
-    def cleanUp(self):
-        pprint.pprint(self.tracker.vehicleDistances)
-
+    def clean_up(self):
+        pprint.pprint(self.tracker.vehicle_distances)

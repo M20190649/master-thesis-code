@@ -5,18 +5,17 @@ from shapely.geometry.polygon import Polygon
 
 
 class Tracker:
-    def __init__(self, simConfig):
-        self.simConfig = simConfig
-        self.polygonIds = []
-        self.polygonEdges = {}
-        self.vehicleDistances = {}
+    def __init__(self, sim_config):
+        self.sim_config = sim_config
+        self.polygon_edges = {}
+        self.vehicle_distances = {}
 
-    def addPolygonSubscriptions(self, pId):
+    def add_polygon_subscriptions(self, pid):
         # Polygon context used for dynamic routing
         traci.polygon.subscribeContext(
-            pId,
+            pid,
             tc.CMD_GET_VEHICLE_VARIABLE,
-            self.simConfig["dynamicReroutingDistance"],
+            self.sim_config["dynamicReroutingDistance"],
             [
                 tc.VAR_EMISSIONCLASS,  # Distinguish between gas and electric cars. Electric cars don't need to be rerouted
                 tc.VAR_ROUTE_INDEX,  # Vehicles that have their destination within the zone shouldn't be rerouted
@@ -24,67 +23,65 @@ class Tracker:
             ],
         )
 
-    def removePolygonSubscriptions(self, pId):
+    def remove_polygon_subscriptions(self, pid):
         traci.polygon.unsubscribeContext(
-            pId, tc.CMD_GET_VEHICLE_VARIABLE, self.simConfig["dynamicReroutingDistance"]
+            pid,
+            tc.CMD_GET_VEHICLE_VARIABLE,
+            self.sim_config["dynamicReroutingDistance"],
         )
 
-    def updatePolygons(self):
-        # Store polygon IDs
-        self.polygonIds = traci.polygon.getIDList()
-
-        for pId in self.polygonIds:
+    def update_polygons(self):
+        for pid in traci.polygon.getIDList():
             # Store all edges that are covered by each polygon
 
             # Add subscription temporarily to be able to query for all edges
-            # Get all edges for polygon pId that are within distance of 0
+            # Get all edges for polygon pid that are within distance of 0
             traci.polygon.subscribeContext(
-                pId, tc.CMD_GET_EDGE_VARIABLE, 0, [tc.VAR_NAME],
+                pid, tc.CMD_GET_EDGE_VARIABLE, 0, [tc.VAR_NAME],
             )
-            polygonContext = traci.polygon.getContextSubscriptionResults(pId)
+            polygon_context = traci.polygon.getContextSubscriptionResults(pid)
             # Remove context subscription because we don't need it anymore
-            traci.polygon.unsubscribeContext(pId, tc.CMD_GET_EDGE_VARIABLE, 0)
+            traci.polygon.unsubscribeContext(pid, tc.CMD_GET_EDGE_VARIABLE, 0)
 
-            if polygonContext is None:
+            if polygon_context is None:
                 print(
-                    f"Polygon {pId} will be removed because it is not covering any edges."
+                    f"Polygon {pid} will be removed because it is not covering any edges."
                 )
                 # Edges subscription can be None when the polygon doesn't cover any edges
                 # Since it doesn't cover any edges it can be removed
-                traci.polygon.remove(pId)
+                traci.polygon.remove(pid)
                 continue
 
             # Filter out edge data
-            edgeIds = traci.edge.getIDList()
-            edgeContext = {k: v for (k, v) in polygonContext.items() if k in edgeIds}
-            edgesInPolygon = edgeContext.keys()
-            print(f"Found {len(edgesInPolygon)} edges in polygon {pId}")
-            self.polygonEdges[pId] = edgesInPolygon
+            edge_ids = traci.edge.getIDList()
+            edge_context = {k: v for (k, v) in polygon_context.items() if k in edge_ids}
+            edges_in_polygon = edge_context.keys()
+            print(f"Found {len(edges_in_polygon)} edges in polygon {pid}")
+            self.polygon_edges[pid] = edges_in_polygon
 
             # Add all other necessary context subscriptions
-            self.addPolygonSubscriptions(pId)
+            self.add_polygon_subscriptions(pid)
 
-    def trackVehicleDistanceInPolygon(self, vId, pId):
-        timestep = traci.polygon.getParameter(pId, "timestep")
-        x, y = traci.vehicle.getPosition(vId)
-        polygonShape = traci.polygon.getShape(pId)
+    def track_vehicle_distance_in_polygon(self, vid, pid):
+        timestep = traci.polygon.getParameter(pid, "timestep")
+        x, y = traci.vehicle.getPosition(vid)
+        polygon_shape = traci.polygon.getShape(pid)
         location = Point(x, y)
-        polygon = Polygon(polygonShape)
+        polygon = Polygon(polygon_shape)
 
-        speed = traci.vehicle.getSpeed(vId)
+        speed = traci.vehicle.getSpeed(vid)
 
         if polygon.contains(location):
-            if timestep not in self.vehicleDistances:
-                self.vehicleDistances[timestep] = {}
+            if timestep not in self.vehicle_distances:
+                self.vehicle_distances[timestep] = {}
 
-            if vId not in self.vehicleDistances[timestep]:
-                self.vehicleDistances[timestep][vId] = {}
+            if vid not in self.vehicle_distances[timestep]:
+                self.vehicle_distances[timestep][vid] = {}
 
-            if pId in self.vehicleDistances[timestep][vId]:
-                self.vehicleDistances[timestep][vId][pId] += speed
+            if pid in self.vehicle_distances[timestep][vid]:
+                self.vehicle_distances[timestep][vid][pid] += speed
             else:
-                self.vehicleDistances[timestep][vId][pId] = 0
+                self.vehicle_distances[timestep][vid][pid] = 0
 
             # print("Vehicle in polygon")
-            # pprint.pprint(self.vehicleDistances)
-
+            # pprint.pprint(self.vehicle_distances)

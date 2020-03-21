@@ -11,7 +11,7 @@ parser.add_argument(
 )
 parser.add_argument(
     "--sumo-config",
-    dest="sumoConfig",
+    dest="sumo_config",
     help="Filepath to the SUMO config file",
     metavar="FILE",
 )
@@ -26,19 +26,19 @@ else:
     sys.exit("Please declare the environment variable 'SUMO_HOME'")
 
 with open(args.config) as configPath:
-    simConfig = json.load(configPath)
+    sim_config = json.load(configPath)
 
 # Add some additional data to simulation config dictionary
-simDir = os.path.dirname(os.path.realpath(args.config))
-simName = re.search(".*(?=\.)", os.path.basename(args.config)).group(0)
-simConfig["sim_airDataDir"] = os.path.join(simDir, simName, "airdata")
+sim_dir = os.path.dirname(os.path.realpath(args.config))
+sim_name = re.search(".*(?=\.)", os.path.basename(args.config)).group(0)
+sim_config["sim_airDataDir"] = os.path.join(sim_dir, sim_name, "airdata")
 
 # sumoBinary = os.environ["SUMO_HOME"] + "/bin/sumo"
-sumoBinary = os.environ["SUMO_HOME"] + "/bin/sumo-gui"
-sumoCmd = [sumoBinary, "--configuration-file", args.sumoConfig]
+sumo_binary = os.environ["SUMO_HOME"] + "/bin/sumo-gui"
+sumo_cmd = [sumo_binary, "--configuration-file", args.sumo_config]
 
 from controller import SimController
 
-traciConfig = {"sumoCmd": sumoCmd, "steps": math.inf}
-controller = SimController(traciConfig, simConfig)
+traci_config = {"sumo_cmd": sumo_cmd, "steps": math.inf}
+controller = SimController(traci_config, sim_config)
 controller.start()
