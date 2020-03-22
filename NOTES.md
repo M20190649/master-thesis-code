@@ -466,3 +466,23 @@ TODO:
 
 TODO: 
 * What to do during static rerouting when zones change? Reroute all vehicles in the simulation or let their route stay as it is?
+
+# 22.03.2020
+
+* Thinking about details of TraCI behaviour
+* Collection of special cases to think about regarding vehicle behaviour:
+  * Destination of vehicle is inside a zone
+    * Should this person reroute at all?
+    * Should this person be rerouted to find the "cheapest" way?
+  * Zones change
+    * Should vehicles all be rerouted again?
+    * According to which polygons should vehicles be tracked?
+      * Always the new polygons?
+      * Those polygons that were in the simulation when they were inserted?
+  * Static rerouting: How should vehicles that are already in the simulation behave when suddenly the zones change?
+    * Reroute them?
+    * Leave their routes as they are since this is the static approach?
+
+* Do a lot of code refactoring for the rerouter
+* Fix crucial detail that ALL edges of ALL polygons need to be set to a high traveltime, not only the polygons that intersect with the current route!!!
+* Make zone manager the "single source of truth" about polygon edge data
