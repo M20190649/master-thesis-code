@@ -6,17 +6,17 @@ from shapely.geometry.polygon import Polygon
 
 
 class Tracker(traci.StepListener):
-    def __init__(self, sim_config):
+    def __init__(self, sim_config, zone_manager):
         self.sim_config = sim_config
-        self.polygon_edges = {}
+        self.zone_manager = zone_manager
         self.vehicle_distances = {}
 
         # Register event handler
         zope.event.subscribers.append(self.event_handler)
 
     def event_handler(self, event):
-        if event["name"] == "zone-update":
-            self.polygon_edges = event["data"]
+        if event == "zone-update":
+            pass
 
     def track_vehicle_distance_in_polygon(self, vid, pid):
         timestep = traci.polygon.getParameter(pid, "timestep")
@@ -48,7 +48,7 @@ class Tracker(traci.StepListener):
         polygon_ids = traci.polygon.getIDList()
         for vid in vehicle_ids:
             for pid in polygon_ids:
-                self.tracker.track_vehicle_distance_in_polygon(vid, pid)
+                self.track_vehicle_distance_in_polygon(vid, pid)
 
         # Return true to indicate that the step listener should stay active in the next step
         return True

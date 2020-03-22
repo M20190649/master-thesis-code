@@ -1,4 +1,5 @@
 import traci, pprint, datetime, os
+from itertools import chain
 import zope.event
 import xml.etree.ElementTree as et
 import traci.constants as tc
@@ -10,7 +11,13 @@ import geopandas as gpd
 class ZoneManager(traci.StepListener):
     def __init__(self, sim_config):
         self.sim_config = sim_config
-        self.polygon_edges = {}
+        self.__polygon_edges = {}
+
+    def get_polygon_edges(self, pid=None):
+        if pid is None:
+            return list(chain(*self.__polygon_edges.values()))
+        else:
+            return self.__polygon_edges[pid]
 
     def add_polygon_subscriptions(self, pid):
         # Polygon context used for dynamic routing
@@ -121,7 +128,7 @@ class ZoneManager(traci.StepListener):
                     self.add_polygon(poly_id, shape, color, layer, time_string)
 
         # Calculate and store all edges that are covered by each new polygon
-        self.polygon_edges = {}
+        self.__polygon_edges = {}
         for pid in traci.polygon.getIDList():
             # Add subscription temporarily to be able to query for all edges
             # Get all edges for polygon pid that are within distance of 0
@@ -147,13 +154,13 @@ class ZoneManager(traci.StepListener):
                 k for (k, v) in polygon_context.items() if k in edge_ids
             ]
             print(f"Found {len(edges_in_polygon)} edges in polygon {pid}")
-            self.polygon_edges[pid] = edges_in_polygon
+            self.__polygon_edges[pid] = edges_in_polygon
 
             # Add all other necessary context subscriptions
             self.add_polygon_subscriptions(pid)
 
-        # Distribute new edge information to others
-        zope.event.notify({"name": "zone-update", "data": self.polygon_edges})
+        # Notify subscribers about the zone update
+        zope.event.notify("zone-update")
 
     def step(self, t):
         if t > 0 and t % (self.sim_config["zoneUpdateInterval"] * 60) == 0:

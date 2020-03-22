@@ -9,8 +9,8 @@ class SimulationController:
     def __init__(self, traci_config, sim_config):
         self.traci_config = traci_config
         self.zone_manager = ZoneManager(sim_config)
-        self.tracker = Tracker(sim_config)
-        self.rerouter = Rerouter(sim_config)
+        self.tracker = Tracker(sim_config, self.zone_manager)
+        self.rerouter = Rerouter(sim_config, self.zone_manager)
 
     def __init(self):
         # Step listeners are always executed AFTER the simulation step (traci.simulationStep())

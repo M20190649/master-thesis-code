@@ -8,76 +8,108 @@ import geopandas as gpd
 
 
 class Rerouter(traci.StepListener):
-    def __init__(self, sim_config):
+    def __init__(self, sim_config, zone_manager):
         self.sim_config = sim_config
-        self.polygon_edges = {}
+        self.zone_manager = zone_manager
         self.rerouted_vehicles = []
 
         # Register event handler
         zope.event.subscribers.append(self.event_handler)
 
     def event_handler(self, event):
-        if event["name"] == "zone-update":
+        if event == "zone-update":
             # Do everything that needs to be done after the zones have updated
-            self.polygon_edges = event["data"]
+            # TODO: Do rerouting again after zones have changed?
+            pass
 
     def reroute_vehicle(self, vid):
         print(f"Rerouting vehicle {vid}")
+        # Avoid all polygon edges
+        all_polygon_edges = self.zone_manager.get_polygon_edges()
+        for eid in all_polygon_edges:
+            # Set travel times for all edges to very high value
+            traci.vehicle.setAdaptedTraveltime(vid, eid, time=99999999)
         traci.vehicle.rerouteTraveltime(vid, False)
+
+        traci.vehicle.setParameter(vid, "is_rerouted", str(True))
         traci.vehicle.setColor(vid, (255, 0, 0))
-        self.rerouted_vehicles.append(vid)
+
+    def should_vehicle_reroute(self, vid):
+        # This function can be arbitrarily complex to decide if a vehicle should be rerouted
+        # Example: Use demographic data, price sensitivity, route length, vehicle type, random etc.
+
+        # Check if vehicle has already made a decision
+        rerouting_decision = traci.vehicle.getParameter(vid, "rerouting_decision")
+        if rerouting_decision is not None:
+            return rerouting_decision == "True"
+
+        decision = True
+
+        # Insert more complex logic here to change the 'decision' variable
+
+        traci.vehicle.setParameter(vid, "rerouting_decision", str(decision))
+
+        return decision
+
+    def should_vehicle_avoid_polygon(self, vid, pid):
+        # Some vehicles might only want to avoid specific zones that are within their price limit
+
+        decision = True
+
+        # FUTURE WORK
+
+        return decision
 
     def static_rerouting(self):
         # Rerouting for vehicles whose route crosses through air quality zones
         newly_inserted_vehicles = traci.simulation.getDepartedIDList()
         for vid in newly_inserted_vehicles:
-            # TODO: Do some meta info check like price sensitivity or randomly avoid rerouting
+            if not self.should_vehicle_reroute(vid):
+                continue
 
             # Check if route includes edges that are within air quality zone polygons
             route = traci.vehicle.getRoute(vid)
-            edges_to_avoid = []
 
             # If any edge is within any polygon avoid all polygon edges
             for pid in traci.polygon.getIDList():
-                for eid in route:
-                    if eid in self.polygon_edges[pid]:
-                        edges_to_avoid.extend(self.polygon_edges[pid])
-                        break
+                if not self.should_vehicle_avoid_polygon(vid, pid):
+                    continue
 
-            # If the route crosses one or more polygon we need to reroute the vehicle to avoid these edges
-            if len(edges_to_avoid) != 0:
-                # Check if destination is within polygon
-                if route[-1] in edges_to_avoid:
-                    # If yes, don't reroute (or maybe find the "cheapest" way to destination?)
-                    print("Destination is in polygon")
+                polygon_edges = self.zone_manager.get_polygon_edges(pid=pid)
 
-                for eid in edges_to_avoid:
-                    # Set travel times for all edges to very high value
-                    traci.vehicle.setAdaptedTraveltime(vid, eid, time=99999999)
-
-                # Reroute
-                self.reroute_vehicle(vid)
-
-    def dynamic_rerouting(self):
-        # TODO: Do some meta info check like price sensitivity or randomly avoid rerouting
-        newly_inserted_vehicles = traci.simulation.getDepartedIDList()
-        for pid in self.polygon_edges:
-            polygon_edges = self.polygon_edges[pid]
-
-            # Check all the newly spawned vehicles if any of them are located within the zone
-            # If yes reroute them immediately
-            for vid in newly_inserted_vehicles:
-                route = traci.vehicle.getRoute(vid)
-                # Check if starting edge is within the polygon
-                if route[0] in polygon_edges:
-                    print(f"New vehicle was inserted inside polygon {pid}.")
-                    for eid in polygon_edges:
-                        # Set travel times for all edges to very high value
-                        traci.vehicle.setAdaptedTraveltime(vid, eid, time=99999999)
+                if any(eid in polygon_edges for eid in route):
+                    if route[-1] in polygon_edges:
+                        # TODO: What to do in the case that the destination is inside a zone?
+                        # Don't reroute at all? Or maybe find the "cheapest" way to destination?
+                        print(f"Destination of vehicle {vid} is in polygon {pid}")
 
                     self.reroute_vehicle(vid)
+                    break
 
-            # Go through all polygons and get all vehicles within dynamic rerouting range
+    def dynamic_rerouting_new(self):
+        # Check all the newly spawned vehicles if any of them are located within the zone
+        newly_inserted_vehicles = traci.simulation.getDepartedIDList()
+
+        for vid in newly_inserted_vehicles:
+            # Make decision if to reroute at all
+            if not self.should_vehicle_reroute(vid):
+                continue
+
+            route = traci.vehicle.getRoute(vid)
+
+            # Check if starting edge is within any of the polygons
+            for pid in traci.polygon.getIDList():
+                if not self.should_vehicle_avoid_polygon(vid, pid):
+                    continue
+
+                polygon_edges = self.zone_manager.get_polygon_edges(pid=pid)
+                if route[0] in polygon_edges:
+                    print(f"New vehicle {vid} was inserted inside polygon {pid}.")
+                    self.reroute_vehicle(vid)
+                    break
+
+        # Go through all polygons and get all vehicles within dynamic rerouting range
+        for pid in traci.polygon.getIDList():
             polygon_context = traci.polygon.getContextSubscriptionResults(pid)
             if polygon_context is None:
                 continue
@@ -87,30 +119,28 @@ class Rerouter(traci.StepListener):
                 k: v for (k, v) in polygon_context.items() if k in vehicle_ids
             }
             for vid in vehicle_context:
-                if vid in self.rerouted_vehicles:
+                # Make decision if to reroute at all
+                if not self.should_vehicle_reroute(vid):
+                    continue
+
+                is_rerouted = traci.vehicle.getParameter(vid, "is_rerouted")
+                if is_rerouted is not None and is_rerouted == "True":
                     # Don't reroute vehicles that already have been rerouted
                     continue
 
-                vehicle_data = polygon_context[vid]
+                vehicle_data = vehicle_context[vid]
                 route = traci.vehicle.getRoute(vid)
                 upcoming_edges = route[vehicle_data[tc.VAR_ROUTE_INDEX] :]
+
                 # Check if any edge of vehicle route goes through polygon
-                route_in_polygon = any(eid in polygon_edges for eid in upcoming_edges)
-                if not route_in_polygon:
-                    # If no, continue with next vehicle
-                    continue
+                if any(eid in polygon_edges for eid in upcoming_edges):
+                    # Check if destination is within polygon
+                    if upcoming_edges[-1] in polygon_edges:
+                        # TODO: What to do in the case that the destination is inside a zone?
+                        # Don't reroute at all? Or maybe find the "cheapest" way to destination?
+                        print(f"Destination of vehicle {vid} is in polygon {pid}")
 
-                # Check if destination is within polygon
-                if upcoming_edges[-1] in polygon_edges:
-                    # If yes, don't reroute (or maybe find the "cheapest" way to destination?)
-                    print(f"Destination is in polygon {pid}")
-
-                # If no, reroute
-                for eid in polygon_edges:
-                    # Set travel times for all edges to very high value
-                    traci.vehicle.setAdaptedTraveltime(vid, eid, time=99999999)
-
-                self.reroute_vehicle(vid)
+                    self.reroute_vehicle(vid)
 
     def reroute(self):
         if self.sim_config["enableRerouting"]:
