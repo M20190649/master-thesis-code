@@ -479,6 +479,8 @@ TODO:
     * According to which polygons should vehicles be tracked?
       * Always the new polygons?
       * Those polygons that were in the simulation when they were inserted?
+  * A zone has a hole
+    * Should vehicles be rerouted to always take the cheapest route?
   * Static rerouting: How should vehicles that are already in the simulation behave when suddenly the zones change?
     * Reroute them?
     * Leave their routes as they are since this is the static approach?
@@ -486,3 +488,17 @@ TODO:
 * Do a lot of code refactoring for the rerouter
 * Fix crucial detail that ALL edges of ALL polygons need to be set to a high traveltime, not only the polygons that intersect with the current route!!!
 * Make zone manager the "single source of truth" about polygon edge data
+
+# 23.03.2020
+
+* Polygons with holes are a problem!
+  * I found an edges where a hole is actually not a different zone but an actual hole where people should not be charged at all (02.02.2020, 07:00:00, IDW)
+  * This could also an important issue for rerouting -> In order for vehicles to always take the cheapest route the traveltime for all edges within the holes should NOT be adjusted!
+  * I have done some research on algorithms to convert polygons with holes into simple polygons that don't have holes but it seems like a very complex task to implement
+  * My solution would be to create the holes as polygons in SUMO (with no background color) and make them clearly identifiable as holes (through their ID for example)
+    * Makes it lot easier to track the driven distances inside the holes and subtract them afterwards
+    * Easy to know which edges are within holes and which are not
+  ![Problem screenshot](screenshots/polygon-holes-in-sumo.png)
+  ![Fixed screenshot](screenshots/polygon-holes-in-sumo-fixed.png)
+
+  

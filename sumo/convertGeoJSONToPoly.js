@@ -49,14 +49,28 @@ async function convertGeoJSONToPoly(callerOptions) {
       zonePolygonCounter[zone] = 0
     }
 
-    // Since SUMO can't handle polygons with holes we can only take the first polygon in the coordinates array
-    const coordinatesString = coordinates[0].map(([long, lat]) => `${long},${lat}`).join(" ")
+    const getShape = polygon => polygon.map(([long, lat]) => `${long},${lat}`).join(" ")
+
+    // Since SUMO can't handle polygons with holes we split into the main polygon and the holes
+    // We clearly mark the holes with a 'hole-{hole-counter}' prefix
+    const [mainPolygon, ...holes] = coordinates
+    // Add the main polygon
     xml.element("poly", {
       id: `${pad(zone)}-${pad(zonePolygonCounter[zone])}`,
-      shape: coordinatesString,
+      shape: getShape(mainPolygon),
       color: `${zoneColours[zone - 1]},0.8`,
       layer: zone,
     })
+
+    // Add all the holes
+    for (const [i, hole] of holes.entries()) {
+      xml.element("poly", {
+        id: `hole-${pad(i)}-${pad(zone)}-${pad(zonePolygonCounter[zone])}`,
+        shape: getShape(hole),
+        color: `${zoneColours[zone - 1]},0`,
+        layer: zone,
+      })
+    }
   })
 
   fs.writeFileSync("tmp/polygon.xml", xml.end({ pretty: true }))
