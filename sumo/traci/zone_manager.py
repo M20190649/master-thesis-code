@@ -11,6 +11,7 @@ import geopandas as gpd
 class ZoneManager(traci.StepListener):
     def __init__(self, sim_config):
         self.sim_config = sim_config
+        self.current_timestep = ""
         self.__polygon_edges = {}
 
     def get_polygon_edges(self, pid=None):
@@ -87,12 +88,15 @@ class ZoneManager(traci.StepListener):
             traci.polygon.remove(pId)
 
         # Load the XML file for the current timestep
-        date_string = "-".join(self.sim_config["simulationDate"].split(".")[::-1])
-        utc = datetime.datetime.utcfromtimestamp(t)
         pad = lambda n: f"0{n}" if n < 10 else n
+        date_parts = list(map(lambda n: str(pad(int(n))), self.sim_config["simulationDate"].split(".")))
+        date_string = "-".join(date_parts[::-1])
+        utc = datetime.datetime.utcfromtimestamp(t)
         time_string = f"{pad(utc.hour)}-{pad(utc.minute)}-{pad(utc.second)}"
         zone_file = f"zones_{date_string}T{time_string}.xml"
         # zone_file = f"zones_{date_string}T10-00-00.xml"
+        self.current_timestep = time_string
+
         print(f"Loading {zone_file}")
         xml_tree = et.parse(os.path.join(self.sim_config["sim_airDataDir"], zone_file))
 
