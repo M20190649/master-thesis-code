@@ -40,7 +40,7 @@ class Rerouter(traci.StepListener):
 
         # Check if vehicle has already made a decision
         rerouting_decision = traci.vehicle.getParameter(vid, "rerouting_decision")
-        if rerouting_decision is not None:
+        if rerouting_decision != "":
             return rerouting_decision == "True"
 
         decision = True
@@ -63,6 +63,8 @@ class Rerouter(traci.StepListener):
     def static_rerouting(self):
         # Rerouting for vehicles whose route crosses through air quality zones
         newly_inserted_vehicles = traci.simulation.getDepartedIDList()
+        if len(newly_inserted_vehicles) != 0:
+            print(f"{len(newly_inserted_vehicles)} new vehicles were inserted")
         for vid in newly_inserted_vehicles:
             if not self.should_vehicle_reroute(vid):
                 continue
@@ -86,7 +88,7 @@ class Rerouter(traci.StepListener):
                     self.reroute_vehicle(vid)
                     break
 
-    def dynamic_rerouting_new(self):
+    def dynamic_rerouting(self):
         # Check all the newly spawned vehicles if any of them are located within the zone
         newly_inserted_vehicles = traci.simulation.getDepartedIDList()
 
@@ -118,13 +120,15 @@ class Rerouter(traci.StepListener):
             vehicle_context = {
                 k: v for (k, v) in polygon_context.items() if k in vehicle_ids
             }
+            polygon_edges = self.zone_manager.get_polygon_edges(pid=pid)
+
             for vid in vehicle_context:
                 # Make decision if to reroute at all
                 if not self.should_vehicle_reroute(vid):
                     continue
 
                 is_rerouted = traci.vehicle.getParameter(vid, "is_rerouted")
-                if is_rerouted is not None and is_rerouted == "True":
+                if is_rerouted == "True":
                     # Don't reroute vehicles that already have been rerouted
                     continue
 
