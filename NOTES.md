@@ -494,6 +494,9 @@ TODO:
 * Polygons with holes are a problem!
   * I found an edges where a hole is actually not a different zone but an actual hole where people should not be charged at all (02.02.2020, 07:00:00, IDW)
   * This could also an important issue for rerouting -> In order for vehicles to always take the cheapest route the traveltime for all edges within the holes should NOT be adjusted!
+  * **I posted a message to the SUMO mailing list to ask if there is an official way of handling polygons with holes [here](http://sumo-user-mailing-list.90755.n8.nabble.com/sumo-user-Polygons-with-holes-td3067.html)**
+    * Got an answer on the same day in the evening 👌😎
+    * In short: There is no support. Alternative solution: Make holes into their own polygons or split the polygon into polygons without holes.
   * I have done some research on algorithms to convert polygons with holes into simple polygons that don't have holes but it seems like a very complex task to implement
   * My solution would be to create the holes as polygons in SUMO (with no background color) and make them clearly identifiable as holes (through their ID for example)
     * Makes it lot easier to track the driven distances inside the holes and subtract them afterwards
