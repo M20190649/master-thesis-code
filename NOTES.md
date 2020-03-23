@@ -474,6 +474,7 @@ TODO:
   * Destination of vehicle is inside a zone
     * Should this person reroute at all?
     * Should this person be rerouted to find the "cheapest" way?
+    * Don't reroute if the new route is greater than double the length of the previous route?
   * Zones change
     * Should vehicles all be rerouted again?
     * According to which polygons should vehicles be tracked?
@@ -495,7 +496,7 @@ TODO:
   * I found an edges where a hole is actually not a different zone but an actual hole where people should not be charged at all (02.02.2020, 07:00:00, IDW)
   * This could also an important issue for rerouting -> In order for vehicles to always take the cheapest route the traveltime for all edges within the holes should NOT be adjusted!
   * **I posted a message to the SUMO mailing list to ask if there is an official way of handling polygons with holes [here](http://sumo-user-mailing-list.90755.n8.nabble.com/sumo-user-Polygons-with-holes-td3067.html)**
-    * Got an answer on the same day in the evening 👌😎
+    * Got an answer on the same day in the evening 👌
     * In short: There is no support. Alternative solution: Make holes into their own polygons or split the polygon into polygons without holes.
   * I have done some research on algorithms to convert polygons with holes into simple polygons that don't have holes but it seems like a very complex task to implement
   * My solution would be to create the holes as polygons in SUMO (with no background color) and make them clearly identifiable as holes (through their ID for example)
@@ -504,4 +505,6 @@ TODO:
   ![Problem screenshot](screenshots/polygon-holes-in-sumo.png)
   ![Fixed screenshot](screenshots/polygon-holes-in-sumo-fixed.png)
 
-  
+* Do more bug fixing and ensuring TraCI is behaving correctly
+* Refactoring of code to make it easily extendable
+* Now allowing each vehicle to decide which zones to avoid (complexity of this decision can be arbitrary)
