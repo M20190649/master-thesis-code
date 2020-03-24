@@ -20,19 +20,17 @@ async function convertMATSimNetwork(callerOptions) {
 
   validateOptions(options, optionDefinitions)
 
-  const log = x => (options.verbose ? console.log(x) : null)
-
   if (!fs.existsSync(options.output)) {
-    log("Converting MATSim network to the SUMO format...")
+    console.log("Converting MATSim network to the SUMO format...")
     await runBash([
       "netconvert",
       `--matsim ${options.network}`,
       `--output-file ${options.output}`,
       "--matsim.lanes-from-capacity=true --matsim.keep-length=true",
     ])
-    log("Done!")
+    console.log("Done!")
   } else {
-    log("Converted MATSim network already exists")
+    console.log("Converted MATSim network already exists")
   }
 
   return options.output

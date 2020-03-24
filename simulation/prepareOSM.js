@@ -76,7 +76,6 @@ module.exports = async (inputDir, config) => {
       plans: matsimPlansFile,
       mode: "geo",
       output: tripsFile,
-      // verbose: true,
     })
   }
 

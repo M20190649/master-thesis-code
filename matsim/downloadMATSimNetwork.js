@@ -34,26 +34,24 @@ async function downloadMATSimNetwork(callerOptions) {
   const networkFile = join(networkDir, "berlin-v5-network.xml")
   const networkZipFile = `${networkFile}.gz`
 
-  const log = x => (options.verbose ? console.log(x) : null)
-
   if (!fs.existsSync(networkDir)) {
     fs.mkdirSync(networkDir)
   }
 
   if (!fs.existsSync(networkZipFile)) {
-    log("Downloading network file...")
+    console.log("Downloading network file...")
     await download(networkZipFile)
-    log("Done")
+    console.log("Done")
   } else {
-    log("Zipped network file already exists")
+    console.log("Zipped network file already exists")
   }
 
   if (!fs.existsSync(networkFile)) {
-    log("Unzipping network file...")
+    console.log("Unzipping network file...")
     await unzip(networkZipFile)
-    log("Done!")
+    console.log("Done!")
   } else {
-    log("Unzipped network file already exists")
+    console.log("Unzipped network file already exists")
   }
 
   return networkFile

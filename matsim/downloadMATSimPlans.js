@@ -48,26 +48,24 @@ async function downloadMATSimPlans(callerOptions) {
   const plansFile = join(plansDir, filename)
   const plansZipFile = `${plansFile}.gz`
 
-  const log = x => (options.verbose ? console.log(x) : null)
-
   if (!fs.existsSync(plansDir)) {
     fs.mkdirSync(plansDir)
   }
 
   if (!fs.existsSync(plansZipFile)) {
-    log(`Downloading ${options.scenario} plans file...`)
+    console.log(`Downloading ${options.scenario} plans file...`)
     await download(options.scenario, plansZipFile)
-    log(`Done`)
+    console.log(`Done`)
   } else {
-    log(`Zipped ${options.scenario} plans file already exists`)
+    console.log(`Zipped ${options.scenario} plans file already exists`)
   }
 
   if (!fs.existsSync(plansFile)) {
-    log(`Unzipping ${options.scenario} plans file...`)
+    console.log(`Unzipping ${options.scenario} plans file...`)
     await unzip(plansZipFile)
-    log(`Done!`)
+    console.log(`Done!`)
   } else {
-    log(`Unzipped ${options.scenario} plans file already exists`)
+    console.log(`Unzipped ${options.scenario} plans file already exists`)
   }
 
   return plansFile

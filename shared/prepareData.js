@@ -3,20 +3,17 @@ const downloadMATSimPlans = require("../matsim/downloadMATSimPlans")
 const convertMATSimNetwork = require("../sumo/convertMATSimNetwork")
 
 const run = async () => {
-  const networkFile = await downloadMATSimNetwork({
-    verbose: true,
-  })
+  const networkFile = await downloadMATSimNetwork()
+
   await convertMATSimNetwork({
-    verbose: true,
     network: networkFile,
   })
 
   await downloadMATSimPlans({
-    verbose: true,
     scenario: "1pct",
   })
+
   await downloadMATSimPlans({
-    verbose: true,
     scenario: "10pct",
   })
 }

@@ -10,12 +10,6 @@ const defaultOptions = [
     description: "Run the code \n (Otherwise this file just exports a node module)",
   },
   {
-    name: "verbose",
-    alias: "v",
-    type: Boolean,
-    description: "Tell you what I am doing",
-  },
-  {
     name: "help",
     alias: "h",
     type: Boolean,
