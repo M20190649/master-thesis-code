@@ -74,18 +74,46 @@ class ZoneController(traci.StepListener):
 
         return part_shapes
 
-    def add_polygon(self, pid, shape, color, layer, timestep):
+    def add_polygon(self, pid, shape, color, layer):
         traci.polygon.add(pid, shape, color, fill=True, layer=layer)
         traci.polygon.setParameter(pid, "zone", str(layer))
-        traci.polygon.setParameter(pid, "timestep", timestep)
+        traci.polygon.setParameter(pid, "timestep", self.current_timestep)
+
+        # Add all necessary context subscriptions
+        self.add_polygon_subscriptions(pid)
+
+        # Calculate and store all edges that are covered by each new polygon
+        # Add temporary subscription to be able to query for all edges
+        # Get all edges for polygon pid that are within distance of 0
+        traci.polygon.subscribeContext(
+            pid, tc.CMD_GET_EDGE_VARIABLE, 0, [tc.VAR_NAME],
+        )
+        polygon_context = traci.polygon.getContextSubscriptionResults(pid)
+        # Remove context subscription because we don't need it anymore
+        traci.polygon.unsubscribeContext(pid, tc.CMD_GET_EDGE_VARIABLE, 0)
+
+        if polygon_context is None:
+            print(
+                f"Polygon {pid} will be removed because it is not covering any edges."
+            )
+            # Edges subscription can be None when the polygon doesn't cover any edges
+            # Since it doesn't cover any edges it can be removed
+            traci.polygon.remove(pid)
+
+        # Filter out edge data
+        edge_ids = traci.edge.getIDList()
+        edges_in_polygon = [
+            k for (k, v) in polygon_context.items() if k in edge_ids
+        ]
+        print(f"Found {len(edges_in_polygon)} edges in polygon {pid}")
+        self.__polygon_edges[pid] = edges_in_polygon
 
     def load_polygons(self, t):
         # Remove all old polygons
         print("Removing old polygons")
-        for pId in traci.polygon.getIDList():
-            # print(pId)
-            self.remove_polygon_subscriptions(pId)
-            traci.polygon.remove(pId)
+        for pid in traci.polygon.getIDList():
+            self.remove_polygon_subscriptions(pid)
+            traci.polygon.remove(pid)
 
         # Load the XML file for the current timestep
         pad = lambda n: f"0{n}" if n < 10 else n
@@ -104,7 +132,7 @@ class ZoneController(traci.StepListener):
         print("Adding new polygons")
         for child in xml_tree.getroot():
             if child.tag == "poly":
-                poly_id = child.attrib["id"]
+                pid = f"{child.attrib['id']}_{self.current_timestep}"
                 shape = list(
                     map(
                         lambda pair: tuple(map(float, pair.split(","))),
@@ -124,44 +152,10 @@ class ZoneController(traci.StepListener):
                     print(f"Split zone polygon into {len(shape_parts)} parts")
 
                     for idx, shape_part in enumerate(shape_parts):
-                        part_poly_id = f"{poly_id}-{idx}"
-                        self.add_polygon(
-                            part_poly_id, shape_part, color, layer, time_string
-                        )
+                        part_pid = f"{pid}-{idx}"
+                        self.add_polygon(part_pid, shape_part, color, layer)
                 else:
-                    self.add_polygon(poly_id, shape, color, layer, time_string)
-
-        # Calculate and store all edges that are covered by each new polygon
-        self.__polygon_edges = {}
-        for pid in traci.polygon.getIDList():
-            # Add subscription temporarily to be able to query for all edges
-            # Get all edges for polygon pid that are within distance of 0
-            traci.polygon.subscribeContext(
-                pid, tc.CMD_GET_EDGE_VARIABLE, 0, [tc.VAR_NAME],
-            )
-            polygon_context = traci.polygon.getContextSubscriptionResults(pid)
-            # Remove context subscription because we don't need it anymore
-            traci.polygon.unsubscribeContext(pid, tc.CMD_GET_EDGE_VARIABLE, 0)
-
-            if polygon_context is None:
-                print(
-                    f"Polygon {pid} will be removed because it is not covering any edges."
-                )
-                # Edges subscription can be None when the polygon doesn't cover any edges
-                # Since it doesn't cover any edges it can be removed
-                traci.polygon.remove(pid)
-                continue
-
-            # Filter out edge data
-            edge_ids = traci.edge.getIDList()
-            edges_in_polygon = [
-                k for (k, v) in polygon_context.items() if k in edge_ids
-            ]
-            print(f"Found {len(edges_in_polygon)} edges in polygon {pid}")
-            self.__polygon_edges[pid] = edges_in_polygon
-
-            # Add all other necessary context subscriptions
-            self.add_polygon_subscriptions(pid)
+                    self.add_polygon(pid, shape, color, layer)
 
         # Notify subscribers about the zone update
         zope.event.notify("zone-update")
