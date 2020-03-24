@@ -27,18 +27,29 @@ class VehicleController(traci.StepListener):
         # This function can be used to avoid only specific zones/polygons
         # For example an agent is fine with paying for zone 1 but not zone 2 and 3
 
+        # Don't avoid any holes
         if pid.startswith("hole"):
+            return False
+
+        # Check the cached list
+        polygon_list = traci.vehicle.getParameter(vid, "avoid_polygons")
+        if pid in polygon_list.split(","):
+            return True
+
+        v_timestep = traci.vehicle.getParameter(vid, "timestep")
+        p_timestep = traci.polygon.getParameter(pid, "timestep")
+        if v_timestep != p_timestep:
             return False
 
         avoid = True
 
-        v_timestep = traci.vehicle.getParameter(vid, "timestep")
-        p_timestep = traci.polygon.getParameter(pid, "timestep")
-        print(v_timestep, p_timestep, v_timestep != p_timestep)
-        if v_timestep != p_timestep:
-            return False
-
         # FUTURE WORK
+
+        # Cache the list of polygons that should be avoided
+        if avoid:
+            polygon_list = traci.vehicle.getParameter(vid, "avoid_polygons")
+            polygon_list += f"{pid},"
+            traci.vehicle.setParameter(vid, "avoid_polygons", polygon_list)
 
         return avoid
 
