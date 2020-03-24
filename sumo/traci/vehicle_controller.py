@@ -6,6 +6,7 @@ from shapely.geometry import Polygon, MultiPolygon, mapping
 from shapely.geometry import box
 import geopandas as gpd
 
+import rerouting_decisions
 
 
 class VehicleController(traci.StepListener):
@@ -64,7 +65,8 @@ class VehicleController(traci.StepListener):
 
         decision = True
 
-        # Insert more complex logic here to change the 'decision' variable
+        # Insert more complex logic into rerouting_decisions.py to here to change the 'decision' variable
+        decision = rerouting_decisions.percentage(vid, 0.05)
 
         traci.vehicle.setParameter(vid, "rerouting_decision", str(decision))
 
