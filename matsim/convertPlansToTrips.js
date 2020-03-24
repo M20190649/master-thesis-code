@@ -51,6 +51,7 @@ let currentTag = ""
 let currentPerson = ""
 let personCounter = 0
 let routeCounter = 0
+let tripCounter = 0
 let parsePlan = false
 let parseRoute = false
 let carInteractionX = 0
@@ -76,8 +77,6 @@ const currentTrip = {
 let timeTracker = 0
 const tripsXML = XMLBuilder.create("trips")
 
-let log = x => console.log(x)
-
 function onError(err) {
   console.error(err)
 }
@@ -94,7 +93,7 @@ function onOpenTag(node) {
 
     personCounter++
     timeTracker = 0
-    log(`New person: ${currentPerson}`)
+    // console.log(`New person: ${currentPerson}`)
   }
 
   if (currentTag === "plan") {
@@ -162,12 +161,12 @@ function onOpenTag(node) {
     }
   }
 
-  // log(node)
+  // console.log(node)
 }
 
 async function onCloseTag(tagName, options) {
   if (tagName === "person") {
-    log(`Person ${currentPerson} done`)
+    // console.log(`Person ${currentPerson} done`)
     routeCounter = 0
   }
 
@@ -193,7 +192,7 @@ async function onCloseTag(tagName, options) {
         return
       }
     }
-    log(`Adding trip ${currentTrip.id}`)
+    // console.log(`Adding trip ${currentTrip.id}`)
     const attributes = {
       id: currentTrip.id,
       depart: currentTrip.depart,
@@ -221,6 +220,7 @@ async function onCloseTag(tagName, options) {
     }
 
     tripsXML.element("trip", attributes)
+    tripCounter++
     parseRoute = false
   }
 }
@@ -234,10 +234,6 @@ async function convertPlans(callerOptions) {
 
     validateOptions(options, optionDefinitions)
 
-    if (!options.verbose) {
-      log = () => null
-    }
-
     const parser = sax.parser(true)
     parser.onerror = onError
     parser.onopentag = onOpenTag
@@ -249,7 +245,9 @@ async function convertPlans(callerOptions) {
     })
     lineReader.on("end", () => {
       fs.writeFileSync(options.output, tripsXML.end({ pretty: true }))
-      log("Parsing done!")
+      console.log(`Total number of agents: ${personCounter}`)
+      console.log(`Total number of trips: ${tripCounter}`)
+      // console.log("Parsing done!")
       resolve()
     })
   })
