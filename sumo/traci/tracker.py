@@ -19,12 +19,12 @@ class Tracker(traci.StepListener):
             pass
 
     def track_vehicles_in_polygons(self):
+        timestep = self.zone_manager.current_timestep
         vehicle_ids = traci.vehicle.getIDList()
         polygon_ids = traci.polygon.getIDList()
         some_vehicle_in_polygon = False
         for vid in vehicle_ids:
             for pid in polygon_ids:
-                timestep = traci.polygon.getParameter(pid, "timestep")
                 x, y = traci.vehicle.getPosition(vid)
                 polygon_shape = traci.polygon.getShape(pid)
                 location = Point(x, y)
@@ -34,16 +34,16 @@ class Tracker(traci.StepListener):
 
                 if polygon.contains(location):
                     some_vehicle_in_polygon = True
-                    if timestep not in self.vehicle_distances:
-                        self.vehicle_distances[timestep] = {}
+                    if vid not in self.vehicle_distances:
+                        self.vehicle_distances[vid] = {}
+                    
+                    if timestep not in self.vehicle_distances[vid]:
+                        self.vehicle_distances[vid][timestep] = {}
 
-                    if vid not in self.vehicle_distances[timestep]:
-                        self.vehicle_distances[timestep][vid] = {}
-
-                    if pid in self.vehicle_distances[timestep][vid]:
-                        self.vehicle_distances[timestep][vid][pid] += speed
+                    if pid in self.vehicle_distances[vid][timestep]:
+                        self.vehicle_distances[vid][timestep][pid] += speed
                     else:
-                        self.vehicle_distances[timestep][vid][pid] = 0
+                        self.vehicle_distances[vid][timestep][pid] = 0
 
                     # print(f"Vehicle {vid} in polygon {pid}")
 
