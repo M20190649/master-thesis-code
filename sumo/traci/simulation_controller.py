@@ -1,28 +1,28 @@
 import os, traci, pprint
 
 from tracker import Tracker
-from rerouter import Rerouter
-from zone_manager import ZoneManager
+from vehicle_controller import VehicleController
+from zone_controller import ZoneController
 
 
 class SimulationController:
     def __init__(self, traci_config, sim_config):
         self.traci_config = traci_config
-        self.zone_manager = ZoneManager(sim_config)
-        self.tracker = Tracker(sim_config, self.zone_manager)
-        self.rerouter = Rerouter(sim_config, self.zone_manager)
+        self.zone_controller = ZoneController(sim_config)
+        self.tracker = Tracker(sim_config, self.zone_controller)
+        self.vehicle_controller = VehicleController(sim_config, self.zone_controller)
 
     def __init(self):
         # Step listeners are always executed AFTER the simulation step (traci.simulationStep())
         # Adding tracker first because we want to track the vehicle movement in the previous step
         traci.addStepListener(self.tracker)
         # Then add the zone manager to check if the zones need to be updated
-        traci.addStepListener(self.zone_manager)
+        traci.addStepListener(self.zone_controller)
         # After zones were checked and possibly adjusted we want to reroute the vehicles if necessary
-        traci.addStepListener(self.rerouter)
+        traci.addStepListener(self.vehicle_controller)
 
         # Load initial zones
-        self.zone_manager.load_polygons(0)
+        self.zone_controller.load_polygons(0)
 
     def start(self):
         # Connect

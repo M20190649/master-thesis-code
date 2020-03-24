@@ -7,7 +7,8 @@ from shapely.geometry import box
 import geopandas as gpd
 
 
-class Rerouter(traci.StepListener):
+
+class VehicleController(traci.StepListener):
     def __init__(self, sim_config, zone_manager):
         self.sim_config = sim_config
         self.zone_manager = zone_manager

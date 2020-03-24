@@ -8,7 +8,7 @@ from shapely.geometry import box
 import geopandas as gpd
 
 
-class ZoneManager(traci.StepListener):
+class ZoneController(traci.StepListener):
     def __init__(self, sim_config):
         self.sim_config = sim_config
         self.current_timestep = ""
