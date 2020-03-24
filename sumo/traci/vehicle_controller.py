@@ -92,9 +92,10 @@ class VehicleController(traci.StepListener):
 
     def static_rerouting(self):
         # Rerouting for vehicles whose route crosses through air quality zones
+        vehicle_subs = traci.vehicle.getAllSubscriptionResults()
         newly_inserted_vehicles = traci.simulation.getDepartedIDList()
         for vid in newly_inserted_vehicles:
-            route = traci.vehicle.getRoute(vid)
+            route = vehicle_subs[vid][tc.VAR_EDGES]
 
             # Check if route includes edges that are within air quality zone polygons
             for pid in traci.polygon.getIDList():
@@ -115,9 +116,10 @@ class VehicleController(traci.StepListener):
 
     def dynamic_rerouting(self):
         # Check all the newly spawned vehicles if any of them are located within the zone
+        vehicle_subs = traci.vehicle.getAllSubscriptionResults()
         newly_inserted_vehicles = traci.simulation.getDepartedIDList()
         for vid in newly_inserted_vehicles:
-            route = traci.vehicle.getRoute(vid)
+            route = vehicle_subs[vid][tc.VAR_EDGES]
 
             # Check if starting edge is within any of the polygons
             for pid in traci.polygon.getIDList():
@@ -138,12 +140,10 @@ class VehicleController(traci.StepListener):
                     break
 
         # Go through all polygons and get all vehicles within dynamic rerouting range
-        for pid in traci.polygon.getIDList():
-            polygon_context = traci.polygon.getContextSubscriptionResults(pid)
-            if polygon_context is None:
-                continue
-
-            vehicle_ids = traci.vehicle.getIDList()
+        polygon_subs = traci.polygon.getAllContextSubscriptionResults()
+        vehicle_ids = traci.vehicle.getIDList()
+        for pid in polygon_subs:
+            polygon_context = polygon_subs[pid]
             vehicle_context = {
                 k: v for (k, v) in polygon_context.items() if k in vehicle_ids
             }
@@ -155,9 +155,9 @@ class VehicleController(traci.StepListener):
                     # Don't reroute vehicles that already have been rerouted
                     continue
 
-                vehicle_data = vehicle_context[vid]
-                route = traci.vehicle.getRoute(vid)
-                upcoming_edges = route[vehicle_data[tc.VAR_ROUTE_INDEX] :]
+                route = vehicle_subs[vid][tc.VAR_EDGES]
+                current_route_index = vehicle_subs[vid][tc.VAR_ROUTE_INDEX]
+                upcoming_edges = route[current_route_index:]
 
                 # Check if any edge of vehicle route goes through polygon
                 if any(eid in polygon_edges for eid in upcoming_edges):
@@ -182,6 +182,13 @@ class VehicleController(traci.StepListener):
         for vid in newly_inserted_vehicles:
             # Store the timestep when a vehicle was inserted into the simulation
             traci.vehicle.setParameter(vid, "timestep", self.zone_manager.current_timestep)
+            traci.vehicle.subscribe(vid, [
+                tc.VAR_POSITION, # Used to check if vehicles are inside a zones
+                tc.VAR_SPEED, # Used to track vehicle distances in the zones
+                tc.VAR_EDGES, # Used to check if the route passes through zones
+                tc.VAR_ROUTE_INDEX, # Vehicles that have their destination within the zone shouldn't be rerouted
+                tc.VAR_EMISSIONCLASS, # Used to distinguish between gas, electric and other car types
+            ])
 
     def reroute(self):
         if self.sim_config["enableRerouting"]:

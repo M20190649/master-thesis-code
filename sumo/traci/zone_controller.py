@@ -23,22 +23,15 @@ class ZoneController(traci.StepListener):
     def add_polygon_subscriptions(self, pid):
         # Polygon context used for dynamic routing
         traci.polygon.subscribeContext(
-            pid,
-            tc.CMD_GET_VEHICLE_VARIABLE,
-            self.sim_config["dynamicReroutingDistance"],
-            [
-                tc.VAR_EMISSIONCLASS,  # Distinguish between gas and electric cars. Electric cars don't need to be rerouted
-                tc.VAR_ROUTE_INDEX,  # Vehicles that have their destination within the zone shouldn't be rerouted
-                tc.VAR_NEXT_STOPS,
-            ],
+            pid, tc.CMD_GET_VEHICLE_VARIABLE, self.sim_config["dynamicReroutingDistance"]
         )
+        traci.polygon.subscribe(pid, [tc.VAR_SHAPE])
 
     def remove_polygon_subscriptions(self, pid):
         traci.polygon.unsubscribeContext(
-            pid,
-            tc.CMD_GET_VEHICLE_VARIABLE,
-            self.sim_config["dynamicReroutingDistance"],
+            pid, tc.CMD_GET_VEHICLE_VARIABLE, self.sim_config["dynamicReroutingDistance"]
         )
+        traci.polygon.unsubscribe(pid)
 
     def split_polygon(self, shape, parts=2):
         polygon = Polygon(shape)
@@ -85,9 +78,7 @@ class ZoneController(traci.StepListener):
         # Calculate and store all edges that are covered by each new polygon
         # Add temporary subscription to be able to query for all edges
         # Get all edges for polygon pid that are within distance of 0
-        traci.polygon.subscribeContext(
-            pid, tc.CMD_GET_EDGE_VARIABLE, 0, [tc.VAR_NAME],
-        )
+        traci.polygon.subscribeContext(pid, tc.CMD_GET_EDGE_VARIABLE, 0)
         polygon_context = traci.polygon.getContextSubscriptionResults(pid)
         # Remove context subscription because we don't need it anymore
         traci.polygon.unsubscribeContext(pid, tc.CMD_GET_EDGE_VARIABLE, 0)
