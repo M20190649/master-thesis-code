@@ -65,7 +65,7 @@ async function convertGeoJSONToPoly(callerOptions) {
     // Add all the holes
     for (const [i, hole] of holes.entries()) {
       xml.element("poly", {
-        id: `hole-${pad(i)}-${pad(zone)}-${pad(zonePolygonCounter[zone])}`,
+        id: `hole-${pad(i)}_${pad(zone)}-${pad(zonePolygonCounter[zone])}`,
         shape: getShape(hole),
         color: `${zoneColours[zone - 1]},0`,
         layer: zone,
