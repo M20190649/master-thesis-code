@@ -135,8 +135,9 @@
   * We discussed a lot about this and came to the conclusion that you could make this arbitrarily complex. You could consider:
     * Wealth distribution (poor people will reroute, rich will pay)
     * Length of distance driven in zone (if someone just drives 50m in a zone it shouldn't be an issue to anyone, 5km is a different story)
-  * It would be best to extract this into a function that return a boolean. The complexity behind this can be increased later in future work
   * For now we might just say 5% reroute and the rest will decide to pay (stay on their current route)
+  * It would be best to extract this into a function that return a boolean. The complexity behind this can be increased later in future work
+  * **Code has been restructured to make it easily extendable with further more complex decision making**
 
 * For the people who are not willing to pay: Will they decide to still take the car and circumvent these zones or will they not take the car at all and switch to public transport?
   * Or do they maybe to park & ride? -> Drive near zone, park and then take public transport?
