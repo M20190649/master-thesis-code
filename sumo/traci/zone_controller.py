@@ -67,13 +67,8 @@ class ZoneController(traci.StepListener):
 
         return part_shapes
 
-    def add_polygon(self, pid, shape, color, layer):
-        traci.polygon.add(pid, shape, color, fill=True, layer=layer)
-        traci.polygon.setParameter(pid, "zone", str(layer))
-        traci.polygon.setParameter(pid, "timestep", self.current_timestep)
-
-        # Add all necessary context subscriptions
-        self.add_polygon_subscriptions(pid)
+    def add_polygon(self, pid, shape, color):
+        traci.polygon.add(pid, shape, color, fill=True)
 
         # Calculate and store all edges that are covered by each new polygon
         # Add temporary subscription to be able to query for all edges
@@ -90,6 +85,12 @@ class ZoneController(traci.StepListener):
             # Edges subscription can be None when the polygon doesn't cover any edges
             # Since it doesn't cover any edges it can be removed
             traci.polygon.remove(pid)
+            return
+        
+        traci.polygon.setParameter(pid, "timestep", self.current_timestep)
+
+        # Add all necessary context subscriptions
+        self.add_polygon_subscriptions(pid)
 
         # Filter out edge data
         edge_ids = traci.edge.getIDList()
@@ -101,10 +102,9 @@ class ZoneController(traci.StepListener):
 
     def load_polygons(self, t):
         # Remove all old polygons
-        print("Removing old polygons")
+        print("Hiding old polygons")
         for pid in traci.polygon.getIDList():
-            self.remove_polygon_subscriptions(pid)
-            traci.polygon.remove(pid)
+            traci.polygon.setFilled(pid, False)
 
         # Load the XML file for the current timestep
         pad = lambda n: f"0{n}" if n < 10 else n
@@ -131,7 +131,6 @@ class ZoneController(traci.StepListener):
                     )
                 )
                 color = list(map(int, child.attrib["color"].split(",")))
-                layer = int(float(child.attrib["layer"]))
 
                 # SUMO can't handle polygons with more than 255 coordinates so I need to split them into multiple polygons
                 if len(shape) > 255:
@@ -143,10 +142,10 @@ class ZoneController(traci.StepListener):
                     print(f"Split zone polygon into {len(shape_parts)} parts")
 
                     for idx, shape_part in enumerate(shape_parts):
-                        part_pid = f"{pid}-{idx}"
-                        self.add_polygon(part_pid, shape_part, color, layer)
+                        part_pid = f"{pid}_part-{pad(idx)}"
+                        self.add_polygon(part_pid, shape_part, color)
                 else:
-                    self.add_polygon(pid, shape, color, layer)
+                    self.add_polygon(pid, shape, color)
 
         # Notify subscribers about the zone update
         zope.event.notify("zone-update")
