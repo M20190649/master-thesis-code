@@ -1,5 +1,6 @@
-import os, traci, pprint
-
+import os, pprint
+import traci
+import traci.constants as tc
 from tracker import Tracker
 from vehicle_controller import VehicleController
 from zone_controller import ZoneController
@@ -20,6 +21,8 @@ class SimulationController:
         traci.addStepListener(self.zone_controller)
         # After zones were checked and possibly adjusted we want to reroute the vehicles if necessary
         traci.addStepListener(self.vehicle_controller)
+
+        traci.simulation.subscribe([tc.VAR_DEPARTED_VEHICLES_IDS])
 
         # Load initial zones
         self.zone_controller.load_polygons(0)

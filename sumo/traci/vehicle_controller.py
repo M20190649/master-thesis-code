@@ -14,6 +14,7 @@ class VehicleController(traci.StepListener):
         self.sim_config = sim_config
         self.zone_manager = zone_manager
         self.rerouted_vehicles = []
+        self.newly_inserted_vehicles = []
 
         # Register event handler
         zope.event.subscribers.append(self.event_handler)
@@ -93,8 +94,7 @@ class VehicleController(traci.StepListener):
     def static_rerouting(self):
         # Rerouting for vehicles whose route crosses through air quality zones
         vehicle_subs = traci.vehicle.getAllSubscriptionResults()
-        newly_inserted_vehicles = traci.simulation.getDepartedIDList()
-        for vid in newly_inserted_vehicles:
+        for vid in self.newly_inserted_vehicles:
             route = vehicle_subs[vid][tc.VAR_EDGES]
 
             # Check if route includes edges that are within air quality zone polygons
@@ -117,8 +117,7 @@ class VehicleController(traci.StepListener):
     def dynamic_rerouting(self):
         # Check all the newly spawned vehicles if any of them are located within the zone
         vehicle_subs = traci.vehicle.getAllSubscriptionResults()
-        newly_inserted_vehicles = traci.simulation.getDepartedIDList()
-        for vid in newly_inserted_vehicles:
+        for vid in self.newly_inserted_vehicles:
             route = vehicle_subs[vid][tc.VAR_EDGES]
 
             # Check if starting edge is within any of the polygons
@@ -174,12 +173,11 @@ class VehicleController(traci.StepListener):
                     self.reroute_vehicle(vid)
 
     def prepare_new_vehicles(self):
-        newly_inserted_vehicles = traci.simulation.getDepartedIDList()
-        n_new = len(newly_inserted_vehicles)
+        n_new = len(self.newly_inserted_vehicles)
         if n_new != 0:
             print(f"{n_new} new vehicle{'' if n_new == 1 else 's'} {'was' if n_new == 1 else 'were'} inserted")
         
-        for vid in newly_inserted_vehicles:
+        for vid in self.newly_inserted_vehicles:
             # Store the timestep when a vehicle was inserted into the simulation
             traci.vehicle.setParameter(vid, "timestep", self.zone_manager.current_timestep)
             traci.vehicle.subscribe(vid, [
@@ -199,6 +197,11 @@ class VehicleController(traci.StepListener):
 
     def step(self, t):
         # Do something at every simulaton step
+
+        # Get subscriptions
+        simulation_sub = traci.simulation.getSubscriptionResults()
+        self.newly_inserted_vehicles = simulation_sub[tc.VAR_DEPARTED_VEHICLES_IDS]
+
         self.prepare_new_vehicles()
 
         self.reroute()
