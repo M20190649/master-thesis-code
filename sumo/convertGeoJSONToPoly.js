@@ -49,6 +49,7 @@ async function convertGeoJSONToPoly(callerOptions) {
       zonePolygonCounter[zone] = 0
     }
 
+    const polyId = `${pad(zone)}-${pad(zonePolygonCounter[zone])}`
     const getShape = polygon => polygon.map(([long, lat]) => `${long},${lat}`).join(" ")
 
     // Since SUMO can't handle polygons with holes we split into the main polygon and the holes
@@ -56,7 +57,7 @@ async function convertGeoJSONToPoly(callerOptions) {
     const [mainPolygon, ...holes] = coordinates
     // Add the main polygon
     xml.element("poly", {
-      id: `${pad(zone)}-${pad(zonePolygonCounter[zone])}`,
+      id: polyId,
       shape: getShape(mainPolygon),
       color: `${zoneColours[zone - 1]},0.8`,
       layer: zone,
@@ -65,7 +66,7 @@ async function convertGeoJSONToPoly(callerOptions) {
     // Add all the holes
     for (const [i, hole] of holes.entries()) {
       xml.element("poly", {
-        id: `hole-${pad(i)}_${pad(zone)}-${pad(zonePolygonCounter[zone])}`,
+        id: `hole-${pad(i)}-${polyId}`,
         shape: getShape(hole),
         color: `${zoneColours[zone - 1]},0`,
         layer: zone,
