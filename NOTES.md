@@ -508,3 +508,30 @@ TODO:
 * Do more bug fixing and ensuring TraCI is behaving correctly
 * Refactoring of code to make it easily extendable
 * Now allowing each vehicle to decide which zones to avoid (complexity of this decision can be arbitrary)
+
+# 24.03.2020
+
+* Code restructuring, bug fixing, performance optimization
+* Decided to not remove old polygons from the simulation. This way I can still track vehicles in previous zones.
+* Tracking vehicle distances for each timesteps in any polygon (previous or current)
+* Now I can simulate two scenarios at the same time: When zones change people get charged by the old zones which were there when they entered the simulation or always the most recent zones
+  * It's just a matter of how you add up the distances in the end
+
+# 25.03.2020
+
+* Digging further into SUMO outputs and what could be used for evaluation
+  * `emissions.xml`
+    * Outputs emission for every vehicle in every timestep at current location
+    * Emissions: CO2, CO, HC, NOx, PMx, fuel, electricity, noise
+    * Compare the emissions per vehicle in different rerouting scenarios (no rerouting, static, dynamic close, dynamic far)
+  * To be continued...
+
+* Add freezeZones simulation config parameter
+  * When zones are frozen the agents only reroute and are charged based on the zones that existed during the timestep where they were inserted into the simulation
+  * When zones are NOT frozen agents always reroute and are charged according to the most recent zones
+
+QUESTION: What to do in the freezeZones: false case when zones change? Are vehicles rerouted?
+
+TODO: 
+* Test freezeZones
+* Explore SUMO outputs for evaluation
