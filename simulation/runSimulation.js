@@ -21,6 +21,12 @@ const CLIOptionDefinitions = [
     required: true,
   },
   {
+    name: "gui",
+    alias: "g",
+    type: Boolean,
+    description: "Run simulation in SUMO GUI",
+  },
+  {
     name: "config-info",
     alias: "i",
     type: String,
@@ -147,6 +153,7 @@ async function run() {
     `python ${join(__dirname, "..", "sumo", "traci", "index.py")}`,
     `--config ${resolve(CLIOptions.config)}`,
     `--sumo-config ${sumoConfigFile}`,
+    `${CLIOptions.gui ? "--gui=true" : ""}`,
   ])
   console.log("Done!\n")
 }
