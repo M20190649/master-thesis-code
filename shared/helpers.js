@@ -30,7 +30,7 @@ const defaultOptions = {
 exports.runBash = (bash, options = defaultOptions) => {
   let bashCommand = bash
   if (Array.isArray(bash)) {
-    bashCommand = bash.join(" ")
+    bashCommand = bash.filter(x => x !== "").join(" ")
   }
 
   return new Promise((resolve, reject) => {
