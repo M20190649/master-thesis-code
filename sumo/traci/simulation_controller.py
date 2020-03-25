@@ -33,11 +33,12 @@ class SimulationController:
 
         # Run the simulation
         step = 0
-        while step < self.traci_config["steps"]:
+        while traci.simulation.getMinExpectedNumber() > 0:
             traci.simulationStep(step)
             step += 1
 
         # Finish and clean up
+        print(f"Finished at step {step}")
         self.__finish()
 
     def __finish(self):

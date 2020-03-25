@@ -49,8 +49,6 @@ sumo_cmd = [sumo_binary, "--configuration-file", args.sumo_config]
 
 from simulation_controller import SimulationController
 
-# steps = 10
-steps = math.inf
-traci_config = {"sumo_cmd": sumo_cmd, "steps": steps}
+traci_config = {"sumo_cmd": sumo_cmd}
 controller = SimulationController(traci_config, sim_config)
 controller.start()
