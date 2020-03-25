@@ -73,13 +73,13 @@ class VehicleController(traci.StepListener):
 
         return decision
 
-    def reroute_vehicle(self, vid):
+    def reroute_vehicle(self, vid, timestep=None):
         print(f"Rerouting vehicle {vid}")
 
         traveltime = 99999999
 
         # Decide per polygon if to avoid it or not
-        for pid in traci.polygon.getIDList():
+        for pid in self.zone_manager.get_polygons_by_timestep(timestep=timestep, holes=False):
             if self.should_vehicle_avoid_polygon(vid, pid):
                 polygon_edges = self.zone_manager.get_polygon_edges(pid=pid)
                 for eid in polygon_edges:
@@ -87,8 +87,6 @@ class VehicleController(traci.StepListener):
                     traci.vehicle.setAdaptedTraveltime(vid, eid, time=traveltime)
 
         traci.vehicle.rerouteTraveltime(vid, False)
-
-        traci.vehicle.setParameter(vid, "is_rerouted", str(True))
         traci.vehicle.setColor(vid, (255, 0, 0))
 
     def static_rerouting(self):
@@ -97,8 +95,8 @@ class VehicleController(traci.StepListener):
         for vid in self.newly_inserted_vehicles:
             route = vehicle_subs[vid][tc.VAR_EDGES]
 
-            # Check if route includes edges that are within air quality zone polygons
-            for pid in traci.polygon.getIDList():
+            # Check if route includes edges that are within air quality zone polygons of current timestep
+            for pid in self.zone_manager.get_polygons_by_timestep(holes=False):
                 polygon_edges = self.zone_manager.get_polygon_edges(pid=pid)
 
                 if any(eid in polygon_edges for eid in route):
@@ -121,7 +119,7 @@ class VehicleController(traci.StepListener):
             route = vehicle_subs[vid][tc.VAR_EDGES]
 
             # Check if starting edge is within any of the polygons
-            for pid in traci.polygon.getIDList():
+            for pid in self.zone_manager.get_polygons_by_timestep(holes=False):
                 polygon_edges = self.zone_manager.get_polygon_edges(pid=pid)
                 if route[0] in polygon_edges:
                     print(f"New vehicle {vid} was inserted inside polygon {pid}.")
@@ -142,6 +140,10 @@ class VehicleController(traci.StepListener):
         polygon_subs = traci.polygon.getAllContextSubscriptionResults()
         vehicle_ids = traci.vehicle.getIDList()
         for pid in polygon_subs:
+            if pid.startswith("hole"):
+                continue
+
+            p_timestep = pid.split("_")[1]
             polygon_context = polygon_subs[pid]
             vehicle_context = {
                 k: v for (k, v) in polygon_context.items() if k in vehicle_ids
@@ -149,10 +151,20 @@ class VehicleController(traci.StepListener):
             polygon_edges = self.zone_manager.get_polygon_edges(pid=pid)
 
             for vid in vehicle_context:
-                is_rerouted = traci.vehicle.getParameter(vid, "is_rerouted")
-                if is_rerouted == "True":
-                    # Don't reroute vehicles that already have been rerouted
+                # Check if vehicle has already made a decision if to reroute at all or not
+                rerouting_decision = traci.vehicle.getParameter(vid, "rerouting_decision")
+                if rerouting_decision != "":
                     continue
+
+                v_timestep = traci.vehicle.getParameter(vid, "timestep")
+                if self.sim_config["freezeZones"]:
+                    # When zones are frozen only consider the polygons that existed at the time when the vehicle was inserted
+                    if p_timestep != v_timestep:
+                        continue
+                else:
+                    # When zones are NOT frozen only consider the most recent polygons
+                    if p_timestep != self.zone_manager.current_timestep:
+                        continue
 
                 route = vehicle_subs[vid][tc.VAR_EDGES]
                 current_route_index = vehicle_subs[vid][tc.VAR_ROUTE_INDEX]
@@ -170,7 +182,7 @@ class VehicleController(traci.StepListener):
                         # Don't reroute at all? Or maybe find the "cheapest" way to destination?
                         print(f"Destination of vehicle {vid} is in polygon {pid}")
 
-                    self.reroute_vehicle(vid)
+                    self.reroute_vehicle(vid, timestep=p_timestep)
 
     def prepare_new_vehicles(self):
         n_new = len(self.newly_inserted_vehicles)

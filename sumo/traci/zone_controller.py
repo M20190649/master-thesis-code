@@ -20,6 +20,19 @@ class ZoneController(traci.StepListener):
         else:
             return self.__polygon_edges[pid]
 
+    def get_polygons_by_timestep(self, timestep=None, holes=True):
+        polygons = traci.polygon.getIDList()
+
+        def check_polygon(p):
+            if not holes:
+                if p.startswith("hole"):
+                    return False
+                    
+            p_timestep = p.split("_")[1]
+            return p_timestep == (timestep or self.current_timestep)
+        
+        return list(filter(check_polygon, polygons))
+
     def add_polygon_subscriptions(self, pid):
         # Polygon context used for dynamic routing
         traci.polygon.subscribeContext(
