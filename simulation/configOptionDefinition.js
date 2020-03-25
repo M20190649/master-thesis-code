@@ -99,6 +99,12 @@ const configOptionDefinitions = [
     description: `Determines the distance for when agents should be dynamically rerouted (Requires dynamicRerouting to be true)`,
     required: true,
   },
+  {
+    name: "freezeZones",
+    type: Boolean,
+    description: `Determines if agents only see the zones from the timestep when they were inserted or if they always see the most recent zones`,
+    required: true,
+  },
 ]
 
 module.exports = configOptionDefinitions
