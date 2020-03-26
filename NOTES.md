@@ -524,7 +524,17 @@ TODO:
     * Outputs emission for every vehicle in every timestep at current location
     * Emissions: CO2, CO, HC, NOx, PMx, fuel, electricity, noise
     * Compare the emissions per vehicle in different rerouting scenarios (no rerouting, static, dynamic close, dynamic far)
-  * To be continued...
+  * `routes-info.xml`
+    * Information about every vehicle and its route
+    * Stores information about the rerouting effect (cost, savings, new edges)
+    * I might need to calculate and store the distance of the new routes after the rerouting action
+  * `trips-info.xml`
+    * Gives information about the trips as a whole
+    * Duration, length, emissions, waitingTime, waitingCount, timeLoss
+  * `vehicle-summary.xml`
+    * Stores vehicle information about every step
+    * How many vehicles were loaded, inserted, running, waiting, arrived etc.
+    * Mean waiting time, mean travel time, mean speed, mean speed relative
 
 * Add freezeZones simulation config parameter
   * When zones are frozen the agents only reroute and are charged based on the zones that existed during the timestep where they were inserted into the simulation
@@ -533,5 +543,9 @@ TODO:
 QUESTION: What to do in the freezeZones: false case when zones change? Are vehicles rerouted?
 
 TODO: 
-* Test freezeZones
-* Explore SUMO outputs for evaluation
+* ~~Test freezeZones~~
+* ~~Explore SUMO outputs for evaluation~~
+
+# 26.03.2020
+
+* Read more about output files
