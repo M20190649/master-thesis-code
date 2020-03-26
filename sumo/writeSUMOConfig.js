@@ -15,12 +15,15 @@ module.exports = (
   const routesInfo = join(outputDir, "routes-info.xml")
 
   const configXML = XMLBuilder.create("configuration")
+
   const inputTag = configXML.element("input")
   inputTag.element("net-file", { value: network })
   inputTag.element("route-files", { value: routes })
   // inputTag.element("additional-files", { value: routesVisualization })
-  inputTag.element("additional-files", { value: polygonsFile })
   inputTag.element("gui_only").element("gui-settings-file", { value: guiConfig })
+
+  const emissionsTag = configXML.element("emissions")
+  emissionsTag.element("device.emissions.probability", { value: "1.0" })
 
   const outputTag = configXML.element("output")
   outputTag.element("emission-output", { value: emissionsFile })
