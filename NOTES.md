@@ -549,3 +549,15 @@ TODO:
 # 26.03.2020
 
 * Read more about output files
+
+# 27.03.2020
+
+* Start writing and creating an outline for the thesis
+
+# 28.03.2020
+
+* Take yet another look into kriging but this time avoid any libraries
+* Created the variogram and histograms for the data
+* Checked the assumptions for Kriging listed [here](https://gisgeography.com/kriging-interpolation-prediction/)
+  * Normal distribution -> No, even standardizing it did not help very much
+  * Spatially correlated -> Not necessarily
