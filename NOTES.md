@@ -561,3 +561,14 @@ TODO:
 * Checked the assumptions for Kriging listed [here](https://gisgeography.com/kriging-interpolation-prediction/)
   * Normal distribution -> No, even standardizing it did not help very much
   * Spatially correlated -> Not necessarily
+
+# 29.03.2020
+
+* Problem: I used matplotlib for creating contours and the polygons but there is no official source that states which algorithm is used
+  * It 99.9999% Marching Squares which is also used in MATLAB
+  * If I have no source that states that it is hard to argue
+  * I searched for a different library (skimage) that has a contour algorithm where it officially says it is implementing Marching Squares
+
+* Worked on implementing contour algorithm from the skimage library
+* Works exactly as the matplotlib version and it looks exactly the same
+* Tested it with the validation script. Works well and looks the same.
