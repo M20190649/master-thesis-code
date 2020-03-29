@@ -2,13 +2,14 @@
 #     "PROJ_LIB"
 # ] = r"C:\\ProgamData\\Miniconda3\\envs\\master-thesis\\Library\\share"
 
-import os, math, time, ntpath, pprint, json
+import os, math, time, ntpath, pprint, json, itertools
 from argparse import ArgumentParser
 import geopandas as gpd
 import pandas as pd
 from shapely import geometry
 import matplotlib.pyplot as plt
 import numpy as np
+from skimage import measure
 
 import interpolators
 
@@ -18,7 +19,11 @@ plt.rcParams["axes.titlesize"] = 50
 plt.rcParams["axes.titlepad"] = 80
 
 
-def get_polygons_from_contour(contour):
+def get_polygons_per_zone_plt(xnew, ynew, interpolated_values, zones):
+    fig, ax = plt.subplots()
+    contour = ax.contourf(xnew, ynew, interpolated_values, zones, cmap="winter_r")
+    plt.close()
+
     polygons_per_zone = []
 
     for col in contour.collections:
@@ -30,6 +35,7 @@ def get_polygons_from_contour(contour):
             # The first polygon in the path is the main one, the following ones are "holes"
             poly = None
             for idx, poly_coords in enumerate(contour_path.to_polygons()):
+                poly_coords = np.array(poly_coords)
                 x = poly_coords[:, 0]
                 y = poly_coords[:, 1]
 
@@ -48,6 +54,50 @@ def get_polygons_from_contour(contour):
                 zone_polygons.append(poly)
         polygons_per_zone.append(zone_polygons)
     return polygons_per_zone
+
+def get_polygons_per_zone(xnew, ynew, interpolated_values, zones):
+    xmin = np.min(xnew)
+    xmax = np.max(xnew)
+    ymin = np.min(ynew)
+    ymax = np.max(ynew)
+    scale_x = lambda x: xmin + (xmax-xmin)/len(xnew)*(x+0.5)
+    scale_y = lambda y: ymin + (ymax-ymin)/len(ynew)*(y+0.5)
+
+    polygons_per_zone = []
+
+    # Iterate in reverse to go from most inner zones to outer zones
+    # Makes it easier for hole detections
+    for zone, zone_limit in enumerate(zones[::-1]):
+        contours = measure.find_contours(interpolated_values, zone_limit)
+        contour_polygons = list(map(lambda c: geometry.Polygon(zip(scale_x(c[:, 1]), scale_y(c[:, 0]))), contours))
+        
+        previous_polygons = list(itertools.chain(*polygons_per_zone))
+        zone_polygons = []
+        holes = []
+
+        for p1 in contour_polygons:
+            if p1 in holes:
+                continue
+
+            # Check for holes in this current contour
+            for p2 in contour_polygons:
+                if p1 == p2:
+                    continue
+
+                if p1.contains(p2):
+                    p1 = p1.difference(p2)
+                    holes.append(p2)
+            
+            # Check if inner contours are holes in current polygon
+            for p2 in previous_polygons:
+                if p1.contains(p2):
+                    p1 = p1.difference(p2)
+                    holes.append(p2)
+            
+            zone_polygons.append(p1)
+        polygons_per_zone.append(zone_polygons)
+    # Reverse again to return polygons in same order as input zones
+    return polygons_per_zone[::-1]
 
 
 def interpolate(
@@ -81,27 +131,17 @@ def interpolate(
 
     print("Interpolating grid...")
     start = time.time()
+
     interpolated_values = interpolator(xnew, ynew, points, values)
+
     end = time.time()
     print(f"Done! ({format(end - start, '.3f')}s)")
 
     print("Extracting zone polygons...")
     start = time.time()
 
-    fig, ax = plt.subplots()
-    contour = ax.contourf(xnew, ynew, interpolated_values, zones, cmap="winter_r")
-
-    polygons = gpd.GeoDataFrame()
-    # Skip first zone because it covers the whole area with holes where the actual zones are
-    polygons_per_zone = get_polygons_from_contour(contour)[1:]
-    for idx, zone_polygons in enumerate(polygons_per_zone):
-        for polygon in zone_polygons:
-            polygon_df = gpd.GeoDataFrame({"zone": [idx + 1], "geometry": [polygon]})
-            polygons = pd.concat([polygons, polygon_df])
-
-    if len(polygons) != 0:
-        polygons.crs = internal_crs
-        polygons = polygons.to_crs(external_crs)
+    # polygons_per_zone = get_polygons_per_zone_plt(xnew, ynew, interpolated_values, zones)
+    polygons_per_zone = get_polygons_per_zone(xnew, ynew, interpolated_values, zones)
 
     end = time.time()
     print(f"Done! ({format(end - start, '.3f')}s)")
@@ -109,14 +149,25 @@ def interpolate(
     print("Writing polygons into GeoJSON file...")
     start = time.time()
 
+    polygons_df = gpd.GeoDataFrame()
+    # Skip first zone because it is irrelevant
+    for idx, zone_polygons in enumerate(polygons_per_zone[1:]):
+        for polygon in zone_polygons:
+            temp_df = gpd.GeoDataFrame({"zone": [idx + 1], "geometry": [polygon]})
+            polygons_df = pd.concat([polygons_df, temp_df])
+
+    if len(polygons_df) != 0:
+        polygons_df.crs = internal_crs
+        polygons_df = polygons_df.to_crs(external_crs)
+
     if not os.path.isdir(output):
         os.mkdir(output)
 
     # Filename without file type ending
     filename = "".join(ntpath.basename(measurements_fp).split(".")[0:-1])
     filename = filename.replace("data", "zones")
-    if len(polygons) != 0:
-        polygons.to_file(f"{output}/{filename}.geojson", driver="GeoJSON")
+    if len(polygons_df) != 0:
+        polygons_df.to_file(f"{output}/{filename}.geojson", driver="GeoJSON")
     else:
         with open(f"{output}/{filename}.geojson", "w", encoding="utf-8") as f:
             json.dump(
@@ -132,6 +183,8 @@ def interpolate(
     if visualize:
         print("Creating visualization...")
         start = time.time()
+        fig, ax = plt.subplots()
+        contour = ax.contourf(xnew, ynew, interpolated_values, zones, cmap="winter_r")
         berlin_districts.boundary.plot(ax=ax, edgecolor="black")
         contour.cmap.set_under("w")
         contour.set_clim(zones[1])
