@@ -114,8 +114,8 @@ def interpolate(
     external_crs = "EPSG:4326"
     internal_crs = "EPSG:3068"
 
-    berlin_districts = berlin_districts.to_crs(epsg=3068)
-    measurements = measurements.to_crs(epsg=3068)
+    berlin_districts = berlin_districts.to_crs(internal_crs)
+    measurements = measurements.to_crs(internal_crs)
 
     x = np.array(measurements.geometry.x)
     y = np.array(measurements.geometry.y)
