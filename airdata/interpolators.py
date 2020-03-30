@@ -33,16 +33,27 @@ def nearest_neighbor(x, y, points, values, grid=True):
     return grid_values
 
 
-def discrete_natural_neighbor(x, y, points, values):
+def discrete_natural_neighbor(x, y, points, values, grid=True):
     # Natural neighbor implementation taken from Python package "naturalneighbor"
     # FASTEST IMPLEMENTATION (because it is discrete)
-    x_step_width = (x[-1] - x[0]) / x.shape[0]
-    y_step_width = (y[-1] - y[0]) / y.shape[0]
-    grid_ranges = [[x[0], x[-1], x_step_width], [y[0], y[-1], y_step_width], [0, 1, 1]]
-    grid_values = naturalneighbor.griddata(
-        np.insert(points, 2, 0, axis=1), values, grid_ranges
-    )
-    return np.squeeze(grid_values).T
+    if grid:
+        x_step_width = (x[-1] - x[0]) / x.shape[0]
+        y_step_width = (y[-1] - y[0]) / y.shape[0]
+        grid_ranges = [[x[0], x[-1], x_step_width], [y[0], y[-1], y_step_width], [0, 1, 1]]
+        grid_values = naturalneighbor.griddata(
+            np.insert(points, 2, 0, axis=1), values, grid_ranges
+        )
+        return np.squeeze(grid_values).T
+    else:
+        interpolated_values = []
+        new_points = np.column_stack((x, y))
+        for px, py in new_points:
+            interpolated_value = naturalneighbor.griddata(
+                np.insert(points, 2, 0, axis=1), values, [[px, px+1, 1], [py, py+1, 1], [0, 1, 1]]
+            )
+            interpolated_values.append(interpolated_value[0][0][0])
+        return interpolated_values
+
 
 
 def inverse_distance_weighting(x, y, points, values, p=2, k=6, grid=True):
