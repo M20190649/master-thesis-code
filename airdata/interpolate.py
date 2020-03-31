@@ -204,7 +204,7 @@ interpolator_functions = {
     "metpy_natural_neighbor": interpolators.metpy_natural_neighbor,
     "scipy_natural_neighbor": interpolators.scipy_natural_neighbor,
     "idw": interpolators.inverse_distance_weighting,
-    "linear_barycentric": interpolators.linear_barycentric,
+    "rbf": interpolators.radial_basis_function,
 }
 
 parser = ArgumentParser()
