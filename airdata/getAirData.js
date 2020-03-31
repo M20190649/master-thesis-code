@@ -59,19 +59,18 @@ async function getAirData(callerOptions) {
     fs.mkdirSync(outputDir)
   }
 
+  options.date = parseDate(options.date)
   if (fs.readdirSync(outputDir).length > 0) {
-    console.log("Air data already exists")
-    return fs
-      .readdirSync(outputDir)
-      .filter(file => {
-        return file.startsWith("data") && file.endsWith(".geojson")
-      })
-      .map(file => {
-        return `${outputDir}/${file}`
-      })
+    const filesForGivenDate = fs.readdirSync(outputDir).filter(file => {
+      return file.startsWith(`data_${getDateString(options.date)}`) && file.endsWith(".geojson")
+    })
+
+    if (filesForGivenDate.length > 0) {
+      console.log("Air data for given date already exists")
+      return filesForGivenDate.map(file => `${outputDir}/${file}`)
+    }
   }
 
-  options.date = parseDate(options.date)
   const [south, west, north, east] = options.bbox
   const allOutputFiles = []
 
@@ -119,8 +118,9 @@ async function getAirData(callerOptions) {
   let openSenseMapMeasurements = null
 
   // Get data from previous day to calculate the data for 00:00:00
-  console.log("\nFetching data from the previous day...\n")
-  const adaptedOptions = { ...options, date: new Date(options.date - 1000 * 60 * 60 * 24) }
+  const previousDate = new Date(options.date - 1000 * 60 * 60 * 24)
+  console.log(`\nFetching data from the previous day (${getDateString(previousDate)})...\n`)
+  const adaptedOptions = { ...options, date: previousDate }
   luftdatenInfoMeasurements = await downloadFromLuftdatenInfoArchive(adaptedOptions)
   console.log("\n")
   openSenseMapMeasurements = await downloadOpenSenseMapArchive(adaptedOptions)
@@ -134,7 +134,7 @@ async function getAirData(callerOptions) {
   writeMeasurements(lastTimestepData, options.date.toISOString())
 
   // Get measurements from actual date
-  console.log("\nFetching data from specified day...\n")
+  console.log(`\nFetching data from specified day (${getDateString(options.date)})...\n`)
   luftdatenInfoMeasurements = await downloadFromLuftdatenInfoArchive(options)
   console.log("\n")
   openSenseMapMeasurements = await downloadOpenSenseMapArchive(options)
