@@ -8,6 +8,7 @@ airdata/*.cmd
 .ipynb_checkpoints
 **test*
 simulation/*/**
+airdata/validation*/**
 
 *.pdf
 *.osm.pbf
