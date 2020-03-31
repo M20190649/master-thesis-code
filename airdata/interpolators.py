@@ -1,4 +1,4 @@
-import math, time
+import math, time, random, collections
 from collections import defaultdict
 import numpy as np
 import geopandas as gpd
@@ -21,8 +21,35 @@ from shapely.strtree import STRtree
 import naturalneighbor
 import metpy.interpolate as metpy_interpolate
 
+def regularize_points(points):
+    # Looks for duplicate x and y values and regularize them
+    x_duplicates = [
+        item for item, count in collections.Counter(points[:, 0]).items() if count > 1
+    ]
+    y_duplicates = [
+        item for item, count in collections.Counter(points[:, 1]).items() if count > 1
+    ]
+
+    regularize_by = 1e-2
+    regularize = lambda n: n + random.uniform(-regularize_by, regularize_by)
+
+    fixed_x = list(
+        map(
+            lambda x: regularize(x) if x in x_duplicates else x,
+            points[:, 0],
+        )
+    )
+    fixed_y = list(
+        map(
+            lambda y: regularize(y) if y in y_duplicates else y,
+            points[:, 1],
+        )
+    )
+    return np.column_stack((fixed_x, fixed_y))
 
 def nearest_neighbor(x, y, points, values, grid=True):
+    points = regularize_points(points)
+
     if grid:
         xx, yy = np.meshgrid(x, y)
         point_matrix = np.dstack((xx, yy))
@@ -36,6 +63,8 @@ def nearest_neighbor(x, y, points, values, grid=True):
 def discrete_natural_neighbor(x, y, points, values, grid=True):
     # Natural neighbor implementation taken from Python package "naturalneighbor"
     # FASTEST IMPLEMENTATION (because it is discrete)
+    points = regularize_points(points)
+
     if grid:
         x_step_width = (x[-1] - x[0]) / x.shape[0]
         y_step_width = (y[-1] - y[0]) / y.shape[0]
@@ -56,11 +85,9 @@ def discrete_natural_neighbor(x, y, points, values, grid=True):
 
 
 
-def inverse_distance_weighting(x, y, points, values, p=2, k=6, grid=True):
-    # Credits to this guy: https://github.com/paulbrodersen/inverse_distance_weighting/blob/master/idw.py
-    tree = cKDTree(points, leafsize=10)
-    eps = 1e-6
-    regularize_by = 1e-9
+def inverse_distance_weighting(x, y, points, values, p=2, k=None, max_dist=np.inf, grid=True):
+    points = regularize_points(points)
+    tree = cKDTree(points)
 
     if grid:
         meshgrid = np.meshgrid(x, y)
@@ -68,127 +95,83 @@ def inverse_distance_weighting(x, y, points, values, p=2, k=6, grid=True):
     else:
         point_matrix = np.column_stack((x, y))
 
-    distances, idx = tree.query(point_matrix, k, eps=eps, p=p)
+    k = k or len(points)
+    distances, idx = tree.query(point_matrix, k=k, distance_upper_bound=max_dist)
 
     if len(idx.shape) == 1:
         distances = np.atleast_2d(distances).reshape((-1, 1))
         idx = np.atleast_2d(idx).reshape((-1, 1))
 
+    # Regularize distances to prevent division by 0
+    regularize_by = 1e-9
     distances += regularize_by
+
+    # Apply power parameter and inverse
+    inverse_distances = 1 / distances ** p 
+    weights = inverse_distances / np.sum(inverse_distances, axis=1)[:, np.newaxis]
     neighbor_values = values[idx.ravel()].reshape(idx.shape)
-    summed_inverse_distances = np.sum(1 / distances, axis=1)
-    idw_values = np.sum(neighbor_values / distances, axis=1) / summed_inverse_distances
+    idw_values = np.sum(weights * neighbor_values, axis=1)
 
     if grid:
         return idw_values.reshape(meshgrid[0].shape)
     else:
         return idw_values
 
+def scipy_radial_basis_function(x, y, points, values, function="linear", grid=True):
+    points = regularize_points(points)
 
-def linear_barycentric(x, y, points, values, grid=True):
-    if grid:
-        xx, yy = np.meshgrid(x, y)
-        point_matrix = np.dstack((xx, yy))
-    else:
-        point_matrix = np.column_stack((x, y))
-
-    grid_values = interpolate.griddata(points, values, point_matrix, method="linear")
-    return grid_values
-
-
-def clough_tocher(x, y, points, values, grid=True):
-    if grid:
-        xx, yy = np.meshgrid(x, y)
-        point_matrix = np.dstack((xx, yy))
-    else:
-        point_matrix = np.column_stack((x, y))
-
-    grid_values = interpolate.griddata(points, values, point_matrix, method="cubic")
-    return grid_values
-
-
-def radial_base_function(x, y, points, values):
-    x_point_dup = [
-        item for item, count in collections.Counter(points[:, 0]).items() if count > 1
-    ]
-    y_point_dup = [
-        item for item, count in collections.Counter(points[:, 1]).items() if count > 1
-    ]
-    fixed_x = list(
-        map(
-            lambda x: x + random.uniform(-0.00001, 0.00001) if x in x_point_dup else x,
-            points[:, 0],
-        )
-    )
-    fixed_y = list(
-        map(
-            lambda y: y + random.uniform(-0.00001, 0.00001) if y in y_point_dup else y,
-            points[:, 1],
-        )
-    )
     rbfInterpolator = interpolate.Rbf(
-        fixed_x, fixed_y, values, function="gaussian", epsilon=50
+        points[:, 0], points[:, 1], values, function=function
     )
-    xx, yy = np.meshgrid(x, y)
-    rbfValues = rbfInterpolator(xx, yy)
+
+    if grid:
+        xx, yy = np.meshgrid(x, y)
+        rbfValues = rbfInterpolator(xx, yy)
+    else:
+        rbfValues = rbfInterpolator(x, y)
     return rbfValues
 
+# My own implementation of radial basis functions
+def radial_basis_function(x, y, points, values, function="linear", eps=None, grid=True):
+    points = regularize_points(points)
 
-def rbf(x, y, points, values):
-    x_point_dup = [
-        item for item, count in collections.Counter(points[:, 0]).items() if count > 1
-    ]
-    y_point_dup = [
-        item for item, count in collections.Counter(points[:, 1]).items() if count > 1
-    ]
-    fixed_x = list(
-        map(
-            lambda x: x + random.uniform(-0.00001, 0.00001) if x in x_point_dup else x,
-            points[:, 0],
-        )
-    )
-    fixed_y = list(
-        map(
-            lambda y: y + random.uniform(-0.00001, 0.00001) if y in y_point_dup else y,
-            points[:, 1],
-        )
-    )
+    pair_distances = cdist(points, points, "euclidean")
 
-    fixed_points = np.column_stack((fixed_x, fixed_y))
-
-    method = "linear"
-    c = 0.1  # shape parameter
+    # Estimate shape parameter for some functions
+    # Usually average euclidean distance between points is acceptable
+    eps = pair_distances.mean()
 
     rbf_functions = {
         "linear": lambda r: r,
         "cubic": lambda r: np.power(r, 3),
-        "gaussian": lambda r: np.exp(-(np.power(c * r, 2))),
-        "multiquadric": lambda r: np.sqrt(1 + np.power(c * r, 2)),
-        "inverse-quadratic": lambda r: 1 / (1 + np.power(c * r, 2)),
-        "inverse-multiquadric": lambda r: 1 / np.sqrt(1 + np.power(c * r, 2)),
+        "quintic": lambda r: np.power(r, 5),
+        "gaussian": lambda r: np.exp(-(np.power(eps * r, 2))),
+        "multiquadric": lambda r: np.sqrt(1 + np.power(eps * r, 2)),
+        "inverse-quadratic": lambda r: 1 / (1 + np.power(eps * r, 2)),
+        "inverse-multiquadric": lambda r: 1 / np.sqrt(1 + np.power(eps * r, 2)),
     }
 
-    pair_distances = cdist(fixed_points, fixed_points, "euclidean")
-    pair_distances = rbf_functions[method](pair_distances)
+    pair_distances = rbf_functions[function](pair_distances)
     weights = np.linalg.solve(pair_distances, values)
 
-    grid = np.meshgrid(x, y)
-    new_points = np.reshape(grid, (2, -1)).T
-    point_distances = cdist(new_points, points)
-    point_distances = rbf_functions[method](point_distances)
-    result = np.dot(point_distances, weights).reshape(grid[0].shape)
-    # print(result)
-    # print(points.shape)
-    # print(pair_distances.shape)
-    # print(weights.shape)
+    if grid:
+        xx, yy = np.meshgrid(x, y)
+        point_matrix = np.dstack((xx, yy))
+        new_points = point_matrix.reshape(-1, point_matrix.shape[-1])
+    else:
+        new_points = np.column_stack((x, y))
 
-    # TODO: Something is still wrong...
+    point_distances = cdist(new_points, points)
+    point_distances = rbf_functions[function](point_distances)
+    result = np.dot(point_distances, weights)
+
+    if grid:
+        result = result.reshape(xx.shape)
     return result
 
-
+# Natural neighbor implementation taken from Python package "MetPy"
+# FASTER THAN scipy_natural_neighbor BUT MUCH SLOWER THAN discrete_natural_neighbor
 def metpy_natural_neighbor(x, y, points, values, grid=True):
-    # Natural neighbor implementation taken from Python package "MetPy"
-    # FASTER THAN scipy_natural_neighbor BUT MUCH SLOWER THAN discrete_natural_neighbor
     if grid:
         xx, yy = np.meshgrid(x, y)
         point_matrix = np.dstack((xx, yy))
@@ -203,73 +186,71 @@ def metpy_natural_neighbor(x, y, points, values, grid=True):
     else:
         return result
 
-
-def voronoi_polygons(voronoi, boundary, diameter=1000000):
-    """Generate shapely.geometry.Polygon objects corresponding to the
-    regions of a scipy.spatial.Voronoi object, in the order of the
-    input points. The polygons for the infinite regions are large
-    enough that all points within a distance 'diameter' of a Voronoi
-    vertex are contained in one of the infinite polygons.
-
-    """
-    polygons = []
-
-    centroid = voronoi.points.mean(axis=0)
-
-    # Mapping from (input point index, Voronoi point index) to list of
-    # unit vectors in the directions of the infinite ridges starting
-    # at the Voronoi point and neighbouring the input point.
-    ridge_direction = defaultdict(list)
-    for (p, q), rv in zip(voronoi.ridge_points, voronoi.ridge_vertices):
-        u, v = sorted(rv)
-        if u == -1:
-            # Infinite ridge starting at ridge point with index v,
-            # equidistant from input points with indexes p and q.
-            t = voronoi.points[q] - voronoi.points[p]  # tangent
-            n = np.array([-t[1], t[0]]) / np.linalg.norm(t)  # normal
-            midpoint = voronoi.points[[p, q]].mean(axis=0)
-            direction = np.sign(np.dot(midpoint - centroid, n)) * n
-            ridge_direction[p, v].append(direction)
-            ridge_direction[q, v].append(direction)
-
-    for i, r in enumerate(voronoi.point_region):
-        region = voronoi.regions[r]
-        if -1 not in region:
-            # Finite region.
-            polygons.append(Polygon(voronoi.vertices[region]).intersection(boundary))
-            continue
-        # Infinite region.
-        inf = region.index(-1)  # Index of vertex at infinity.
-        j = region[(inf - 1) % len(region)]  # Index of previous vertex.
-        k = region[(inf + 1) % len(region)]  # Index of next vertex.
-        if j == k:
-            # Region has one Voronoi vertex with two ridges.
-            dir_j, dir_k = ridge_direction[i, j]
-        else:
-            # Region has two Voronoi vertices, each with one ridge.
-            (dir_j,) = ridge_direction[i, j]
-            (dir_k,) = ridge_direction[i, k]
-
-        # Length of ridges needed for the extra edge to lie at least
-        # 'diameter' away from all Voronoi vertices.
-        length = 2 * diameter / np.linalg.norm(dir_j + dir_k)
-
-        # Polygon consists of finite part plus an extra edge.
-        finite_part = voronoi.vertices[region[inf + 1 :] + region[:inf]]
-        extra_edge = [
-            voronoi.vertices[j] + dir_j * length,
-            voronoi.vertices[k] + dir_k * length,
-        ]
-        polygons.append(
-            Polygon(np.concatenate((finite_part, extra_edge))).intersection(boundary)
-        )
-
-    return polygons
-
-
+# Natural neighbor implementation based on spatial voronoi region intersections
+# THIS IS VERY SLOW!!!
 def scipy_natural_neighbor(x, y, points, values, grid=True):
-    # This natural neighbor implementation based on spatial voronoi region intersections
-    # THIS IS VERY SLOW!!!
+    def voronoi_polygons(voronoi, boundary, diameter=1000000):
+        """Generate shapely.geometry.Polygon objects corresponding to the
+        regions of a scipy.spatial.Voronoi object, in the order of the
+        input points. The polygons for the infinite regions are large
+        enough that all points within a distance 'diameter' of a Voronoi
+        vertex are contained in one of the infinite polygons.
+
+        """
+        polygons = []
+
+        centroid = voronoi.points.mean(axis=0)
+
+        # Mapping from (input point index, Voronoi point index) to list of
+        # unit vectors in the directions of the infinite ridges starting
+        # at the Voronoi point and neighbouring the input point.
+        ridge_direction = defaultdict(list)
+        for (p, q), rv in zip(voronoi.ridge_points, voronoi.ridge_vertices):
+            u, v = sorted(rv)
+            if u == -1:
+                # Infinite ridge starting at ridge point with index v,
+                # equidistant from input points with indexes p and q.
+                t = voronoi.points[q] - voronoi.points[p]  # tangent
+                n = np.array([-t[1], t[0]]) / np.linalg.norm(t)  # normal
+                midpoint = voronoi.points[[p, q]].mean(axis=0)
+                direction = np.sign(np.dot(midpoint - centroid, n)) * n
+                ridge_direction[p, v].append(direction)
+                ridge_direction[q, v].append(direction)
+
+        for i, r in enumerate(voronoi.point_region):
+            region = voronoi.regions[r]
+            if -1 not in region:
+                # Finite region.
+                polygons.append(Polygon(voronoi.vertices[region]).intersection(boundary))
+                continue
+            # Infinite region.
+            inf = region.index(-1)  # Index of vertex at infinity.
+            j = region[(inf - 1) % len(region)]  # Index of previous vertex.
+            k = region[(inf + 1) % len(region)]  # Index of next vertex.
+            if j == k:
+                # Region has one Voronoi vertex with two ridges.
+                dir_j, dir_k = ridge_direction[i, j]
+            else:
+                # Region has two Voronoi vertices, each with one ridge.
+                (dir_j,) = ridge_direction[i, j]
+                (dir_k,) = ridge_direction[i, k]
+
+            # Length of ridges needed for the extra edge to lie at least
+            # 'diameter' away from all Voronoi vertices.
+            length = 2 * diameter / np.linalg.norm(dir_j + dir_k)
+
+            # Polygon consists of finite part plus an extra edge.
+            finite_part = voronoi.vertices[region[inf + 1 :] + region[:inf]]
+            extra_edge = [
+                voronoi.vertices[j] + dir_j * length,
+                voronoi.vertices[k] + dir_k * length,
+            ]
+            polygons.append(
+                Polygon(np.concatenate((finite_part, extra_edge))).intersection(boundary)
+            )
+
+        return polygons
+
     if grid:
         xx, yy = np.meshgrid(x, y)
         point_matrix = np.dstack((xx, yy))
@@ -311,12 +292,28 @@ def scipy_natural_neighbor(x, y, points, values, grid=True):
 
     return np.array(interpolated_values).reshape(y.shape[0], x.shape[0])
 
+# DO NOT USE THIS
+def linear_barycentric(x, y, points, values, grid=True):
+    points = regularize_points(points)
 
-def metpy_idw(x, y, points, values):
-    xx, yy = np.meshgrid(x, y)
-    point_matrix = np.dstack((xx, yy))
-    new_points = point_matrix.reshape(-1, point_matrix.shape[-1])
-    result = metpy_interpolate.inverse_distance_to_points(
-        points, values, new_points, 1000, kind="cressman", min_neighbors=50
-    )
-    return result.reshape(y.shape[0], x.shape[0])
+    if grid:
+        xx, yy = np.meshgrid(x, y)
+        point_matrix = np.dstack((xx, yy))
+    else:
+        point_matrix = np.column_stack((x, y))
+
+    grid_values = interpolate.griddata(points, values, point_matrix, method="linear")
+    return grid_values
+
+# DO NOT USE THIS
+def clough_tocher(x, y, points, values, grid=True):
+    points = regularize_points(points)
+
+    if grid:
+        xx, yy = np.meshgrid(x, y)
+        point_matrix = np.dstack((xx, yy))
+    else:
+        point_matrix = np.column_stack((x, y))
+
+    grid_values = interpolate.griddata(points, values, point_matrix, method="cubic")
+    return grid_values
