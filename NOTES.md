@@ -572,3 +572,9 @@ TODO:
 * Worked on implementing contour algorithm from the skimage library
 * Works exactly as the matplotlib version and it looks exactly the same
 * Tested it with the validation script. Works well and looks the same.
+
+# 30+31.03.2020
+
+* Implement cross validation script
+  * IDW is clearly the winner from Nearest Neighbor, Natural Neighbor, IDW and RBF
+  * No Spline and no Kriging yet
