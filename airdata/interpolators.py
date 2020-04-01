@@ -21,7 +21,7 @@ from shapely.strtree import STRtree
 import naturalneighbor
 import metpy.interpolate as metpy_interpolate
 
-def regularize_points(points):
+def regularize_points(points, eps=1e-2):
     # Looks for duplicate x and y values and regularize them
     x_duplicates = [
         item for item, count in collections.Counter(points[:, 0]).items() if count > 1
@@ -30,8 +30,7 @@ def regularize_points(points):
         item for item, count in collections.Counter(points[:, 1]).items() if count > 1
     ]
 
-    regularize_by = 1e-2
-    regularize = lambda n: n + random.uniform(-regularize_by, regularize_by)
+    regularize = lambda n: n + random.uniform(-eps, eps)
 
     fixed_x = list(
         map(
