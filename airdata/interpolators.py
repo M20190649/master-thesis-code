@@ -175,9 +175,14 @@ def radial_basis_function(x, y, points, values, function="linear", eps=None, gri
 
     pair_distances = cdist(points, points, "euclidean")
 
+    # Regularize to prevent ill-formed problem (especially for log function in thin-plate)
+    regularize_by = 1e-9
+    pair_distances += regularize_by
+
     # Estimate shape parameter for some functions
     # Usually average euclidean distance between points is acceptable
-    eps = pair_distances.mean()
+    if eps is None:
+        eps = pair_distances.mean()
 
     rbf_functions = {
         "linear": lambda r: r,
@@ -187,10 +192,11 @@ def radial_basis_function(x, y, points, values, function="linear", eps=None, gri
         "multiquadric": lambda r: np.sqrt(1 + np.power(eps * r, 2)),
         "inverse-quadratic": lambda r: 1 / (1 + np.power(eps * r, 2)),
         "inverse-multiquadric": lambda r: 1 / np.sqrt(1 + np.power(eps * r, 2)),
+        "thin-plate": lambda r: np.power(r, 2) * np.log(r)
     }
 
-    pair_distances = rbf_functions[function](pair_distances)
-    weights = np.linalg.solve(pair_distances, values)
+    rbf_pair_distances = rbf_functions[function](pair_distances)
+    weights = np.linalg.solve(rbf_pair_distances, values)
 
     if grid:
         xx, yy = np.meshgrid(x, y)
@@ -200,8 +206,10 @@ def radial_basis_function(x, y, points, values, function="linear", eps=None, gri
         new_points = np.column_stack((x, y))
 
     point_distances = cdist(new_points, points)
-    point_distances = rbf_functions[function](point_distances)
-    result = np.dot(point_distances, weights)
+    point_distances += regularize_by
+
+    rbf_point_distances = rbf_functions[function](point_distances)
+    result = np.dot(rbf_point_distances, weights)
 
     if grid:
         result = result.reshape(xx.shape)
