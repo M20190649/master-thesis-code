@@ -1,4 +1,5 @@
 import random, pprint, glob
+from functools import partial
 from argparse import ArgumentParser
 import geopandas as gpd
 import numpy as np
@@ -15,14 +16,14 @@ plt.rcParams["axes.titlesize"] = 50
 plt.rcParams["axes.titlepad"] = 80
 
 interpolator_functions = {
-    "nearest_neighbor": interpolators.nearest_neighbor,
-    "discrete_natural_neighbor": interpolators.discrete_natural_neighbor,
-    # "metpy_natural_neighbor": interpolators.metpy_natural_neighbor,
-    # "scipy_natural_neighbor": interpolators.scipy_natural_neighbor,
+    "nearest-neighbor": interpolators.nearest_neighbor,
+    "natural-neighbor": interpolators.discrete_natural_neighbor,
     "idw": interpolators.inverse_distance_weighting,
-    "radial_basis_function": interpolators.radial_basis_function,
-    "scipy_radial_basis_function": interpolators.scipy_radial_basis_function
-    # "linear_barycentric": interpolators.linear_barycentric,
+    "linear-rbf": partial(interpolators.radial_basis_function, function="linear"),
+    "mq-rbf": partial(interpolators.radial_basis_function, function="multiquadric"),
+    "imq-rbf": partial(interpolators.radial_basis_function, function="inverse-multiquadric"),
+    "thin-plate-rbf": partial(interpolators.radial_basis_function, function="thin-plate"),
+    # "kriging": interpolators.kriging,
 }
 
 def cross_validate_file(measurements_file):
