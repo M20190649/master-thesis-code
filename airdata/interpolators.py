@@ -20,6 +20,8 @@ from shapely.geometry import Polygon, Point, box
 from shapely.strtree import STRtree
 import naturalneighbor
 import metpy.interpolate as metpy_interpolate
+from sklearn.model_selection import KFold
+from sklearn.metrics import mean_squared_error
 
 def regularize_points(points, eps=1e-2):
     # Looks for duplicate x and y values and regularize them
@@ -84,8 +86,45 @@ def discrete_natural_neighbor(x, y, points, values, grid=True):
 
 
 
-def inverse_distance_weighting(x, y, points, values, p=2, k=None, max_dist=np.inf, grid=True):
+def inverse_distance_weighting(x, y, points, values, power=2, cv=False, k=None, grid=True):
+
     points = regularize_points(points)
+
+    if cv:
+        print("Doing CV to determine best power parameter...")
+        folds = 10
+        seed = random.randint(0,9999)
+        kfold = KFold(folds, True, seed)
+        avg_rmse_per_power = {}
+        for p in np.arange(1, 3, 0.01):
+            sum_rmse = 0
+            for train, test in kfold.split(values):
+                train_points = points[train]
+                train_values = values[train]
+                test_points = points[test]
+                test_values = values[test]
+
+                tree = cKDTree(train_points)
+                k = k or len(train_points)
+                distances, idx = tree.query(test_points, k=k)
+
+                inverse_distances = 1 / distances ** p 
+                weights = inverse_distances / np.sum(inverse_distances, axis=1)[:, np.newaxis]
+                neighbor_values = train_values[idx.ravel()].reshape(idx.shape)
+                idw_values = np.sum(weights * neighbor_values, axis=1)
+                rmse = mean_squared_error(test_values, idw_values)
+                sum_rmse +=rmse
+            
+            avg_rmse = sum_rmse/folds
+            avg_rmse_per_power[p] = avg_rmse
+            # print(f"p: {p}")
+            # print(f"Avg RMSE: {avg_rmse}")
+
+        print("Done")
+        power = min(avg_rmse_per_power, key=avg_rmse_per_power.get)
+        print(f"Winning lag: {power}")
+        print(f"Avg RMSE: {avg_rmse_per_power[power]}")
+
     tree = cKDTree(points)
 
     if grid:
@@ -95,7 +134,7 @@ def inverse_distance_weighting(x, y, points, values, p=2, k=None, max_dist=np.in
         point_matrix = np.column_stack((x, y))
 
     k = k or len(points)
-    distances, idx = tree.query(point_matrix, k=k, distance_upper_bound=max_dist)
+    distances, idx = tree.query(point_matrix, k=k)
 
     if len(idx.shape) == 1:
         distances = np.atleast_2d(distances).reshape((-1, 1))
@@ -106,7 +145,7 @@ def inverse_distance_weighting(x, y, points, values, p=2, k=None, max_dist=np.in
     distances += regularize_by
 
     # Apply power parameter and inverse
-    inverse_distances = 1 / distances ** p 
+    inverse_distances = 1 / distances ** power
     weights = inverse_distances / np.sum(inverse_distances, axis=1)[:, np.newaxis]
     neighbor_values = values[idx.ravel()].reshape(idx.shape)
     idw_values = np.sum(weights * neighbor_values, axis=1)
