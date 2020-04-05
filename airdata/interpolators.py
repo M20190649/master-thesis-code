@@ -20,6 +20,8 @@ from shapely.geometry import Polygon, Point, box
 from shapely.strtree import STRtree
 import naturalneighbor
 import metpy.interpolate as metpy_interpolate
+from pykrige.ok import OrdinaryKriging
+from pykrige.uk import UniversalKriging
 from sklearn.model_selection import KFold
 from sklearn.metrics import mean_squared_error
 
@@ -214,6 +216,58 @@ def radial_basis_function(x, y, points, values, function="linear", eps=None, gri
     if grid:
         result = result.reshape(xx.shape)
     return result
+
+def kriging(x, y, points, values, nlags=10, cv=False, krige_type="ordinary", grid=True, verbose=False):
+    points = regularize_points(points)
+
+    if cv:
+        print("Doing CV to determine best number of lags...")
+        folds = 10
+        seed = random.randint(0,9999)
+        kfold = KFold(folds, True, seed)
+        avg_rmse_per_lag = {}
+        for lags in range(2, 101):
+            sum_rmse = 0
+            for train, test in kfold.split(values):
+                train_points = points[train]
+                train_values = values[train]
+                test_points = points[test]
+                test_values = values[test]
+
+                krige_interpolator = None
+                if krige_type == "ordinary":
+                    krige_interpolator = OrdinaryKriging(train_points[:, 0], train_points[:, 1], train_values, nlags=lags)
+                
+                if krige_type == "universal":
+                    krige_interpolator = OrdinaryKriging(train_points[:, 0], train_points[:, 1], train_values, nlags=lags) 
+
+                result = krige_interpolator.execute('points', test_points[:, 0], test_points[:, 1])
+                rmse = mean_squared_error(test_values, result[0])
+                sum_rmse +=rmse
+            
+            avg_rmse = sum_rmse/folds
+            avg_rmse_per_lag[lags] = avg_rmse
+            # print(f"lags: {lags}")
+            # print(f"Avg RMSE: {avg_rmse}")
+
+        print("Done")
+        nlags = min(avg_rmse_per_lag, key=avg_rmse_per_lag.get)
+        print(f"Winning lag: {nlags}")
+        print(f"Avg RMSE: {avg_rmse_per_lag[nlags]}")
+
+    krige_interpolator = None
+    if krige_type == "ordinary":
+        krige_interpolator = OrdinaryKriging(points[:, 0], points[:, 1], values, nlags=nlags, verbose=verbose)
+
+    if krige_type == "universal":
+        krige_interpolator = OrdinaryKriging(points[:, 0], points[:, 1], values, nlags=nlags, verbose=verbose) 
+
+    if grid:
+        result = krige_interpolator.execute('grid', x, y)
+    else:
+        result = krige_interpolator.execute('points', x, y)
+
+    return result[0]
 
 # Natural neighbor implementation taken from Python package "MetPy"
 # FASTER THAN scipy_natural_neighbor BUT MUCH SLOWER THAN discrete_natural_neighbor
