@@ -3,6 +3,7 @@
 # ] = r"C:\\ProgamData\\Miniconda3\\envs\\master-thesis\\Library\\share"
 
 import os, math, time, ntpath, pprint, json, itertools
+from functools import partial
 from argparse import ArgumentParser
 import geopandas as gpd
 import pandas as pd
@@ -199,12 +200,14 @@ def interpolate(
 
 
 interpolator_functions = {
-    "nearest_neighbor": interpolators.nearest_neighbor,
-    "discrete_natural_neighbor": interpolators.discrete_natural_neighbor,
-    "metpy_natural_neighbor": interpolators.metpy_natural_neighbor,
-    "scipy_natural_neighbor": interpolators.scipy_natural_neighbor,
+    "nearest-neighbor": interpolators.nearest_neighbor,
+    "natural-neighbor": interpolators.discrete_natural_neighbor,
     "idw": interpolators.inverse_distance_weighting,
-    "rbf": interpolators.radial_basis_function,
+    "linear-rbf": partial(interpolators.radial_basis_function, function="linear"),
+    "mq-rbf": partial(interpolators.radial_basis_function, function="multiquadric"),
+    "imq-rbf": partial(interpolators.radial_basis_function, function="inverse-multiquadric"),
+    "thin-plate-rbf": partial(interpolators.radial_basis_function, function="thin-plate"),
+    "kriging": interpolators.kriging,
 }
 
 parser = ArgumentParser()
