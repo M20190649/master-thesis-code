@@ -114,40 +114,46 @@ async function getAirData(callerOptions) {
     allOutputFiles.push(filepath)
   }
 
-  let luftdatenInfoMeasurements = null
-  let openSenseMapMeasurements = null
+  const sources = {
+    luftdatenInfo: downloadFromLuftdatenInfoArchive,
+    openSenseMap: downloadOpenSenseMapArchive,
+  }
+  const measurementPerSource = {}
 
   // Get data from previous day to calculate the data for 00:00:00
   const previousDate = new Date(options.date - 1000 * 60 * 60 * 24)
   console.log(`\nFetching data from the previous day (${getDateString(previousDate)})...\n`)
   const adaptedOptions = { ...options, date: previousDate }
-  luftdatenInfoMeasurements = await downloadFromLuftdatenInfoArchive(adaptedOptions)
-  console.log("\n")
-  openSenseMapMeasurements = await downloadOpenSenseMapArchive(adaptedOptions)
+  for (const [source, downloader] of Object.entries(sources)) {
+    measurementPerSource[source] = await downloader(adaptedOptions)
+    console.log("\n")
+  }
   console.log("\nDone!\n")
 
-  const lastTimestepData = [
-    ...(Object.values(luftdatenInfoMeasurements).pop() || []),
-    ...(Object.values(openSenseMapMeasurements).pop() || []),
-  ]
+  const lastTimestepData = Object.values(measurementPerSource).reduce((data, measurements) => {
+    // The measurements are organized in timesteps so here we only take the last one
+    data.push(...Object.values(measurements).pop())
+    return data
+  }, [])
 
   writeMeasurements(lastTimestepData, options.date.toISOString())
 
   // Get measurements from actual date
   console.log(`\nFetching data from specified day (${getDateString(options.date)})...\n`)
-  luftdatenInfoMeasurements = await downloadFromLuftdatenInfoArchive(options)
-  console.log("\n")
-  openSenseMapMeasurements = await downloadOpenSenseMapArchive(options)
+  for (const [source, downloader] of Object.entries(sources)) {
+    measurementPerSource[source] = await downloader(options)
+    console.log("\n")
+  }
   console.log("\nDone!\n")
 
-  for (const timestep of Object.keys(luftdatenInfoMeasurements)) {
-    writeMeasurements(
-      [
-        ...(openSenseMapMeasurements[timestep] || []),
-        ...(luftdatenInfoMeasurements[timestep] || []),
-      ],
-      timestep
-    )
+  const timesteps = Object.keys(Object.values(measurementPerSource)[0])
+  for (const timestep of timesteps) {
+    const timestepData = Object.values(measurementPerSource).reduce((data, measurements) => {
+      // The measurements are organized in timesteps so here we only take the last one
+      data.push(...measurements[timestep])
+      return data
+    }, [])
+    writeMeasurements(timestepData, timestep)
   }
 
   return allOutputFiles
