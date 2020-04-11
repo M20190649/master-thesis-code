@@ -13,11 +13,6 @@ const pollutantMapping = {
 const malfunctioningSensors = [2115, 12695, 24509]
 
 async function downloadFromLuftdatenInfoAPI(options) {
-  const pollutantMapping = {
-    PM10: "P1",
-    "PM2.5": "P2",
-  }
-
   const pollutant = pollutantMapping[options.pollutant]
 
   // API does not allow to filter the data for timestamps
