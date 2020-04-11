@@ -64,6 +64,10 @@ exports.validateOptions = (options, optionDefinitions) => {
         )
       }
     }
+
+    if (options[name] === undefined && option.defaultValue !== undefined) {
+      options[name] = option.defaultValue
+    }
   }
 }
 

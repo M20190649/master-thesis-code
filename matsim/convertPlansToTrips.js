@@ -7,7 +7,6 @@ const LineByLineReader = require("line-by-line")
 
 const parseCLIOptions = require("../shared/parseCLIOptions")
 const { validateOptions, getTimeString } = require("../shared/helpers")
-const db = require("../db/matsim/index")
 
 const outputModes = {
   geo: "geo",
@@ -226,9 +225,6 @@ async function onCloseTag(tagName, options) {
 }
 
 async function convertPlans(callerOptions) {
-  await db.init()
-  await db.testConnection()
-
   return new Promise((resolve, reject) => {
     const options = { ...CLIOptions, ...callerOptions }
 
