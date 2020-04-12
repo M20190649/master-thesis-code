@@ -15,6 +15,8 @@ class VehicleController(traci.StepListener):
         self.zone_manager = zone_manager
         self.rerouted_vehicles = []
         self.newly_inserted_vehicles = []
+        self.vehicle_subs = {}
+        self.polygon_subs = {}
 
         # Register event handler
         zope.event.subscribers.append(self.event_handler)
@@ -91,9 +93,8 @@ class VehicleController(traci.StepListener):
 
     def static_rerouting(self):
         # Rerouting for vehicles whose route crosses through air quality zones
-        vehicle_subs = traci.vehicle.getAllSubscriptionResults()
         for vid in self.newly_inserted_vehicles:
-            route = vehicle_subs[vid][tc.VAR_EDGES]
+            route = self.vehicle_subs[vid][tc.VAR_EDGES]
 
             # Check if route includes edges that are within air quality zone polygons of current timestep
             for pid in self.zone_manager.get_polygons_by_timestep(holes=False):
@@ -116,7 +117,7 @@ class VehicleController(traci.StepListener):
         # Check all the newly spawned vehicles if any of them are located within the zone
         vehicle_subs = traci.vehicle.getAllSubscriptionResults()
         for vid in self.newly_inserted_vehicles:
-            route = vehicle_subs[vid][tc.VAR_EDGES]
+            route = self.vehicle_subs[vid][tc.VAR_EDGES]
 
             # Check if starting edge is within any of the polygons
             for pid in self.zone_manager.get_polygons_by_timestep(holes=False):
@@ -137,14 +138,13 @@ class VehicleController(traci.StepListener):
                     break
 
         # Go through all polygons and get all vehicles within dynamic rerouting range
-        polygon_subs = traci.polygon.getAllContextSubscriptionResults()
         vehicle_ids = traci.vehicle.getIDList()
-        for pid in polygon_subs:
+        for pid in self.polygon_subs:
             if pid.startswith("hole"):
                 continue
 
             p_timestep = pid.split("_")[1]
-            polygon_context = polygon_subs[pid]
+            polygon_context = self.polygon_subs[pid]
             vehicle_context = {
                 k: v for (k, v) in polygon_context.items() if k in vehicle_ids
             }
@@ -166,8 +166,8 @@ class VehicleController(traci.StepListener):
                     if p_timestep != self.zone_manager.current_timestep:
                         continue
 
-                route = vehicle_subs[vid][tc.VAR_EDGES]
-                current_route_index = vehicle_subs[vid][tc.VAR_ROUTE_INDEX]
+                route = self.vehicle_subs[vid][tc.VAR_EDGES]
+                current_route_index = self.vehicle_subs[vid][tc.VAR_ROUTE_INDEX]
                 upcoming_edges = route[current_route_index:]
 
                 # Check if any edge of vehicle route goes through polygon
@@ -213,6 +213,8 @@ class VehicleController(traci.StepListener):
         # Get subscriptions
         simulation_sub = traci.simulation.getSubscriptionResults()
         self.newly_inserted_vehicles = simulation_sub[tc.VAR_DEPARTED_VEHICLES_IDS]
+        self.vehicle_subs = traci.vehicle.getAllSubscriptionResults()
+        self.polygon_subs = traci.polygon.getAllContextSubscriptionResults()
 
         self.prepare_new_vehicles()
 
