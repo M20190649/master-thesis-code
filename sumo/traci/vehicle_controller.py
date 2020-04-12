@@ -69,7 +69,13 @@ class VehicleController(traci.StepListener):
         decision = True
 
         # Insert more complex logic into rerouting_decisions.py to here to change the 'decision' variable
-        decision = rerouting_decisions.percentage(vid, 0.05)
+        if "reroutingDecisionMode" in self.sim_config:
+            mode = self.sim_config["reroutingDecisionMode"]
+            if mode == "percentage":
+                p = self.sim_config["reroutingPercentage"]
+                decision = rerouting_decisions.percentage(p=p)
+            if mode == "random":
+                decision = rerouting_decisions.random()
 
         traci.vehicle.setParameter(vid, "rerouting_decision", str(decision))
 
