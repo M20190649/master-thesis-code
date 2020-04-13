@@ -27,7 +27,7 @@ module.exports = (
 
   const outputTag = configXML.element("output")
   outputTag.element("emission-output", { value: emissionsFile })
-  outputTag.element("human-readable-time", { value: "true" })
+  // outputTag.element("human-readable-time", { value: "true" })
   outputTag.element("fcd-output", { value: floatingCarData })
   outputTag.element("fcd-output.geo", { value: "true" })
   outputTag.element("summary-output", { value: vehicleSummary })
