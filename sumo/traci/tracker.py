@@ -56,7 +56,7 @@ class Tracker(traci.StepListener):
                     some_vehicle_in_polygon = True
 
                     if vehicle_xml is None:
-                        v_timestep = traci.vehicle.getParameter(vid, "timestep")
+                        v_timestep = traci.vehicle.getParameter(vid, "zone_timestep")
                         vehicle_xml = SubElement(
                             timestep_xml, 
                             "vehicle", 
@@ -67,7 +67,7 @@ class Tracker(traci.StepListener):
                             }
                         )
 
-                    p_timestep = traci.polygon.getParameter(pid, "timestep")
+                    p_timestep = traci.polygon.getParameter(pid, "zone_timestep")
                     polygon_xml = SubElement(
                         vehicle_xml, 
                         "polygon", 

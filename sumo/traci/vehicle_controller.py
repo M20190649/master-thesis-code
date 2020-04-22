@@ -40,8 +40,8 @@ class VehicleController(traci.StepListener):
         if pid in polygon_list.split(","):
             return True
 
-        v_timestep = traci.vehicle.getParameter(vid, "timestep")
-        p_timestep = traci.polygon.getParameter(pid, "timestep")
+        v_timestep = traci.vehicle.getParameter(vid, "zone_timestep")
+        p_timestep = traci.polygon.getParameter(pid, "zone_timestep")
         if v_timestep != p_timestep:
             return False
 
@@ -161,7 +161,7 @@ class VehicleController(traci.StepListener):
                 if rerouting_decision != "":
                     continue
 
-                v_timestep = traci.vehicle.getParameter(vid, "timestep")
+                v_timestep = traci.vehicle.getParameter(vid, "zone_timestep")
                 if self.sim_config["freezeZones"]:
                     # When zones are frozen only consider the polygons that existed at the time when the vehicle was inserted
                     if p_timestep != v_timestep:
@@ -196,7 +196,7 @@ class VehicleController(traci.StepListener):
         
         for vid in self.newly_inserted_vehicles:
             # Store the timestep when a vehicle was inserted into the simulation
-            traci.vehicle.setParameter(vid, "timestep", self.zone_controller.current_timestep)
+            traci.vehicle.setParameter(vid, "zone_timestep", self.zone_controller.current_timestep)
             traci.vehicle.subscribe(vid, [
                 tc.VAR_POSITION, # Used to check if vehicles are inside a zones
                 tc.VAR_SPEED, # Used to track vehicle distances in the zones
