@@ -10,9 +10,9 @@ import rerouting_decisions
 
 
 class VehicleController(traci.StepListener):
-    def __init__(self, sim_config, zone_manager):
+    def __init__(self, sim_config, zone_controller):
         self.sim_config = sim_config
-        self.zone_manager = zone_manager
+        self.zone_controller = zone_controller
         self.rerouted_vehicles = []
         self.newly_inserted_vehicles = []
         self.vehicle_subs = {}
@@ -87,9 +87,9 @@ class VehicleController(traci.StepListener):
         traveltime = 99999999
 
         # Decide per polygon if to avoid it or not
-        for pid in self.zone_manager.get_polygons_by_timestep(timestep=timestep, holes=False):
+        for pid in self.zone_controller.get_polygons_by_timestep(timestep=timestep, holes=False):
             if self.should_vehicle_avoid_polygon(vid, pid):
-                polygon_edges = self.zone_manager.get_polygon_edges(pid=pid)
+                polygon_edges = self.zone_controller.get_polygon_edges(pid=pid)
                 for eid in polygon_edges:
                     # Set travel times for all edges to very high value
                     traci.vehicle.setAdaptedTraveltime(vid, eid, time=traveltime)
@@ -103,8 +103,8 @@ class VehicleController(traci.StepListener):
             route = self.vehicle_subs[vid][tc.VAR_EDGES]
 
             # Check if route includes edges that are within air quality zone polygons of current timestep
-            for pid in self.zone_manager.get_polygons_by_timestep(holes=False):
-                polygon_edges = self.zone_manager.get_polygon_edges(pid=pid)
+            for pid in self.zone_controller.get_polygons_by_timestep(holes=False):
+                polygon_edges = self.zone_controller.get_polygon_edges(pid=pid)
 
                 if any(eid in polygon_edges for eid in route):
                     if not self.should_vehicle_reroute(vid):
@@ -121,13 +121,12 @@ class VehicleController(traci.StepListener):
 
     def dynamic_rerouting(self):
         # Check all the newly spawned vehicles if any of them are located within the zone
-        vehicle_subs = traci.vehicle.getAllSubscriptionResults()
         for vid in self.newly_inserted_vehicles:
             route = self.vehicle_subs[vid][tc.VAR_EDGES]
 
             # Check if starting edge is within any of the polygons
-            for pid in self.zone_manager.get_polygons_by_timestep(holes=False):
-                polygon_edges = self.zone_manager.get_polygon_edges(pid=pid)
+            for pid in self.zone_controller.get_polygons_by_timestep(holes=False):
+                polygon_edges = self.zone_controller.get_polygon_edges(pid=pid)
                 if route[0] in polygon_edges:
                     print(f"New vehicle {vid} was inserted inside polygon {pid}.")
                     # Make decision if to reroute at all
@@ -154,7 +153,7 @@ class VehicleController(traci.StepListener):
             vehicle_context = {
                 k: v for (k, v) in polygon_context.items() if k in vehicle_ids
             }
-            polygon_edges = self.zone_manager.get_polygon_edges(pid=pid)
+            polygon_edges = self.zone_controller.get_polygon_edges(pid=pid)
 
             for vid in vehicle_context:
                 # Check if vehicle has already made a decision if to reroute at all or not
@@ -169,7 +168,7 @@ class VehicleController(traci.StepListener):
                         continue
                 else:
                     # When zones are NOT frozen only consider the most recent polygons
-                    if p_timestep != self.zone_manager.current_timestep:
+                    if p_timestep != self.zone_controller.current_timestep:
                         continue
 
                 route = self.vehicle_subs[vid][tc.VAR_EDGES]
@@ -197,7 +196,7 @@ class VehicleController(traci.StepListener):
         
         for vid in self.newly_inserted_vehicles:
             # Store the timestep when a vehicle was inserted into the simulation
-            traci.vehicle.setParameter(vid, "timestep", self.zone_manager.current_timestep)
+            traci.vehicle.setParameter(vid, "timestep", self.zone_controller.current_timestep)
             traci.vehicle.subscribe(vid, [
                 tc.VAR_POSITION, # Used to check if vehicles are inside a zones
                 tc.VAR_SPEED, # Used to track vehicle distances in the zones

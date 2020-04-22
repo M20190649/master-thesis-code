@@ -14,9 +14,9 @@ def prettify(elem, indent=4):
     return root.toprettyxml(indent=" " * indent)
 
 class Tracker(traci.StepListener):
-    def __init__(self, sim_config, zone_manager):
+    def __init__(self, sim_config, zone_controller):
         self.sim_config = sim_config
-        self.zone_manager = zone_manager
+        self.zone_controller = zone_controller
         self.vehicle_distances = {}
         
         output_file_path = f"{sim_config['sim_outputDir']}/vehicle-zone-tracking.xml"
@@ -32,7 +32,7 @@ class Tracker(traci.StepListener):
             pass
 
     def track_vehicles_in_polygons(self, t):
-        timestep = self.zone_manager.current_timestep
+        timestep = self.zone_controller.current_timestep
         vehicle_subs = traci.vehicle.getAllSubscriptionResults()
         polygon_subs = traci.polygon.getAllSubscriptionResults()
         some_vehicle_in_polygon = False
