@@ -45,4 +45,5 @@ class SimulationController:
         self.__finish()
 
     def __finish(self):
+        self.tracker.finish()
         traci.close()
