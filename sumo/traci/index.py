@@ -39,6 +39,7 @@ with open(args.config) as configPath:
 sim_dir = os.path.dirname(os.path.realpath(args.config))
 sim_name = re.search(".*(?=\.)", os.path.basename(args.config)).group(0)
 sim_config["sim_airDataDir"] = os.path.join(sim_dir, sim_name, "airdata")
+sim_config["sim_outputDir"] = os.path.join(sim_dir, sim_name, "output")
 
 sumo_binary = os.environ["SUMO_HOME"] + "/bin/sumo"
 
