@@ -34,10 +34,15 @@ async function test() {
 
   console.log(filenames)
 
-  return
-
-  // const methods = ["nearest_neighbor", "discrete_natural_neighbor", "idw", "linear_barycentric"]
-  const methods = ["idw"]
+  const methods = [
+    "nearest-neighbor",
+    "natural-neighbor",
+    "idw",
+    "linear-rbf",
+    "thin-plate-rbf",
+    "kriging",
+  ]
+  // const methods = ["idw"]
 
   for (const method of methods) {
     for (const file of filenames) {
