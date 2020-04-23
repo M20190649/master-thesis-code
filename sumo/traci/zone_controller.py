@@ -114,20 +114,14 @@ class ZoneController(traci.StepListener):
         self.__polygon_edges[pid] = edges_in_polygon
 
     def load_polygons(self, t):
-        # Remove all old polygons
-        print("Hiding old polygons")
-        for pid in traci.polygon.getIDList():
-            traci.polygon.setFilled(pid, False)
-
         # Load the XML file for the current timestep
         pad = lambda n: f"0{n}" if n < 10 else n
         date_parts = list(map(lambda n: str(pad(int(n))), self.sim_config["simulationDate"].split(".")))
         date_string = "-".join(date_parts[::-1])
-        utc = datetime.datetime.utcfromtimestamp(t)
-        time_string = f"{pad(utc.hour)}-{pad(utc.minute)}-{pad(utc.second)}"
-        zone_file = f"zones_{date_string}T{time_string}.xml"
+        timestep = self.get_timestep_from_step(t)
+        zone_file = f"zones_{date_string}T{timestep}.xml"
         # zone_file = f"zones_{date_string}T10-00-00.xml"
-        self.current_timestep = time_string
+        self.current_timestep = timestep
 
         print(f"Loading {zone_file}")
         xml_tree = et.parse(os.path.join(self.sim_config["sim_airDataDir"], zone_file))
@@ -163,10 +157,41 @@ class ZoneController(traci.StepListener):
         # Notify subscribers about the zone update
         zope.event.notify("zone-update")
 
+    def remove_polygons(self, t):
+        if t < 0:
+            return
+
+        timestep = self.get_timestep_from_step(t)
+        print(f"Removing polygons from timestep {timestep}")
+        for pid in self.get_polygons_by_timestep(timestep=timestep):
+            self.remove_polygon_subscriptions(pid)
+            traci.polygon.remove(pid)
+
+    def hide_polygons(self, t):
+        if t < 0:
+            return
+            
+        timestep = self.get_timestep_from_step(t)
+        print(f"Hiding polygons from timestep {timestep}")
+        for pid in self.get_polygons_by_timestep(timestep=timestep):
+            traci.polygon.setFilled(pid, False)
+
+    def get_timestep_from_step(self, t):
+        pad = lambda n: f"0{n}" if n < 10 else n
+        utc = datetime.datetime.utcfromtimestamp(t)
+        time_string = f"{pad(utc.hour)}-{pad(utc.minute)}-{pad(utc.second)}"
+        return time_string
+
     def step(self, t):
-        if t > 0 and t % (self.sim_config["zoneUpdateInterval"] * 60) == 0:
+        interval = self.sim_config["zoneUpdateInterval"] * 60
+        if t > 0 and t % interval == 0:
             # if t > 0 and t % 40 == 0:
             print("New timestep! Zones will be updated...")
+            # Always keep the polygons up until three hours after they have been loaded
+            keep_duration = 3 * 60 * 60
+            self.remove_polygons(t - keep_duration)
+            # Hide the polygons from last timestep
+            self.hide_polygons(t - interval)
             self.load_polygons(t)
             print("Done")
 
