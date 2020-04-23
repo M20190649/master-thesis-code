@@ -23,12 +23,12 @@ class ZoneController(traci.StepListener):
     def get_polygons_by_timestep(self, timestep=None, holes=True):
         polygons = traci.polygon.getIDList()
 
-        def check_polygon(p):
+        def check_polygon(pid):
             if not holes:
-                if p.startswith("hole"):
+                if pid.startswith("hole"):
                     return False
                     
-            p_timestep = p.split("_")[1]
+            p_timestep = traci.polygon.getParameter(pid, "zone_timestep")
             return p_timestep == (timestep or self.current_timestep)
         
         return list(filter(check_polygon, polygons))

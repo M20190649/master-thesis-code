@@ -148,7 +148,7 @@ class VehicleController(traci.StepListener):
             if pid.startswith("hole"):
                 continue
 
-            p_timestep = pid.split("_")[1]
+            p_timestep = traci.polygon.getParameter(pid, "zone_timestep")
             polygon_context = self.polygon_subs[pid]
             vehicle_context = {
                 k: v for (k, v) in polygon_context.items() if k in vehicle_ids
