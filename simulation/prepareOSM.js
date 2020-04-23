@@ -29,7 +29,11 @@ module.exports = async (inputDir, config) => {
   const routesName = `${basename(inputDir)}-routes`
 
   const osmNetworkFile = `${join(networkDir, networkName)}.osm.xml`
-  const matsimPlansFile = join(matsimDir, "plans", "berlin-v5.4-1pct.output_plans.xml")
+  const matsimPlansFile = join(
+    matsimDir,
+    "plans",
+    `berlin-v5.4-${config.scenario}.output_plans.xml`
+  )
   // const matsimPlansFile = join(matsimDir, "plans", "test-pop.xml")
   const networkFile = `${join(networkDir, networkName)}.net.xml`
   const tripsFile = `${join(demandDir, routesName)}.trips.xml`
