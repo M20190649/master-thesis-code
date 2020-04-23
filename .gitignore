@@ -9,6 +9,7 @@ airdata/*.cmd
 **test*
 simulation/*/**
 airdata/validation*/**
+airdata/backup
 
 *.pdf
 *.osm.pbf
