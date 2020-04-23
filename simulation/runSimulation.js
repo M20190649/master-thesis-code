@@ -53,16 +53,18 @@ validateOptions(config, configOptionDefinition)
 // File and directory names
 const simName = basename(CLIOptions.config).match(/.*(?=\.)/)[0]
 const inputDir = join(__dirname, simName)
-const airDataInput = join(inputDir, "airdata")
+const airDataDir = join(inputDir, "airdata")
+const rawAirData = join(airDataDir, "raw")
+const interpolatedAirData = join(airDataDir, config.interpolationMethod)
 const outputDir = join(inputDir, "output")
 const sumoConfigFile = `${join(inputDir, simName)}.sumocfg`
 
-if (!fs.existsSync(inputDir)) {
-  fs.mkdirSync(inputDir)
-}
+const requiredDirs = [inputDir, outputDir, airDataDir, rawAirData, interpolatedAirData]
 
-if (!fs.existsSync(outputDir)) {
-  fs.mkdirSync(outputDir)
+for (const dir of requiredDirs) {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir)
+  }
 }
 
 // Importing necessary helper scripts
@@ -96,13 +98,13 @@ async function run() {
     bbox: config.bbox,
     date: config.simulationDate,
     timestep: config.zoneUpdateInterval,
-    output: airDataInput,
+    output: rawAirData,
   })
   console.log("Done!\n")
 
   // There will be a measurements file for every timestep
   console.log("Creating air pollution zones...")
-  const zonesFiles = fs.readdirSync(airDataInput).filter(f => f.startsWith("zones"))
+  const zonesFiles = fs.readdirSync(interpolatedAirData)
   if (zonesFiles.length === 0) {
     for (const airDataFile of airDataFiles) {
       // Interpolate measurements
@@ -111,16 +113,16 @@ async function run() {
         `--measurements=${airDataFile}`,
         `--method=${config.interpolationMethod}`,
         `--zones=${config.zones.join(",")}`,
-        `--output=${airDataInput}`,
+        `--output=${interpolatedAirData}`,
         `${config.visualizeZones ? `--visualize=true` : ""}`,
       ])
 
       // Convert the resulting zones into SUMO poly format
       await convertGeoJSONToPoly({
-        geojson: join(airDataInput, `${basename(airDataFile).replace("data", "zones")}`),
+        geojson: join(interpolatedAirData, `${basename(airDataFile).replace("data", "zones")}`),
         network: inputFiles.network,
         output: join(
-          airDataInput,
+          interpolatedAirData,
           basename(airDataFile)
             .replace("data", "zones")
             .replace(".geojson", ".xml")
