@@ -1,4 +1,5 @@
 const fs = require("fs")
+const { join } = require("path")
 
 const parseCLIOptions = require("../shared/parseCLIOptions")
 const { validateOptions, getDateString, getTimeString, pad } = require("../shared/helpers")
@@ -67,7 +68,7 @@ async function getAirData(callerOptions) {
 
     if (filesForGivenDate.length > 0) {
       console.log("Air data for given date already exists")
-      return filesForGivenDate.map(file => `${outputDir}/${file}`)
+      return filesForGivenDate.map(file => join(outputDir, file))
     }
   }
 
@@ -109,7 +110,10 @@ async function getAirData(callerOptions) {
     console.log(`Total numbers of measurements for ${timestep}: ${outputGeojson.features.length}`)
 
     const tsDate = new Date(timestep)
-    const filepath = `${outputDir}/data_${getDateString(tsDate)}T${getTimeString(tsDate)}.geojson`
+    const filepath = join(
+      outputDir,
+      `data_${getDateString(tsDate)}T${getTimeString(tsDate)}.geojson`
+    )
     fs.writeFileSync(filepath, JSON.stringify(outputGeojson, null, 2))
     allOutputFiles.push(filepath)
   }
