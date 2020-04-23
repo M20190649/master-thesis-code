@@ -79,18 +79,17 @@ module.exports = async (inputDir, config) => {
   console.log("Done!\n")
 
   // Create visualization of routes for preview
-  console.log("Creating a visualization of SUMO routes...")
-  if (fs.existsSync(routesVisualizationFile)) {
-    console.log("Routes visualization file already exists")
-  } else {
-    await visualizeRoutes({
-      routes: routesFile,
-      network: networkFile,
-      output: routesVisualizationFile,
-    })
-  }
-
-  console.log("Done!\n")
+  // console.log("Creating a visualization of SUMO routes...")
+  // if (fs.existsSync(routesVisualizationFile)) {
+  //   console.log("Routes visualization file already exists")
+  // } else {
+  //   await visualizeRoutes({
+  //     routes: routesFile,
+  //     network: networkFile,
+  //     output: routesVisualizationFile,
+  //   })
+  // }
+  // console.log("Done!\n")
 
   const outputFiles = {
     network: networkFile,
