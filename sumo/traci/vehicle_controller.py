@@ -196,9 +196,9 @@ class VehicleController(traci.StepListener):
                     self.reroute_vehicle(vid, timestep=p_timestep)
 
     def prepare_new_vehicles(self):
-        n_new = len(self.newly_inserted_vehicles)
-        if n_new != 0:
-            print(f"{n_new} new vehicle{'' if n_new == 1 else 's'} {'was' if n_new == 1 else 'were'} inserted")
+        # n_new = len(self.newly_inserted_vehicles)
+        # if n_new != 0:
+        #     print(f"{n_new} new vehicle{'' if n_new == 1 else 's'} {'was' if n_new == 1 else 'were'} inserted")
         
         for vid in self.newly_inserted_vehicles:
             # Store the timestep when a vehicle was inserted into the simulation
