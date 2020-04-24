@@ -1,10 +1,8 @@
 const { join } = require("path")
 const fs = require("fs")
-const zlib = require("zlib")
-const axios = require("axios")
 
 const parseCLIOptions = require("../shared/parseCLIOptions")
-const { validateOptions } = require("../shared/helpers")
+const { validateOptions, gunzip, downloadFile } = require("../shared/helpers")
 
 const optionDefinitions = [
   {
@@ -19,38 +17,17 @@ const optionDefinitions = [
 
 const CLIOptions = parseCLIOptions(optionDefinitions)
 
-async function download(scenario, zipFile) {
-  return new Promise((resolve, reject) => {
-    const outputStream = fs.createWriteStream(zipFile)
-    axios
-      .get(
-        `https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.4-${scenario}/output-berlin-v5.4-${scenario}/berlin-v5.4-${scenario}.output_plans.xml.gz`,
-        {
-          responseType: "stream",
-        }
-      )
-      .then(res => res.data.pipe(outputStream))
-
-    outputStream.on("close", resolve)
-  })
-}
-
-async function unzip(zipFile, output) {
-  const readStream = fs.createReadStream(zipFile)
-  const writeStream = fs.createWriteStream(output)
-  const unzipStream = zlib.createGunzip()
-  readStream.pipe(unzipStream).pipe(writeStream)
-}
-
 async function downloadMATSimPlans(callerOptions) {
   const options = { ...CLIOptions, ...callerOptions }
 
   validateOptions(options, optionDefinitions)
 
-  const filename = `berlin-v5.4-${options.scenario}.output_plans.xml`
+  const { scenario } = options
+  const filename = `berlin-v5.4-${scenario}.output_plans.xml`
   const plansDir = join(__dirname, "plans")
   const plansFile = join(plansDir, filename)
   const plansZipFile = `${plansFile}.gz`
+  const url = `https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.4-${scenario}/output-berlin-v5.4-${scenario}/${filename}.gz`
 
   if (!fs.existsSync(plansDir)) {
     fs.mkdirSync(plansDir)
@@ -58,7 +35,7 @@ async function downloadMATSimPlans(callerOptions) {
 
   if (!fs.existsSync(plansZipFile)) {
     console.log(`Downloading ${options.scenario} plans file...`)
-    await download(options.scenario, plansZipFile)
+    await downloadFile(url, plansZipFile)
     console.log(`Done`)
   } else {
     console.log(`Zipped ${options.scenario} plans file already exists`)
@@ -66,7 +43,7 @@ async function downloadMATSimPlans(callerOptions) {
 
   if (!fs.existsSync(plansFile)) {
     console.log(`Unzipping ${options.scenario} plans file...`)
-    await unzip(plansZipFile, plansFile)
+    await gunzip(plansZipFile, plansFile)
     console.log(`Done!`)
   } else {
     console.log(`Unzipped ${options.scenario} plans file already exists`)

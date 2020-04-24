@@ -1,4 +1,7 @@
 const { spawn } = require("child_process")
+const fs = require("fs")
+const gunzip = require("gunzip-file")
+const axios = require("axios")
 
 exports.pad = n => (n < 10 ? `0${n}` : n)
 
@@ -77,4 +80,23 @@ exports.logSection = sectionName => {
   const n1 = Math.floor(restSpaceLength / 2)
   const n2 = restSpaceLength % 2 === 0 ? n1 : n1 + 1
   console.log(`${"-".repeat(n1)} ${sectionName} ${"-".repeat(n2)}\n`)
+}
+
+exports.gunzip = (zipFile, output) => {
+  return new Promise((resolve, reject) => {
+    gunzip(zipFile, output, resolve)
+  })
+}
+
+exports.downloadFile = (url, filename) => {
+  return new Promise((resolve, reject) => {
+    const outputStream = fs.createWriteStream(filename)
+    axios
+      .get(url, {
+        responseType: "stream",
+      })
+      .then(res => res.data.pipe(outputStream))
+
+    outputStream.on("close", resolve)
+  })
 }

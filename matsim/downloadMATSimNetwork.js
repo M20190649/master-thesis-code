@@ -1,38 +1,17 @@
 const { join } = require("path")
 const fs = require("fs")
-const axios = require("axios")
 
 const parseCLIOptions = require("../shared/parseCLIOptions")
-const { runBash } = require("../shared/helpers")
+const { gunzip, downloadFile } = require("../shared/helpers")
 
 const CLIOptions = parseCLIOptions()
 
-async function download(zipFile) {
-  return new Promise((resolve, reject) => {
-    const outputStream = fs.createWriteStream(zipFile)
-    axios
-      .get(
-        "https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.4-10pct/input/berlin-v5-network.xml.gz",
-        {
-          responseType: "stream",
-        }
-      )
-      .then(res => res.data.pipe(outputStream))
-
-    outputStream.on("close", resolve)
-  })
-}
-
-async function unzip(zipFile) {
-  await runBash(`gunzip -k ${zipFile}`)
-}
-
-async function downloadMATSimNetwork(callerOptions) {
-  const options = { ...CLIOptions, ...callerOptions }
-
+async function downloadMATSimNetwork() {
+  const filename = "berlin-v5-network.xml"
   const networkDir = join(__dirname, "network")
-  const networkFile = join(networkDir, "berlin-v5-network.xml")
+  const networkFile = join(networkDir, filename)
   const networkZipFile = `${networkFile}.gz`
+  const url = `https://svn.vsp.tu-berlin.de/repos/public-svn/matsim/scenarios/countries/de/berlin/berlin-v5.4-10pct/input/${filename}.gz`
 
   if (!fs.existsSync(networkDir)) {
     fs.mkdirSync(networkDir)
@@ -40,7 +19,7 @@ async function downloadMATSimNetwork(callerOptions) {
 
   if (!fs.existsSync(networkZipFile)) {
     console.log("Downloading network file...")
-    await download(networkZipFile)
+    await downloadFile(url, networkZipFile)
     console.log("Done")
   } else {
     console.log("Zipped network file already exists")
@@ -48,7 +27,7 @@ async function downloadMATSimNetwork(callerOptions) {
 
   if (!fs.existsSync(networkFile)) {
     console.log("Unzipping network file...")
-    await unzip(networkZipFile)
+    await gunzip(networkZipFile, networkFile)
     console.log("Done!")
   } else {
     console.log("Unzipped network file already exists")
