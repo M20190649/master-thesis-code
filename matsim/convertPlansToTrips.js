@@ -11,7 +11,6 @@ const { validateOptions, getTimeString } = require("../shared/helpers")
 const outputModes = {
   geo: "geo",
   matsim: "matsim",
-  osm: "osm",
 }
 
 const optionDefinitions = [
@@ -49,8 +48,8 @@ let lineReader = null
 let currentTag = ""
 let currentPerson = ""
 let personCounter = 0
-let routeCounter = 0
-let tripCounter = 0
+let personTripCounter = 0
+let totalTripCounter = 0
 let parsePlan = false
 let parseRoute = false
 let carInteractionX = 0
@@ -80,7 +79,7 @@ function onError(err) {
   console.error(err)
 }
 
-function onOpenTag(node) {
+function onOpenTag(node, options) {
   currentTag = node.name
   if (currentTag === "person") {
     currentPerson = node.attributes.id
@@ -127,6 +126,43 @@ function onOpenTag(node) {
         ...GK4coordinates,
         ...WGS84Coordinates,
       }
+
+      if (options.bbox) {
+        const [south, west, north, east] = options.bbox
+        if (
+          currentTrip.fromCoordinates.latitude < south ||
+          currentTrip.fromCoordinates.latitude > north ||
+          currentTrip.fromCoordinates.longitude < west ||
+          currentTrip.fromCoordinates.longitude > east ||
+          currentTrip.toCoordinates.latitude < south ||
+          currentTrip.toCoordinates.latitude > north ||
+          currentTrip.toCoordinates.longitude < west ||
+          currentTrip.toCoordinates.longitude > east
+        ) {
+          // trip is out of bounds
+          parseRoute = false
+          return
+        }
+      }
+      // console.log(`Adding trip ${currentTrip.id}`)
+      const attributes = {
+        id: currentTrip.id,
+        depart: currentTrip.depart,
+      }
+
+      if (options.mode === outputModes.geo) {
+        attributes.fromLonLat = `${currentTrip.fromCoordinates.longitude},${currentTrip.fromCoordinates.latitude}`
+        attributes.toLonLat = `${currentTrip.toCoordinates.longitude},${currentTrip.toCoordinates.latitude}`
+      }
+
+      if (options.mode === outputModes.matsim) {
+        attributes.from = currentTrip.from
+        attributes.to = currentTrip.to
+      }
+
+      tripsXML.element("trip", attributes)
+      totalTripCounter++
+      parseRoute = false
     }
   }
 
@@ -144,14 +180,14 @@ function onOpenTag(node) {
       }
 
       parseRoute = true
-      routeCounter++
+      personTripCounter++
     }
   }
 
   if (currentTag === "route" && parseRoute && parsePlan) {
     const GK4coordinates = { x: carInteractionX, y: carInteractionY }
     const WGS84Coordinates = gk.toWGS(GK4coordinates)
-    currentTrip.id = `${currentPerson}_${routeCounter}`
+    currentTrip.id = `${currentPerson}_${personTripCounter}`
     currentTrip.from = node.attributes.start_link
     currentTrip.to = node.attributes.end_link
     currentTrip.fromCoordinates = {
@@ -163,64 +199,14 @@ function onOpenTag(node) {
   // console.log(node)
 }
 
-async function onCloseTag(tagName, options) {
+async function onCloseTag(tagName) {
   if (tagName === "person") {
     // console.log(`Person ${currentPerson} done`)
-    routeCounter = 0
+    personTripCounter = 0
   }
 
   if (tagName === "plan") {
     parsePlan = false
-  }
-
-  if (tagName === "activity" && parseRoute && parsePlan) {
-    if (options.bbox) {
-      const [south, west, north, east] = options.bbox
-      if (
-        currentTrip.fromCoordinates.latitude < south ||
-        currentTrip.fromCoordinates.latitude > north ||
-        currentTrip.fromCoordinates.longitude < west ||
-        currentTrip.fromCoordinates.longitude > east ||
-        currentTrip.toCoordinates.latitude < south ||
-        currentTrip.toCoordinates.latitude > north ||
-        currentTrip.toCoordinates.longitude < west ||
-        currentTrip.toCoordinates.longitude > east
-      ) {
-        // trip is out of bounds
-        parseRoute = false
-        return
-      }
-    }
-    // console.log(`Adding trip ${currentTrip.id}`)
-    const attributes = {
-      id: currentTrip.id,
-      depart: currentTrip.depart,
-    }
-
-    if (options.mode === outputModes.geo) {
-      attributes.fromLonLat = `${currentTrip.fromCoordinates.longitude},${currentTrip.fromCoordinates.latitude}`
-      attributes.toLonLat = `${currentTrip.toCoordinates.longitude},${currentTrip.toCoordinates.latitude}`
-    }
-
-    if (options.mode === outputModes.matsim) {
-      attributes.from = currentTrip.from
-      attributes.to = currentTrip.to
-    }
-
-    if (options.mode === outputModes.osm) {
-      lineReader.pause()
-      await Promise.all([db.getLinkById(currentTrip.from), db.getLinkById(currentTrip.to)]).then(
-        ([fromLink, toLink]) => {
-          attributes.from = fromLink.osmEdge
-          attributes.to = toLink.osmEdge
-        }
-      )
-      lineReader.resume()
-    }
-
-    tripsXML.element("trip", attributes)
-    tripCounter++
-    parseRoute = false
   }
 }
 
@@ -232,8 +218,8 @@ async function convertPlans(callerOptions) {
 
     const parser = sax.parser(true)
     parser.onerror = onError
-    parser.onopentag = onOpenTag
-    parser.onclosetag = tagName => onCloseTag(tagName, options)
+    parser.onopentag = node => onOpenTag(node, options)
+    parser.onclosetag = onCloseTag
 
     lineReader = new LineByLineReader(options.plans)
     lineReader.on("line", line => {
@@ -242,7 +228,7 @@ async function convertPlans(callerOptions) {
     lineReader.on("end", () => {
       fs.writeFileSync(options.output, tripsXML.end({ pretty: true }))
       console.log(`Total number of agents: ${personCounter}`)
-      console.log(`Total number of trips: ${tripCounter}`)
+      console.log(`Total number of trips: ${totalTripCounter}`)
       // console.log("Parsing done!")
       resolve()
     })
