@@ -20,11 +20,7 @@
     "gauss-krueger": "^1.0.1",
     "line-by-line": "^0.1.6",
     "p-queue": "^6.2.1",
-    "pg": "^7.18.0",
-    "pg-hstore": "^2.3.3",
     "sax": "^1.2.4",
-    "sequelize": "^5.21.3",
-    "sqlite3": "^4.1.1",
     "xmlbuilder": "^13.0.2"
   },
   "devDependencies": {
