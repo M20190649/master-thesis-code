@@ -148,6 +148,7 @@ function onOpenTag(node, options) {
       const attributes = {
         id: currentTrip.id,
         depart: currentTrip.depart,
+        // depart: totalTripCounter * 60, // For testing purposes
       }
 
       if (options.mode === outputModes.geo) {

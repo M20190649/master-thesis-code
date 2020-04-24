@@ -4,20 +4,14 @@ const fs = require("fs")
 const { logSection } = require("../shared/helpers")
 
 const convertMATSimNetwork = require("../sumo/convertMATSimNetwork")
+const convertPlansToTrips = require("../sumo/convertPlansToTrips")
 const convertTripsToRoutes = require("../sumo/convertTripsToRoutes")
 const visualizeRoutes = require("../sumo/visualizeRoutes")
-
-const convertPlansToTrips = require("../matsim/convertPlansToTrips")
 
 module.exports = async (inputDir, config) => {
   const rootDir = join(__dirname, "..")
   const matsimDir = join(rootDir, "matsim")
-  // const networkDir = join(inputDir, "network")
   const demandDir = join(inputDir, "demand")
-
-  // if (!fs.existsSync(networkDir)) {
-  //   fs.mkdirSync(networkDir)
-  // }
 
   if (!fs.existsSync(demandDir)) {
     fs.mkdirSync(demandDir)

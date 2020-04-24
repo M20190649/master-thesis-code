@@ -5,9 +5,8 @@ const { logSection } = require("../shared/helpers")
 
 const downloadFromOverpass = require("../osm/downloadFromOverpass")
 
-const convertPlansToTrips = require("../matsim/convertPlansToTrips")
-
 const convertOSMNetwork = require("../sumo/convertOSMNetwork")
+const convertPlansToTrips = require("../sumo/convertPlansToTrips")
 const convertTripsToRoutes = require("../sumo/convertTripsToRoutes")
 const visualizeRoutes = require("../sumo/visualizeRoutes")
 
