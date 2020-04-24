@@ -1,4 +1,4 @@
-const { join, basename } = require("path")
+const { join } = require("path")
 const fs = require("fs")
 
 const { logSection } = require("../shared/helpers")
@@ -6,13 +6,11 @@ const { logSection } = require("../shared/helpers")
 const downloadFromOverpass = require("../osm/downloadFromOverpass")
 
 const convertOSMNetwork = require("../sumo/convertOSMNetwork")
-const convertPlansToTrips = require("../sumo/convertPlansToTrips")
 const convertTripsToRoutes = require("../sumo/convertTripsToRoutes")
+const filterTrips = require("../sumo/filterTrips")
 const visualizeRoutes = require("../sumo/visualizeRoutes")
 
 module.exports = async (inputDir, config) => {
-  const rootDir = join(__dirname, "..")
-  const matsimDir = join(rootDir, "matsim")
   const networkDir = join(inputDir, "network")
   const demandDir = join(inputDir, "demand")
 
@@ -28,11 +26,6 @@ module.exports = async (inputDir, config) => {
   const routesName = "demand"
 
   const osmNetworkFile = `${join(networkDir, networkName)}.osm.xml`
-  const matsimPlansFile = join(
-    matsimDir,
-    "plans",
-    `berlin-v5.4-${config.scenario}.output_plans.xml`
-  )
   // const matsimPlansFile = join(matsimDir, "plans", "test-pop.xml")
   const networkFile = `${join(networkDir, networkName)}.net.xml`
   const tripsFile = `${join(demandDir, routesName)}.trips.xml`
@@ -69,15 +62,13 @@ module.exports = async (inputDir, config) => {
 
   // 2. Prepare demand data
   logSection("Prepare Demand Data")
-  // 2.1. Parse all the plans for the bbox and convert them to trips
-  console.log("Parsing MATSim plans for given Bbox...")
+  // 2.1. Filter the preconverted MATSim trips file for all trips within the bbox
+  console.log("Filter preconverted MATSim plans for given bbox...")
   if (fs.existsSync(tripsFile)) {
     console.log("Trips file already exists")
   } else {
-    await convertPlansToTrips({
+    await filterTrips({
       bbox: config.bbox,
-      plans: matsimPlansFile,
-      mode: "geo",
       output: tripsFile,
     })
   }

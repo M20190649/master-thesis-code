@@ -4,7 +4,7 @@ const fs = require("fs")
 const { logSection } = require("../shared/helpers")
 
 const convertMATSimNetwork = require("../sumo/convertMATSimNetwork")
-const convertPlansToTrips = require("../sumo/convertPlansToTrips")
+const filterTrips = require("../sumo/filterTrips")
 const convertTripsToRoutes = require("../sumo/convertTripsToRoutes")
 const visualizeRoutes = require("../sumo/visualizeRoutes")
 
@@ -22,7 +22,6 @@ module.exports = async (inputDir, config) => {
 
   const matsimNetworkFile = join(matsimDir, "network", "berlin-v5-network.xml")
   const networkFile = join(matsimDir, "network", "berlin-v5-network-converted.net.xml")
-  const matsimPlans = join(matsimDir, "plans", `berlin-v5.4-${config.scenario}.output_plans.xml`)
   const tripsFile = `${join(demandDir, routesName)}.trips.xml`
   const routesFile = `${join(demandDir, routesName)}.rou.xml`
   const routesVisualizationFile = `${join(demandDir, routesName)}.rou.visualization.xml`
@@ -44,14 +43,13 @@ module.exports = async (inputDir, config) => {
 
   // 2. Prepare routes data
   logSection("Prepare Demand Data")
-  // Parse all the plans for the bbox and convert them to trips
-  console.log("Converting the MATSim plans...")
+  // 2.1. Filter the preconverted MATSim trips file for all trips within the bbox
+  console.log("Filter preconverted MATSim plans for given bbox...")
   if (fs.existsSync(tripsFile)) {
     console.log("Trips file already exists")
   } else {
-    await convertPlansToTrips({
-      plans: matsimPlans,
-      mode: "matsim",
+    await filterTrips({
+      bbox: config.bbox,
       output: tripsFile,
     })
   }
