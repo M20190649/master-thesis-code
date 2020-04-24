@@ -24,7 +24,7 @@ The simulation is built using the following technologies and software:
 
 ### [Setup Guide for Windows](setup/windows.md)
 
-### [Setup Guide for Linux](setup/linus.md)
+### [Setup Guide for Linux](setup/linux.md)
 
 ## Preparation
 
