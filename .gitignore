@@ -22,3 +22,4 @@ airdata/backup
 *.sqlite-journal
 *.sumocfg
 *log*
+*.pem
