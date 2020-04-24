@@ -15,56 +15,16 @@ Road data is taken from [OpenStreetMap](https://www.openstreetmap.org/) and real
 
 Air pollution data is taken from [Luftdaten.info](https://luftdaten.info/en/home-en/) and [OpenSenseBox](https://opensensemap.org/).
 
+The simulation is built using the following technologies and software:
+* NodeJS
+* Python
+* SUMO (Simulation of Urban MObility)
+
 ## Setup
 
-### General Requirements
+### [Setup Guide for Windows](setup/windows.md)
 
-* [NodeJS + npm](https://nodejs.org/en/)
-* [Python (Miniconda/Anaconda)](https://docs.conda.io/en/latest/miniconda.html)
-* [SUMO (Simulation of Urban MObility)](https://sumo.dlr.de/docs/Downloads.php)
-* [Latest C++ Build Tool for Visual Studio](https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=BuildTools&rel=16) (Windows only)
-
-### SUMO (TraCI)
-
-1. Download and install/unpack SUMO
-2. Set `SUMO_HOME` environment variable to your SUMO install directory (e.g. `C:\Users\Mazel\Desktop\sumo-1.5.0`)
-3. Add the `bin` directory of your SUMO directory to the PATH variable (e.g. `C:\Users\Mazel\Desktop\sumo-1.5.0\bin`)
-
-## Dependencies
-
-### NodeJS
-
-1. Install the latest [NodeJS](https://nodejs.org/en/) (min. v.12.x) for your OS
-2. Install NodeJS dependencies:
-
-```
-npm install
-```
-
-### Python/Miniconda/Anaconda
-
-1. Install [Miniconda/Anaconda](https://docs.conda.io/en/latest/index.html) for your OS
-2. Install Python dependencies:
-
-```
-conda env create -f environment.yml
-```
-
-If the above does not work you can also create the environment manually
-
-```bash
-# Create a new environment and activate it
-conda create --name apats-sim
-conda activate apats-sim
-
-# Add additional channel for packages
-conda config --add channels conda-forge
-
-# Install all packages
-conda install numpy scipy shapely pandas geopandas matplotlib notebook scikit-learn scikit-image metpy pykrige zope.event
-
-pip install naturalneighbor
-```
+### [Setup Guide for Linux](setup/linus.md)
 
 ## Preparation
 
