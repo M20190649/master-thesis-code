@@ -25,8 +25,8 @@ module.exports = async (inputDir, config) => {
     fs.mkdirSync(demandDir)
   }
 
-  const networkName = `${basename(inputDir)}-network`
-  const routesName = `${basename(inputDir)}-routes`
+  const networkName = "network"
+  const routesName = "demand"
 
   const osmNetworkFile = `${join(networkDir, networkName)}.osm.xml`
   const matsimPlansFile = join(
