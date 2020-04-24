@@ -21,8 +21,8 @@ Air pollution data is taken from [Luftdaten.info](https://luftdaten.info/en/home
 
 * [NodeJS + npm](https://nodejs.org/en/)
 * [Python (Miniconda/Anaconda)](https://docs.conda.io/en/latest/miniconda.html)
-* [Latest C++ Build Tool for Visual Studio](https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=BuildTools&rel=16)
 * [SUMO (Simulation of Urban MObility)](https://sumo.dlr.de/docs/Downloads.php)
+* [Latest C++ Build Tool for Visual Studio](https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=BuildTools&rel=16) (Windows only)
 
 ### SUMO (TraCI)
 
@@ -34,7 +34,7 @@ Air pollution data is taken from [Luftdaten.info](https://luftdaten.info/en/home
 
 ### NodeJS
 
-1. Install [NodeJS](https://nodejs.org/en/) for your OS
+1. Install the latest [NodeJS](https://nodejs.org/en/) (min. v.12.x) for your OS
 2. Install NodeJS dependencies:
 
 ```
@@ -50,9 +50,25 @@ npm install
 conda env create -f environment.yml
 ```
 
+If the above does not work you can also create the environment manually
+
+```bash
+# Create a new environment and activate it
+conda create --name apats-sim
+conda activate apats-sim
+
+# Add additional channel for packages
+conda config --add channels conda-forge
+
+# Install all packages
+conda install numpy scipy shapely pandas geopandas matplotlib notebook scikit-learn scikit-image metpy pykrige zope.event
+
+pip install naturalneighbor
+```
+
 ## Preparation
 
-1. Download necessary static input data
+1. Download and prepare necessary static input data (this takes around 30 minutes)
 
 ```
 npm run setup
