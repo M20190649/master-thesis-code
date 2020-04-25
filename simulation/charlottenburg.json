@@ -1,0 +1,31 @@
+{
+  "mode": "osm",
+  "scenario": "10pct",
+  "bbox": [
+    52.4828,
+    13.2136,
+    52.5330,
+    13.3594
+  ],
+  "includeServiceRoads": true,
+  "pollutant": "PM10",
+  "simulationDate": "02.02.2020",
+  "zoneUpdateInterval": 60,
+  "interpolationMethod": "idw",
+  "zones": [
+    0,
+    20,
+    40,
+    100,
+    200,
+    400,
+    1000
+  ],
+  "visualizeZones": true,
+  "enableRerouting": false,
+  "reroutingDecisionMode": "percentage",
+  "reroutingPercentage": 1,
+  "dynamicRerouting": false,
+  "dynamicReroutingDistance": 1000,
+  "freezeZones": true
+}
