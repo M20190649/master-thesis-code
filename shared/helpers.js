@@ -88,15 +88,17 @@ exports.gunzip = (zipFile, output) => {
   })
 }
 
-exports.downloadFile = (url, filename) => {
+exports.downloadFile = (url, filepath) => {
   return new Promise((resolve, reject) => {
-    const outputStream = fs.createWriteStream(filename)
     axios
       .get(url, {
         responseType: "stream",
       })
-      .then(res => res.data.pipe(outputStream))
-
-    outputStream.on("close", resolve)
+      .then(res => {
+        const outputStream = fs.createWriteStream(filepath)
+        outputStream.on("close", resolve)
+        res.data.pipe(outputStream)
+      })
+      .catch(error => reject(error))
   })
 }
