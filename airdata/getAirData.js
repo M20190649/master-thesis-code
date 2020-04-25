@@ -132,7 +132,7 @@ async function getAirData(callerOptions) {
     measurementPerSource[source] = await downloader(adaptedOptions)
     console.log("\n")
   }
-  console.log("\nDone!\n")
+  console.log("Done!\n")
 
   const lastTimestepData = Object.values(measurementPerSource).reduce((data, measurements) => {
     if (measurements === null) return data
@@ -152,7 +152,7 @@ async function getAirData(callerOptions) {
     measurementPerSource[source] = await downloader(options)
     console.log("\n")
   }
-  console.log("\nDone!\n")
+  console.log("Done!\n")
 
   const timesteps = Object.keys(Object.values(measurementPerSource)[0] || {})
   for (const timestep of timesteps) {
