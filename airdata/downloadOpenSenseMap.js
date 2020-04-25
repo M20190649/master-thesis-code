@@ -6,77 +6,9 @@ const axios = require("axios")
 const Measurement = require("./Measurement")
 const { getDateString, getTimeString } = require("../shared/helpers")
 
-async function downloadOpenSenseMapAPI(options) {
-  const pollutantMapping = {
-    PM10: "PM10",
-    "PM2.5": "PM2.5",
-  }
-
-  const pollutant = pollutantMapping[options.pollutant]
-
-  const baseUrl = "https://api.opensensemap.org"
-
-  const [south, west, north, east] = options.bbox
-  const bbox = [west, south, east, north]
-
-  const allBoxesURL = [baseUrl, "/boxes", `?bbox=${bbox.join(",")}`, "&format=json"].join("")
-  const { data: allBoxes } = await axios.get(allBoxesURL)
-  const allPhenomenons = allBoxes.reduce(
-    (set, b) => set.add(...b.sensors.map(s => s.title)),
-    new Set()
-  )
-  const numberOfSensorForMeasurement = allBoxes.filter(b =>
-    b.sensors.some(s => s.title === pollutant)
-  ).length
-
-  const specificMeasurementURL = [
-    baseUrl,
-    "/boxes/data",
-    `?bbox=${bbox.join(",")}`,
-    `&phenomenon=${pollutant}`,
-    `&from-date=${options.date.toISOString()}`,
-    `&to-date=${options.date.toISOString()}`,
-    "&format=json",
-  ].join("")
-
-  const { data: rawMeasurements } = await axios.get(specificMeasurementURL)
-
-  const measurements = rawMeasurements.reduce((collection, m) => {
-    if (collection[m.sensorId]) {
-      if (collection[m.sensorId].createdAt > m.createdAt) {
-        collection[m.sensorId] = m
-      }
-    } else {
-      collection[m.sensorId] = m
-    }
-    return collection
-  }, {})
-
-  const outputGeojson = {
-    type: "FeatureCollection",
-    features: Object.values(measurements).map(m => {
-      return {
-        type: "Feature",
-        geometry: {
-          type: "Point",
-          coordinates: [parseFloat(m.lon), parseFloat(m.lat)],
-        },
-        properties: {
-          sensorId: m.sensorId,
-          pollutant: options.pollutant,
-          timestamp: m.createdAt,
-          value: parseFloat(m.value),
-        },
-      }
-    }),
-  }
-
-  // fs.writeFileSync(
-  //   `./data/open-sense-map-${getDateString()}T${getTimeString()}.geojson`,
-  //   JSON.stringify(outputGeojson, null, 2)
-  // )
-
-  return outputGeojson
+const pollutantMapping = {
+  PM10: "PM10",
+  "PM2.5": "PM2.5",
 }
 
 function getArchiveURLFromSenseBox(options, pollutant, box) {
@@ -90,11 +22,6 @@ function getArchiveURLFromSenseBox(options, pollutant, box) {
 }
 
 async function downloadOpenSenseMapArchive(options) {
-  const pollutantMapping = {
-    PM10: "PM10",
-    "PM2.5": "PM2.5",
-  }
-
   const pollutant = pollutantMapping[options.pollutant]
 
   const [south, west, north, east] = options.bbox
@@ -171,6 +98,5 @@ async function downloadOpenSenseMapArchive(options) {
 }
 
 module.exports = {
-  downloadOpenSenseMapAPI,
   downloadOpenSenseMapArchive,
 }
