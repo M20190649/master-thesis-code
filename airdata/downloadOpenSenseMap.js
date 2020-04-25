@@ -65,14 +65,12 @@ async function downloadOpenSenseMapArchive(options) {
     const senseBoxesURL = `https://api.opensensemap.org/boxes?bbox=${apiBbox.join(
       ","
     )}&phenomenon=${pollutant}&format=json`
-    console.log(senseBoxesURL)
     const { data: senseBoxes } = await axios.get(senseBoxesURL, { timeout: 10000 })
-    console.log(senseBoxes)
 
     // Check if there are new ones that should be added to the backup list
     const backupIdList = openSenseMapSensors.sensors.map(s => s._id)
     let newSensorCounter = 0
-    for (const sensor of openSenseMapSensors) {
+    for (const sensor of senseBoxes) {
       const sensorIndex = backupIdList.indexOf(sensor._id)
       if (sensorIndex !== -1) {
         // Update sensor
