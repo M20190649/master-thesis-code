@@ -143,7 +143,7 @@ async function downloadOpenSenseMapArchive(options) {
           timeoutCounter++
         }
 
-        const timeoutLimit = 3
+        const timeoutLimit = 1
         if (timeoutCounter > timeoutLimit) {
           console.log(`More than ${timeoutLimit} archive requests timed out`)
           console.log("Stopping the download from OpenSenseMap")
