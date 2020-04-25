@@ -122,7 +122,7 @@ async function getAirData(callerOptions) {
     luftdatenInfo: downloadFromLuftdatenInfo,
     openSenseMap: downloadOpenSenseMap,
   }
-  const measurementPerSource = {}
+  let measurementPerSource = {}
 
   // Get data from previous day to calculate the data for 00:00:00
   const previousDate = new Date(options.date - 1000 * 60 * 60 * 24)
@@ -146,10 +146,15 @@ async function getAirData(callerOptions) {
     writeMeasurements(lastTimestepData, options.date.toISOString())
   }
 
+  measurementPerSource = {}
+
   // Get measurements from actual date
   console.log(`\nFetching data from specified day (${getDateString(options.date)})...\n`)
   for (const [source, downloader] of Object.entries(sources)) {
-    measurementPerSource[source] = await downloader(options)
+    const measurements = await downloader(options)
+    if (measurements !== null) {
+      measurementPerSource[source] = measurements
+    }
     console.log("\n")
   }
   console.log("Done!\n")
@@ -157,9 +162,6 @@ async function getAirData(callerOptions) {
   const timesteps = Object.keys(Object.values(measurementPerSource)[0] || {})
   for (const timestep of timesteps) {
     const timestepData = Object.values(measurementPerSource).reduce((data, measurements) => {
-      if (measurements === null) return data
-
-      // The measurements are organized in timesteps so here we only take the last one
       data.push(...measurements[timestep])
       return data
     }, [])
