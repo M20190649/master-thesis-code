@@ -1,6 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 
 const fs = require("fs")
+const { join } = require("path")
 const axios = require("axios")
 
 const Measurement = require("./Measurement")
@@ -74,7 +75,8 @@ async function downloadOpenSenseMapArchive(options) {
     for (const sensor of openSenseMapSensors) {
       const sensorIndex = backupIdList.indexOf(sensor._id)
       if (sensorIndex !== -1) {
-        openSenseMapSensors.sensors[sensorIndex] = sensor
+        // Update sensor
+        // openSenseMapSensors.sensors[sensorIndex] = sensor
       } else {
         newSensorCounter++
         openSenseMapSensors.sensors.push(sensor)
@@ -86,7 +88,7 @@ async function downloadOpenSenseMapArchive(options) {
     }
 
     fs.writeFileSync(
-      "./data/open-sense-map-sensors.json",
+      join(__dirname, "data", "open-sense-map-sensors.json"),
       JSON.stringify(openSenseMapSensors, null, 2)
     )
   } catch (error) {
@@ -125,9 +127,9 @@ async function downloadOpenSenseMapArchive(options) {
 
     const archiveURL = getArchiveURLFromSenseBox(s, options)
     // Check if sensor data for the given date has already been downloaded
-    const dir = `./data/${dateString}/openSenseMap`
+    const dir = join(__dirname, "data", dateString, "openSenseMap")
     const filename = archiveURL.split("/").pop()
-    const filepath = `${dir}/${filename}`
+    const filepath = join(dir, filename)
 
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true })

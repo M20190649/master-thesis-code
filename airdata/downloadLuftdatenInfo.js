@@ -1,4 +1,5 @@
 const fs = require("fs")
+const { join } = require("path")
 const axios = require("axios")
 
 const Measurement = require("./Measurement")
@@ -70,7 +71,8 @@ async function downloadFromLuftdatenInfoArchive(options) {
     for (const measurement of latestMeasurements) {
       const sensorIndex = backupIdList.indexOf(measurement.sensor.id)
       if (sensorIndex !== -1) {
-        luftdatenInfoSensors.sensors[sensorIndex] = measurement
+        // Update sensor
+        // luftdatenInfoSensors.sensors[sensorIndex] = measurement
       } else {
         newSensorCounter++
         luftdatenInfoSensors.sensors.push(measurement)
@@ -82,7 +84,7 @@ async function downloadFromLuftdatenInfoArchive(options) {
     }
 
     fs.writeFileSync(
-      "./data/luftdaten-info-sensors.json",
+      join(__dirname, "data", "luftdaten-info-sensors.json"),
       JSON.stringify(luftdatenInfoSensors, null, 2)
     )
   } catch (error) {
@@ -137,8 +139,8 @@ async function downloadFromLuftdatenInfoArchive(options) {
 
     const filename = `${s.sensor.sensor_type.name.toLowerCase()}_sensor_${s.sensor.id}.csv`
     // Check if sensor data for the given date has already been downloaded
-    const dir = `./data/${dateString}/luftdaten.info`
-    const filepath = `${dir}/${filename}`
+    const dir = join(__dirname, "data", dateString, "luftdaten.info")
+    const filepath = join(dir, filename)
 
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true })
