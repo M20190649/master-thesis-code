@@ -4,14 +4,47 @@ const fs = require("fs")
 const axios = require("axios")
 
 const Measurement = require("./Measurement")
-const { getDateString, getTimeString } = require("../shared/helpers")
+const { getDateString, downloadFile } = require("../shared/helpers")
+
+const openSenseMapSensors = require("./data/open-sense-map-sensors.json")
 
 const pollutantMapping = {
   PM10: "PM10",
   "PM2.5": "PM2.5",
 }
 
-function getArchiveURLFromSenseBox(options, pollutant, box) {
+function aggregateMeasurements(filepath, options) {
+  const csv = fs.readFileSync(filepath, "utf8")
+  const rows = csv.split("\n")
+
+  const values = {}
+  let currentTimeStep = new Date(options.date.getTime() + options.timestep * 60 * 1000)
+  let sum = 0
+  let counter = 0
+  for (const row of rows) {
+    const [ts, value] = row.split(",")
+    const tsDate = new Date(ts)
+    if (tsDate <= currentTimeStep) {
+      // When measurement value is within current timestep add it to sum
+      sum += parseFloat(value)
+      counter++
+    } else {
+      // We reached the end of the time step
+      // Calculate the average and add it to the result object
+      if (sum > 0 && counter > 0) {
+        values[currentTimeStep.toISOString()] = sum / counter
+      }
+
+      currentTimeStep = new Date(currentTimeStep.getTime() + options.timestep * 60 * 1000)
+      sum = 0
+      counter = 0
+    }
+  }
+  return values
+}
+
+function getArchiveURLFromSenseBox(box, options) {
+  const pollutant = pollutantMapping[options.pollutant]
   let url = `https://uni-muenster.sciebo.de/index.php/s/HyTbguBP4EkqBcp/download?path=/data/`
   url += `${getDateString(options.date)}/`
   const name = box.name.replace(/ |,|'/gi, "_").replace(/ß|ö|ä|ü/gi, "__")
@@ -22,81 +55,127 @@ function getArchiveURLFromSenseBox(options, pollutant, box) {
 }
 
 async function downloadOpenSenseMapArchive(options) {
+  console.log("Downloading from OpenSenseMap")
   const pollutant = pollutantMapping[options.pollutant]
-
   const [south, west, north, east] = options.bbox
-  const bbox = [west, south, east, north]
 
-  const senseBoxesURL = `https://api.opensensemap.org/boxes?bbox=${bbox.join(
-    ","
-  )}&phenomenon=${pollutant}&format=json`
+  try {
+    const apiBbox = [west, south, east, north]
+    const senseBoxesURL = `https://api.opensensemap.org/boxes?bbox=${apiBbox.join(
+      ","
+    )}&phenomenon=${pollutant}&format=json`
+    console.log(senseBoxesURL)
+    const { data: senseBoxes } = await axios.get(senseBoxesURL, { timeout: 10000 })
+    console.log(senseBoxes)
 
-  const { data: senseBoxes } = await axios.get(senseBoxesURL)
+    // Check if there are new ones that should be added to the backup list
+    const backupIdList = openSenseMapSensors.sensors.map(s => s._id)
+    let newSensorCounter = 0
+    for (const sensor of openSenseMapSensors) {
+      const sensorIndex = backupIdList.indexOf(sensor._id)
+      if (sensorIndex !== -1) {
+        openSenseMapSensors.sensors[sensorIndex] = sensor
+      } else {
+        newSensorCounter++
+        openSenseMapSensors.sensors.push(sensor)
+      }
+    }
 
-  // Filter for all boxes that have PM values
-  const pmBoxes = senseBoxes.filter(b => {
-    return b.sensors.some(s => s.title === pollutant)
+    if (newSensorCounter > 0) {
+      console.log("New sensors: ", newSensorCounter)
+    }
+
+    fs.writeFileSync(
+      "./data/open-sense-map-sensors.json",
+      JSON.stringify(openSenseMapSensors, null, 2)
+    )
+  } catch (error) {
+    console.log("Error when fetching latest measurements:", error.message)
+    console.log("Using backup sensor list instead")
+  }
+
+  // We filter all measurements for the following things:
+  // 1. Reports PM (or other given pollutant)
+  // 2. Is inside given bbox
+  const filteredSensors = openSenseMapSensors.sensors.filter(s => {
+    const isPM = s.sensors.some(v => {
+      return v.title === pollutant
+    })
+    if (!isPM) return false
+
+    const [long, lat] = s.currentLocation.coordinates
+    const isInBbox = lat >= south && lat <= north && long >= west && long <= east
+    if (!isInBbox) return false
+
+    return true
   })
 
-  // fs.writeFileSync("stations.json", JSON.stringify(pmBoxes, null, 2))
+  console.log(`All sensors: ${openSenseMapSensors.sensors.length}`)
+  console.log(`${options.pollutant} sensors: ${filteredSensors.length}`)
 
-  // Measurements object will contain a list of sensors with averages values for every timestep
+  // Now we know which sensors report PM values in the given bbox
+
+  // Measurements object will contain a list of sensors with their averages values for every timestep
   const measurements = {}
   let errorCounter = 0
-  for (const box of pmBoxes) {
-    try {
-      const { data: csv } = await axios.get(getArchiveURLFromSenseBox(options, pollutant, box))
-      const rows = csv.split("\n")
-      const header = rows.shift().split(",")
+  let timeoutCounter = 0
+  const dateString = getDateString(options.date)
+  for (const s of filteredSensors) {
+    let timestepValues = {}
 
-      let currentTimeStep = new Date(options.date.getTime() + options.timestep * 60 * 1000)
-      let sum = 0
-      let counter = 0
-      for (const row of rows) {
-        const [ts, value] = row.split(",")
-        const tsDate = new Date(ts)
-        if (tsDate <= currentTimeStep) {
-          // When measurement value is within current timestep add it to sum
-          sum += parseFloat(value)
-          counter++
-        } else {
-          // We reached the end of the time step
-          // Calculate the average and add it to the result object
-          if (sum > 0 && counter > 0) {
-            const measurementObj = new Measurement(
-              box._id,
-              sum / counter,
-              "openSenseMap",
-              parseFloat(box.currentLocation.coordinates[1]),
-              parseFloat(box.currentLocation.coordinates[0])
-            )
-            if (measurements[currentTimeStep.toISOString()]) {
-              measurements[currentTimeStep.toISOString()].push(measurementObj)
-            } else {
-              measurements[currentTimeStep.toISOString()] = [measurementObj]
-            }
-          }
+    const archiveURL = getArchiveURLFromSenseBox(s, options)
+    // Check if sensor data for the given date has already been downloaded
+    const dir = `./data/${dateString}/openSenseMap`
+    const filename = archiveURL.split("/").pop()
+    const filepath = `${dir}/${filename}`
 
-          currentTimeStep = new Date(currentTimeStep.getTime() + options.timestep * 60 * 1000)
-          sum = 0
-          counter = 0
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true })
+    }
+
+    if (!fs.existsSync(filepath)) {
+      // Data has not been downloaded yet
+      // Access the archives for the specific sensor
+      try {
+        await downloadFile(archiveURL, filepath, 10000)
+      } catch (error) {
+        if (error.message.match(/timeout/gi)) {
+          timeoutCounter++
         }
+
+        const timeoutLimit = 3
+        if (timeoutCounter > timeoutLimit) {
+          console.log(`More than ${timeoutLimit} archive requests timed out`)
+          console.log("Stopping the download from OpenSenseMap")
+          return null
+        }
+
+        errorCounter++
+        continue
       }
-    } catch (error) {
-      // Some will fail because they are not available
-      errorCounter++
+    }
+
+    timestepValues = aggregateMeasurements(filepath, options)
+
+    for (const [timestep, value] of Object.entries(timestepValues)) {
+      const measurementObj = new Measurement(
+        s._id,
+        value,
+        "openSenseMap",
+        parseFloat(s.currentLocation.coordinates[1]),
+        parseFloat(s.currentLocation.coordinates[0])
+      )
+      if (measurements[timestep]) {
+        measurements[timestep].push(measurementObj)
+      } else {
+        measurements[timestep] = [measurementObj]
+      }
     }
   }
 
-  // console.log(measurements)
-  console.log("OpenSenseMap")
-  console.log(`All sensors: ${senseBoxes.length}`)
-  console.log(`PM sensors: ${pmBoxes.length}`)
   console.log(`Archive sensor data errors: ${errorCounter} `)
 
   return measurements
 }
 
-module.exports = {
-  downloadOpenSenseMapArchive,
-}
+module.exports = downloadOpenSenseMapArchive

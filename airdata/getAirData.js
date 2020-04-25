@@ -3,8 +3,8 @@ const { join } = require("path")
 
 const parseCLIOptions = require("../shared/parseCLIOptions")
 const { validateOptions, getDateString, getTimeString, pad } = require("../shared/helpers")
-const { downloadFromLuftdatenInfoArchive } = require("./downloadLuftdatenInfo")
-const { downloadOpenSenseMapArchive } = require("./downloadOpenSenseMap")
+const downloadFromLuftdatenInfo = require("./downloadLuftdatenInfo")
+const downloadOpenSenseMap = require("./downloadOpenSenseMap")
 
 const optionDefinitions = [
   {
@@ -119,8 +119,8 @@ async function getAirData(callerOptions) {
   }
 
   const sources = {
-    luftdatenInfo: downloadFromLuftdatenInfoArchive,
-    openSenseMap: downloadOpenSenseMapArchive,
+    luftdatenInfo: downloadFromLuftdatenInfo,
+    openSenseMap: downloadOpenSenseMap,
   }
   const measurementPerSource = {}
 
@@ -135,12 +135,16 @@ async function getAirData(callerOptions) {
   console.log("\nDone!\n")
 
   const lastTimestepData = Object.values(measurementPerSource).reduce((data, measurements) => {
+    if (measurements === null) return data
+
     // The measurements are organized in timesteps so here we only take the last one
     data.push(...Object.values(measurements).pop())
     return data
   }, [])
 
-  writeMeasurements(lastTimestepData, options.date.toISOString())
+  if (lastTimestepData.length > 0) {
+    writeMeasurements(lastTimestepData, options.date.toISOString())
+  }
 
   // Get measurements from actual date
   console.log(`\nFetching data from specified day (${getDateString(options.date)})...\n`)
@@ -150,9 +154,11 @@ async function getAirData(callerOptions) {
   }
   console.log("\nDone!\n")
 
-  const timesteps = Object.keys(Object.values(measurementPerSource)[0])
+  const timesteps = Object.keys(Object.values(measurementPerSource)[0] || {})
   for (const timestep of timesteps) {
     const timestepData = Object.values(measurementPerSource).reduce((data, measurements) => {
+      if (measurements === null) return data
+
       // The measurements are organized in timesteps so here we only take the last one
       data.push(...measurements[timestep])
       return data

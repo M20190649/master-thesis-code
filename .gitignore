@@ -1,15 +1,19 @@
 .vscode
 node_modules
 __pycache__
-airdata/data
 .idea
-output
-airdata/*.cmd
 .ipynb_checkpoints
-**test*
+
+# Ignore all test or log data
+**test**
+**log**
+
+# Ignore all simulation input/output data
 simulation/*/**
-airdata/validation*/**
-airdata/backup
+
+# Ignore all folders in the airdata directory with some exceptions
+airdata/*/**
+!airdata/data/*.json
 
 *.pdf
 *.osm.pbf
@@ -18,8 +22,5 @@ airdata/backup
 *.xml
 *.bz2
 *.gz
-*.sqlite
-*.sqlite-journal
 *.sumocfg
-*log*
 *.pem
