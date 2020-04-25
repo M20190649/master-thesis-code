@@ -146,7 +146,7 @@ async function downloadFromLuftdatenInfoArchive(options) {
       fs.mkdirSync(dir, { recursive: true })
     }
 
-    if (fs.existsSync(filepath)) {
+    if (!fs.existsSync(filepath)) {
       // Data has not been downloaded yet
       // Access the archives for the specific sensor
       try {
