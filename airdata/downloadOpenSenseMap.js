@@ -70,12 +70,12 @@ async function downloadOpenSenseMapArchive(options) {
     const { data: senseBoxes } = await axios.get(senseBoxesURL, { timeout })
 
     // Check if there are new ones that should be added to the backup list
-    const backupIdList = openSenseMapSensors.sensors.map(s => s._id)
     let newSensorCounter = 0
     for (const sensor of senseBoxes) {
-      const sensorIndex = backupIdList.indexOf(sensor._id)
+      const idList = openSenseMapSensors.sensors.map(s => s._id)
+      const sensorIndex = idList.indexOf(sensor._id)
       if (sensorIndex !== -1) {
-        // Update sensor
+        // Sensor is already in the list
         // openSenseMapSensors.sensors[sensorIndex] = sensor
       } else {
         newSensorCounter++

@@ -67,12 +67,12 @@ async function downloadFromLuftdatenInfoArchive(options) {
     const { data: latestMeasurements } = await axios.get(apiURL, { timeout })
 
     // Check if there are new ones that should be added to the backup list
-    const backupIdList = luftdatenInfoSensors.sensors.map(s => s.sensor.id)
     let newSensorCounter = 0
     for (const measurement of latestMeasurements) {
-      const sensorIndex = backupIdList.indexOf(measurement.sensor.id)
+      const idList = luftdatenInfoSensors.sensors.map(s => s.sensor.id)
+      const sensorIndex = idList.indexOf(measurement.sensor.id)
       if (sensorIndex !== -1) {
-        // Update sensor
+        // Sensor is already in the list
         // luftdatenInfoSensors.sensors[sensorIndex] = measurement
       } else {
         newSensorCounter++
