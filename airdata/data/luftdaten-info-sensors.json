@@ -44248,6 +44248,339 @@
         }
       ],
       "id": 181305253
+    },
+    {
+      "sensordatavalues": [
+        {
+          "value": "13.50",
+          "value_type": "temperature",
+          "id": 395102238
+        },
+        {
+          "value": "47.40",
+          "value_type": "humidity",
+          "id": 395102245
+        }
+      ],
+      "location": {
+        "altitude": "49.0",
+        "latitude": "52.45658760000",
+        "country": "DE",
+        "exact_location": 1,
+        "id": 24117,
+        "longitude": "13.37542590000",
+        "indoor": 0
+      },
+      "timestamp": "2020-04-25 20:55:12",
+      "sampling_rate": null,
+      "sensor": {
+        "sensor_type": {
+          "id": 9,
+          "manufacturer": "various",
+          "name": "DHT22"
+        },
+        "pin": "7",
+        "id": 38315
+      },
+      "id": 183873195
+    },
+    {
+      "sensordatavalues": [
+        {
+          "value": "10.83",
+          "value_type": "temperature",
+          "id": 395099246
+        },
+        {
+          "value": "100738.47",
+          "value_type": "pressure",
+          "id": 395099247
+        },
+        {
+          "value": "70.44",
+          "value_type": "humidity",
+          "id": 395099248
+        },
+        {
+          "value": 101294.67,
+          "value_type": "pressure_at_sealevel"
+        }
+      ],
+      "location": {
+        "altitude": "45.8",
+        "latitude": "52.754",
+        "country": "DE",
+        "exact_location": 0,
+        "id": 10507,
+        "longitude": "13.04",
+        "indoor": 0
+      },
+      "timestamp": "2020-04-25 20:55:03",
+      "sampling_rate": null,
+      "sensor": {
+        "sensor_type": {
+          "id": 17,
+          "manufacturer": "Bosch",
+          "name": "BME280"
+        },
+        "pin": "11",
+        "id": 20696
+      },
+      "id": 183871828
+    },
+    {
+      "sensordatavalues": [
+        {
+          "value": "10.86",
+          "value_type": "temperature",
+          "id": 395050908
+        },
+        {
+          "value": "100734.78",
+          "value_type": "pressure",
+          "id": 395050909
+        },
+        {
+          "value": "71.19",
+          "value_type": "humidity",
+          "id": 395050910
+        },
+        {
+          "value": 101290.9,
+          "value_type": "pressure_at_sealevel"
+        }
+      ],
+      "location": {
+        "altitude": "45.8",
+        "latitude": "52.754",
+        "country": "DE",
+        "exact_location": 0,
+        "id": 10507,
+        "longitude": "13.04",
+        "indoor": 0
+      },
+      "timestamp": "2020-04-25 20:52:37",
+      "sampling_rate": null,
+      "sensor": {
+        "sensor_type": {
+          "id": 17,
+          "manufacturer": "Bosch",
+          "name": "BME280"
+        },
+        "pin": "11",
+        "id": 20696
+      },
+      "id": 183849348
+    },
+    {
+      "sensordatavalues": [
+        {
+          "value": "15.60",
+          "value_type": "temperature",
+          "id": 395047776
+        },
+        {
+          "value": "41.00",
+          "value_type": "humidity",
+          "id": 395047777
+        }
+      ],
+      "location": {
+        "altitude": "35.7",
+        "latitude": "52.52",
+        "country": "DE",
+        "exact_location": 0,
+        "id": 9680,
+        "longitude": "13.332",
+        "indoor": 0
+      },
+      "timestamp": "2020-04-25 20:52:25",
+      "sampling_rate": null,
+      "sensor": {
+        "sensor_type": {
+          "id": 9,
+          "manufacturer": "various",
+          "name": "DHT22"
+        },
+        "pin": "7",
+        "id": 19096
+      },
+      "id": 183847907
+    },
+    {
+      "sampling_rate": null,
+      "id": 184732652,
+      "sensor": {
+        "sensor_type": {
+          "name": "DHT22",
+          "id": 9,
+          "manufacturer": "various"
+        },
+        "pin": "7",
+        "id": 45197
+      },
+      "location": {
+        "country": "DE",
+        "exact_location": 1,
+        "id": 30939,
+        "indoor": 0,
+        "longitude": "13.39213442796",
+        "latitude": "52.55165192099",
+        "altitude": "48.4"
+      },
+      "timestamp": "2020-04-25 22:29:14",
+      "sensordatavalues": [
+        {
+          "id": 396951334,
+          "value_type": "temperature",
+          "value": "21.40"
+        },
+        {
+          "id": 396951335,
+          "value_type": "humidity",
+          "value": "44.90"
+        }
+      ]
+    },
+    {
+      "sampling_rate": null,
+      "sensor": {
+        "sensor_type": {
+          "manufacturer": "various",
+          "name": "DHT22",
+          "id": 9
+        },
+        "id": 12815,
+        "pin": "7"
+      },
+      "location": {
+        "altitude": "43.7",
+        "country": "DE",
+        "indoor": 0,
+        "latitude": "52.328",
+        "id": 6472,
+        "exact_location": 0,
+        "longitude": "13.07"
+      },
+      "sensordatavalues": [
+        {
+          "value_type": "temperature",
+          "value": "18.50",
+          "id": 407782463
+        },
+        {
+          "value_type": "humidity",
+          "value": "45.80",
+          "id": 407782464
+        }
+      ],
+      "id": 189769074,
+      "timestamp": "2020-04-26 08:09:29"
+    },
+    {
+      "sampling_rate": null,
+      "sensor": {
+        "sensor_type": {
+          "manufacturer": "various",
+          "name": "DHT22",
+          "id": 9
+        },
+        "id": 12815,
+        "pin": "7"
+      },
+      "location": {
+        "altitude": "43.7",
+        "country": "DE",
+        "indoor": 0,
+        "latitude": "52.328",
+        "id": 6472,
+        "exact_location": 0,
+        "longitude": "13.07"
+      },
+      "sensordatavalues": [
+        {
+          "value_type": "temperature",
+          "value": "18.30",
+          "id": 407733155
+        },
+        {
+          "value_type": "humidity",
+          "value": "44.90",
+          "id": 407733156
+        }
+      ],
+      "id": 189746137,
+      "timestamp": "2020-04-26 08:07:01"
+    },
+    {
+      "sensor": {
+        "id": 15774,
+        "pin": "1",
+        "sensor_type": {
+          "manufacturer": "Nova Fitness",
+          "id": 14,
+          "name": "SDS011"
+        }
+      },
+      "id": 192197519,
+      "timestamp": "2020-04-26 12:30:54",
+      "sampling_rate": null,
+      "sensordatavalues": [
+        {
+          "id": 413000244,
+          "value_type": "P1",
+          "value": "30.53"
+        },
+        {
+          "id": 413000245,
+          "value_type": "P2",
+          "value": "24.83"
+        }
+      ],
+      "location": {
+        "longitude": "13.47",
+        "id": 11765,
+        "indoor": 0,
+        "latitude": "52.524",
+        "altitude": "51.3",
+        "country": "DE",
+        "exact_location": 0
+      }
+    },
+    {
+      "sensor": {
+        "id": 15774,
+        "pin": "1",
+        "sensor_type": {
+          "manufacturer": "Nova Fitness",
+          "id": 14,
+          "name": "SDS011"
+        }
+      },
+      "id": 192174937,
+      "timestamp": "2020-04-26 12:28:27",
+      "sampling_rate": null,
+      "sensordatavalues": [
+        {
+          "id": 412951718,
+          "value_type": "P1",
+          "value": "61.03"
+        },
+        {
+          "id": 412951720,
+          "value_type": "P2",
+          "value": "32.00"
+        }
+      ],
+      "location": {
+        "longitude": "13.47",
+        "id": 11765,
+        "indoor": 0,
+        "latitude": "52.524",
+        "altitude": "51.3",
+        "country": "DE",
+        "exact_location": 0
+      }
     }
   ]
 }
