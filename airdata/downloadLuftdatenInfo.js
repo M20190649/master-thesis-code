@@ -151,7 +151,7 @@ async function downloadFromLuftdatenInfoArchive(options) {
       // Access the archives for the specific sensor
       try {
         const requestURL = [
-          "http://archive.luftdaten.info/",
+          "https://archive.sensor.community/",
           `${dateString}/`,
           `${dateString}_`,
           filename,
