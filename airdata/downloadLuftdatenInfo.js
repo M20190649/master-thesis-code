@@ -55,6 +55,7 @@ async function downloadFromLuftdatenInfoArchive(options) {
   console.log("Downloading from Luftdaten.info")
   const pollutant = pollutantMapping[options.pollutant]
   const [south, west, north, east] = options.bbox
+  const timeout = 20000
 
   // API does not allow to filter the data for timestamps
   // So I need to access the archives and filter manually
@@ -63,7 +64,7 @@ async function downloadFromLuftdatenInfoArchive(options) {
   try {
     const baseUrl = "http://data.sensor.community/airrohr/v1/filter"
     const apiURL = `${baseUrl}/box=${options.bbox.join("%2C")}`
-    const { data: latestMeasurements } = await axios.get(apiURL, { timeout: 10000 })
+    const { data: latestMeasurements } = await axios.get(apiURL, { timeout })
 
     // Check if there are new ones that should be added to the backup list
     const backupIdList = luftdatenInfoSensors.sensors.map(s => s.sensor.id)
@@ -132,7 +133,10 @@ async function downloadFromLuftdatenInfoArchive(options) {
 
   // Measurements object will contain a list of sensors with their averages values for every timestep
   const measurements = {}
+  let fileReuseCount = 0
+  let newFileCount = 0
   let errorCounter = 0
+  let timeoutCounter = 0
   const dateString = getDateString(options.date)
   for (const s of filteredSensors) {
     let timestepValues = {}
@@ -156,11 +160,25 @@ async function downloadFromLuftdatenInfoArchive(options) {
           `${dateString}_`,
           filename,
         ].join("")
-        await downloadFile(requestURL, filepath)
+        await downloadFile(requestURL, filepath, timeout)
+        newFileCount++
       } catch (error) {
+        if (error.message.match(/timeout/gi)) {
+          timeoutCounter++
+        }
+
+        const timeoutLimit = 5
+        if (timeoutCounter > timeoutLimit) {
+          console.log(`More than ${timeoutLimit} archive requests timed out`)
+          console.log("Stopping the download from Luftdaten.info")
+          return measurements
+        }
+
         errorCounter++
         continue
       }
+    } else {
+      fileReuseCount++
     }
 
     timestepValues = aggregateMeasurements(filepath, options)
@@ -181,9 +199,9 @@ async function downloadFromLuftdatenInfoArchive(options) {
     }
   }
 
-  // console.log(Object.values(measurements)[0])
-
-  console.log(`Archive sensor data errors: ${errorCounter} `)
+  console.log(`Reused archive files: ${fileReuseCount}`)
+  console.log(`New downloaded archive files: ${newFileCount}`)
+  console.log(`Archive sensor data errors: ${errorCounter}`)
 
   return measurements
 }
