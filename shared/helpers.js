@@ -107,3 +107,14 @@ exports.downloadFile = (url, filepath, timeout) => {
       .catch(error => reject(error))
   })
 }
+
+exports.getAllTimesteps = (date, timestep) => {
+  const timesteps = []
+  const stop = new Date(date.getTime() + 24 * 60 * 60 * 1000)
+  let currentTimestep = date
+  while (currentTimestep < stop) {
+    timesteps.push(currentTimestep.toISOString())
+    currentTimestep = new Date(currentTimestep.getTime() + timestep * 60 * 1000)
+  }
+  return timesteps
+}

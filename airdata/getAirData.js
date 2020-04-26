@@ -2,7 +2,13 @@ const fs = require("fs")
 const { join } = require("path")
 
 const parseCLIOptions = require("../shared/parseCLIOptions")
-const { validateOptions, getDateString, getTimeString, pad } = require("../shared/helpers")
+const {
+  validateOptions,
+  getDateString,
+  getTimeString,
+  pad,
+  getAllTimesteps,
+} = require("../shared/helpers")
 const downloadFromLuftdatenInfo = require("./downloadLuftdatenInfo")
 const downloadOpenSenseMap = require("./downloadOpenSenseMap")
 
@@ -54,13 +60,14 @@ async function getAirData(callerOptions) {
 
   validateOptions(options, optionDefinitions)
 
+  options.date = parseDate(options.date)
+
   const outputDir = options.output || "data"
 
   if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir)
   }
 
-  options.date = parseDate(options.date)
   if (fs.readdirSync(outputDir).length > 0) {
     const filesForGivenDate = fs.readdirSync(outputDir).filter(file => {
       return file.startsWith(`data_${getDateString(options.date)}`) && file.endsWith(".geojson")
@@ -107,7 +114,7 @@ async function getAirData(callerOptions) {
       features: geoJSONFeatures,
     }
 
-    console.log(`Total numbers of measurements for ${timestep}: ${outputGeojson.features.length}`)
+    console.log(`Total numbers of measurements for ${timestep}:`, outputGeojson.features.length)
 
     const tsDate = new Date(timestep)
     const filepath = join(
@@ -122,49 +129,73 @@ async function getAirData(callerOptions) {
     luftdatenInfo: downloadFromLuftdatenInfo,
     openSenseMap: downloadOpenSenseMap,
   }
-  let measurementPerSource = {}
+
+  async function getMeasurementsPerSource(downloadOptions) {
+    const measurementsPerSource = {}
+    for (const [source, downloader] of Object.entries(sources)) {
+      const measurements = await downloader(downloadOptions)
+      measurementsPerSource[source] = measurements
+      console.log()
+    }
+
+    return measurementsPerSource
+  }
+
+  const timesteps = getAllTimesteps(options.date, options.timestep)
+  let measurementsPerSource = {}
 
   // Get data from previous day to calculate the data for 00:00:00
-  const previousDate = new Date(options.date - 1000 * 60 * 60 * 24)
+  const previousDate = new Date(options.date - 24 * 60 * 60 * 1000)
   console.log(`\nFetching data from the previous day (${getDateString(previousDate)})...\n`)
   const adaptedOptions = { ...options, date: previousDate }
-  for (const [source, downloader] of Object.entries(sources)) {
-    measurementPerSource[source] = await downloader(adaptedOptions)
-    console.log("\n")
-  }
+  measurementsPerSource = await getMeasurementsPerSource(adaptedOptions)
   console.log("Done!\n")
 
-  const lastTimestepData = Object.values(measurementPerSource).reduce((data, measurements) => {
-    if (measurements === null) return data
-
+  const firstTimestep = timesteps.shift()
+  const lastTimestepData = []
+  for (const [source, measurements] of Object.entries(measurementsPerSource)) {
     // The measurements are organized in timesteps so here we only take the last one
-    data.push(...Object.values(measurements).pop())
-    return data
-  }, [])
-
-  if (lastTimestepData.length > 0) {
-    writeMeasurements(lastTimestepData, options.date.toISOString())
+    const measurementsPerTimestep = Object.values(measurements)
+    if (measurementsPerTimestep.length > 0) {
+      const lastMeasurements = measurementsPerTimestep.pop()
+      if (lastMeasurements.length > 0) {
+        lastTimestepData.push(...lastMeasurements)
+      }
+    } else {
+      console.log(
+        `Warning: No measurements data from ${source} for timestep ${firstTimestep.toISOString()}`
+      )
+    }
   }
 
-  measurementPerSource = {}
+  if (lastTimestepData.length === 0) {
+    console.log(`Warning: No measurements data for timestep ${firstTimestep.toISOString()}`)
+  }
+
+  writeMeasurements(lastTimestepData, firstTimestep)
+
+  measurementsPerSource = {}
 
   // Get measurements from actual date
   console.log(`\nFetching data from specified day (${getDateString(options.date)})...\n`)
-  for (const [source, downloader] of Object.entries(sources)) {
-    const measurements = await downloader(options)
-    if (measurements !== null) {
-      measurementPerSource[source] = measurements
-    }
-    console.log("\n")
-  }
+  measurementsPerSource = await getMeasurementsPerSource(options)
   console.log("Done!\n")
 
-  const timesteps = Object.keys(Object.values(measurementPerSource)[0] || {})
   for (const timestep of timesteps) {
-    const timestepData = Object.values(measurementPerSource).reduce((data, measurements) => {
-      data.push(...measurements[timestep])
-      return data
-    }, [])
+    const timestepData = []
+    for (const [source, measurements] of Object.entries(measurementsPerSource)) {
+      const timestepMeasurements = measurements[timestep] || []
+      if (timestepMeasurements.length > 0) {
+        timestepData.push(...timestepMeasurements)
+      } else {
+        console.log(`Warning: No measurements data from ${source} for timestep ${timestep}`)
+      }
+    }
+
+    if (timestepData.length === 0) {
+      console.log(`Warning: No measurements data for timestep ${timestep}`)
+    }
+
     writeMeasurements(timestepData, timestep)
   }
 
