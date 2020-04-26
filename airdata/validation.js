@@ -106,7 +106,6 @@ async function download() {
       output: date,
     }
     const files = await getAirData(options)
-    console.log(files)
   }
 }
 
