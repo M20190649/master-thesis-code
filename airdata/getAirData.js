@@ -162,14 +162,12 @@ async function getAirData(callerOptions) {
         lastTimestepData.push(...lastMeasurements)
       }
     } else {
-      console.log(
-        `Warning: No measurements data from ${source} for timestep ${firstTimestep.toISOString()}`
-      )
+      console.log(`Warning: No measurements data from ${source} for timestep ${firstTimestep}`)
     }
   }
 
   if (lastTimestepData.length === 0) {
-    console.log(`Warning: No measurements data for timestep ${firstTimestep.toISOString()}`)
+    console.log(`Warning: No measurements data for timestep ${firstTimestep}`)
   }
 
   writeMeasurements(lastTimestepData, firstTimestep)
