@@ -17,6 +17,7 @@ const pollutantMapping = {
 function aggregateMeasurements(filepath, options) {
   const csv = fs.readFileSync(filepath, "utf8")
   const rows = csv.split("\n")
+  const header = rows.shift().split(";")
 
   const values = {}
   let currentTimeStep = new Date(options.date.getTime() + options.timestep * 60 * 1000)
@@ -59,13 +60,14 @@ async function downloadOpenSenseMapArchive(options) {
   console.log("Downloading from OpenSenseMap")
   const pollutant = pollutantMapping[options.pollutant]
   const [south, west, north, east] = options.bbox
+  const timeout = 20000
 
   try {
     const apiBbox = [west, south, east, north]
     const senseBoxesURL = `https://api.opensensemap.org/boxes?bbox=${apiBbox.join(
       ","
     )}&phenomenon=${pollutant}&format=json`
-    const { data: senseBoxes } = await axios.get(senseBoxesURL, { timeout: 10000 })
+    const { data: senseBoxes } = await axios.get(senseBoxesURL, { timeout })
 
     // Check if there are new ones that should be added to the backup list
     const backupIdList = openSenseMapSensors.sensors.map(s => s._id)
@@ -117,6 +119,8 @@ async function downloadOpenSenseMapArchive(options) {
 
   // Measurements object will contain a list of sensors with their averages values for every timestep
   const measurements = {}
+  let fileReuseCount = 0
+  let newFileCount = 0
   let errorCounter = 0
   let timeoutCounter = 0
   const dateString = getDateString(options.date)
@@ -137,22 +141,25 @@ async function downloadOpenSenseMapArchive(options) {
       // Data has not been downloaded yet
       // Access the archives for the specific sensor
       try {
-        await downloadFile(archiveURL, filepath, 10000)
+        await downloadFile(archiveURL, filepath, timeout)
+        newFileCount++
       } catch (error) {
         if (error.message.match(/timeout/gi)) {
           timeoutCounter++
         }
 
-        const timeoutLimit = 1
+        const timeoutLimit = 5
         if (timeoutCounter > timeoutLimit) {
           console.log(`More than ${timeoutLimit} archive requests timed out`)
           console.log("Stopping the download from OpenSenseMap")
-          return null
+          return measurements
         }
 
         errorCounter++
         continue
       }
+    } else {
+      fileReuseCount++
     }
 
     timestepValues = aggregateMeasurements(filepath, options)
@@ -173,7 +180,9 @@ async function downloadOpenSenseMapArchive(options) {
     }
   }
 
-  console.log(`Archive sensor data errors: ${errorCounter} `)
+  console.log(`Reused archive files: ${fileReuseCount}`)
+  console.log(`New downloaded archive files: ${newFileCount}`)
+  console.log(`Archive sensor data errors: ${errorCounter}`)
 
   return measurements
 }
