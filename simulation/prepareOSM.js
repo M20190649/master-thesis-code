@@ -70,6 +70,7 @@ module.exports = async (inputDir, config) => {
   } else {
     await filterTrips({
       bbox: config.bbox,
+      scenario: config.scenario,
       output: tripsFile,
     })
   }
