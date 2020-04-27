@@ -98,8 +98,8 @@ async function convertGeoJSONToPoly(callerOptions) {
     `polyconvert --xml-files tmp/polygon.xml --net-file ${options.network} --output-file ${options.output}`
   )
 
-  // fs.unlinkSync("tmp/polygon.xml")
-  // fs.rmdirSync("tmp")
+  fs.unlinkSync("tmp/polygon.xml")
+  fs.rmdirSync("tmp")
 }
 
 if (CLIOptions.run) {
