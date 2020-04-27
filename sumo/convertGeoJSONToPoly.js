@@ -39,9 +39,9 @@ async function convertGeoJSONToPoly(callerOptions) {
 
   const xml = XMLBuilder.create("additional")
   const zonePolygonCounter = {}
-  geojson.features.forEach(f => {
-    const { coordinates } = f.geometry
-    const { zone } = f.properties
+
+  function convertPolygon(properties, coordinates) {
+    const { zone } = properties
 
     if (zonePolygonCounter[zone] !== undefined) {
       zonePolygonCounter[zone]++
@@ -71,6 +71,23 @@ async function convertGeoJSONToPoly(callerOptions) {
         color: `${zoneColours[zone - 1]},0`,
         layer: zone,
       })
+    }
+  }
+
+  geojson.features.forEach(f => {
+    const { type, coordinates } = f.geometry
+
+    switch (type) {
+      case "Polygon":
+        convertPolygon(f.properties, coordinates)
+        break
+      case "MultiPolygon":
+        for (const polygonCoordinates of coordinates) {
+          convertPolygon(f.properties, polygonCoordinates)
+        }
+        break
+      default:
+        break
     }
   })
 
