@@ -16,12 +16,9 @@ const optionDefinitions = [
 ]
 const CLIOptions = parseCLIOptions(optionDefinitions)
 
-const zoneColours = [
-  "0.267004,0.004874,0.329415",
-  "0.190631,0.407061,0.556089",
-  "0.20803,0.718701,0.472873",
-  "0.993248,0.906157,0.143936",
-]
+const zoneColour = "128,0,255"
+const alphaMin = 50
+const alphaMax = 255
 
 async function convertGeoJSONToPoly(callerOptions) {
   const options = { ...CLIOptions, ...callerOptions }
@@ -37,6 +34,9 @@ async function convertGeoJSONToPoly(callerOptions) {
   const file = fs.readFileSync(options.geojson, "utf8")
   const geojson = JSON.parse(file)
 
+  const nZones = Math.max(...geojson.features.map(f => f.properties.zone))
+  const alphaStep = Math.floor((alphaMax - alphaMin) / (nZones - 1))
+
   const xml = XMLBuilder.create("additional")
   const zonePolygonCounter = {}
 
@@ -51,6 +51,7 @@ async function convertGeoJSONToPoly(callerOptions) {
 
     const polyId = `${pad(zone)}-${pad(zonePolygonCounter[zone])}`
     const getShape = polygon => polygon.map(([long, lat]) => `${long},${lat}`).join(" ")
+    const layer = `${-nZones + zone}.0`
 
     // Since SUMO can't handle polygons with holes we split into the main polygon and the holes
     // We clearly mark the holes with a 'hole-{hole-counter}' prefix
@@ -59,8 +60,8 @@ async function convertGeoJSONToPoly(callerOptions) {
     xml.element("poly", {
       id: polyId,
       shape: getShape(mainPolygon),
-      color: `${zoneColours[zone - 1]},0.8`,
-      layer: zone,
+      color: `${zoneColour},${(zone - 1) * alphaStep}`,
+      layer,
     })
 
     // Add all the holes
@@ -68,8 +69,8 @@ async function convertGeoJSONToPoly(callerOptions) {
       xml.element("poly", {
         id: `hole-${pad(i)}-${polyId}`,
         shape: getShape(hole),
-        color: `${zoneColours[zone - 1]},0`,
-        layer: zone,
+        color: `${zoneColour},0`,
+        layer,
       })
     }
   }
@@ -97,8 +98,8 @@ async function convertGeoJSONToPoly(callerOptions) {
     `polyconvert --xml-files tmp/polygon.xml --net-file ${options.network} --output-file ${options.output}`
   )
 
-  fs.unlinkSync("tmp/polygon.xml")
-  fs.rmdirSync("tmp")
+  // fs.unlinkSync("tmp/polygon.xml")
+  // fs.rmdirSync("tmp")
 }
 
 if (CLIOptions.run) {
