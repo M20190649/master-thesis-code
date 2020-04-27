@@ -7,6 +7,7 @@
     52.778678,
     13.932037
   ],
+  "includeServiceRoads": true,
   "pollutant": "PM10",
   "simulationDate": "02.02.2020",
   "zoneUpdateInterval": 60,
@@ -20,7 +21,7 @@
     400
   ],
   "visualizeZones": true,
-  "enableRerouting": true,
+  "enableRerouting": false,
   "reroutingDecisionMode": "percentage",
   "reroutingPercentage": 0.5,
   "dynamicRerouting": false,
