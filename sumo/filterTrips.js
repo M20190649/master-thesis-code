@@ -64,6 +64,13 @@ function onOpenTag(node, options) {
       return
     }
 
+    // Filter all trips that start after 24h
+    const tripDepartLimit = 24 * 60 * 60
+    if (currentTrip.depart > tripDepartLimit) {
+      filteredTripCounter++
+      return
+    }
+
     // currentTrip.depart = (totalTripCounter - filteredTripCounter) * 60
 
     tripsXML.element("trip", currentTrip)
