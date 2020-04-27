@@ -15,7 +15,7 @@ npm install
 5. Create the conda environment with all Python dependencies
 
 ```bash
-conda env create -f environment.yml
+conda env create -f environment-windows.yml
 ```
 
 If the above does not work you can also create the environment manually

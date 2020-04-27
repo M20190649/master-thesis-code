@@ -33,7 +33,7 @@ exec bash -l
 5. Create the conda environment with all Python dependencies
 
 ```bash
-conda env create -f environment.yml
+conda env create -f environment-ubuntu18.04.yml
 ```
 
 If the above does not work you can also create the environment manually
@@ -47,9 +47,13 @@ conda activate apats-sim
 conda config --add channels conda-forge
 
 # Install all packages
-conda install numpy scipy shapely pandas geopandas matplotlib notebook scikit-learn scikit-image metpy pykrige zope.event
+conda install numpy scipy shapely pandas geopandas matplotlib notebook scikit-learn scikit-image metpy pykrige zope.event lxml
 
 pip install naturalneighbor
+
+# Make sure Python 3.x.x is callable via "python"
+# If not use this
+alias python=python3
 ```
 
 6. Install SUMO
