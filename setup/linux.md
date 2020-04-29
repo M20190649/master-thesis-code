@@ -50,8 +50,11 @@ conda config --add channels conda-forge
 conda install numpy scipy shapely pandas geopandas matplotlib notebook scikit-learn scikit-image metpy pykrige zope.event lxml
 
 pip install naturalneighbor
+```
 
-# Make sure Python 3.x.x is callable via "python"
+Make sure Python 3.x.x is callable via "python"
+
+```bash
 # If not use this
 alias python=python3
 ```
