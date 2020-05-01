@@ -35,7 +35,7 @@ async function convertGeoJSONToPoly(callerOptions) {
   const geojson = JSON.parse(file)
 
   const nZones = Math.max(...geojson.features.map(f => f.properties.zone))
-  const alphaStep = Math.floor((alphaMax - alphaMin) / (nZones - 1))
+  const alphaStep = Math.floor((alphaMax - alphaMin) / (nZones - 1 || 1))
 
   const xml = XMLBuilder.create("additional")
   const zonePolygonCounter = {}
@@ -60,9 +60,12 @@ async function convertGeoJSONToPoly(callerOptions) {
     xml.element("poly", {
       id: polyId,
       shape: getShape(mainPolygon),
-      color: `${zoneColour},${(zone - 1) * alphaStep}`,
+      color: `${zoneColour},${alphaMin + (zone - 1) * alphaStep}`,
       layer,
     })
+
+    console.log(alphaMin, zone, alphaStep)
+    console.log(alphaMin + (zone - 1) * alphaStep)
 
     // Add all the holes
     for (const [i, hole] of holes.entries()) {
@@ -98,8 +101,8 @@ async function convertGeoJSONToPoly(callerOptions) {
     `polyconvert --xml-files tmp/polygon.xml --net-file ${options.network} --output-file ${options.output}`
   )
 
-  fs.unlinkSync("tmp/polygon.xml")
-  fs.rmdirSync("tmp")
+  // fs.unlinkSync("tmp/polygon.xml")
+  // fs.rmdirSync("tmp")
 }
 
 if (CLIOptions.run) {
