@@ -24,7 +24,7 @@ async function convertTripsToRoutes(callerOptions) {
   validateOptions(options, optionDefinitions)
 
   await runBash(
-    `duarouter -v --route-files ${options.trips} --net-file ${options.network} --output-file ${options.output} --mapmatch.distance 300 --human-readable-time --unsorted-input --ignore-errors`
+    `duarouter -v --route-files ${options.trips} --net-file ${options.network} --output-file ${options.output} --mapmatch.distance 1000 --human-readable-time --unsorted-input --ignore-errors`
   )
 }
 
