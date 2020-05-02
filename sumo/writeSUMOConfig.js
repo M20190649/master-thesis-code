@@ -26,7 +26,7 @@ module.exports = (
   emissionsTag.element("device.emissions.probability", { value: "1.0" })
 
   const outputTag = configXML.element("output")
-  outputTag.element("emission-output", { value: emissionsFile })
+  // outputTag.element("emission-output", { value: emissionsFile })
   // outputTag.element("human-readable-time", { value: "true" })
   outputTag.element("fcd-output", { value: floatingCarData })
   outputTag.element("fcd-output.geo", { value: "true" })
