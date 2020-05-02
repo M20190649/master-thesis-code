@@ -64,9 +64,6 @@ async function convertGeoJSONToPoly(callerOptions) {
       layer,
     })
 
-    console.log(alphaMin, zone, alphaStep)
-    console.log(alphaMin + (zone - 1) * alphaStep)
-
     // Add all the holes
     for (const [i, hole] of holes.entries()) {
       xml.element("poly", {
@@ -101,8 +98,8 @@ async function convertGeoJSONToPoly(callerOptions) {
     `polyconvert --xml-files tmp/polygon.xml --net-file ${options.network} --output-file ${options.output}`
   )
 
-  // fs.unlinkSync("tmp/polygon.xml")
-  // fs.rmdirSync("tmp")
+  fs.unlinkSync("tmp/polygon.xml")
+  fs.rmdirSync("tmp")
 }
 
 if (CLIOptions.run) {
