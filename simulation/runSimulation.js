@@ -54,8 +54,8 @@ validateOptions(config, configOptionDefinition)
 const simName = basename(CLIOptions.config).match(/.*(?=\.)/)[0]
 const inputDir = join(__dirname, simName)
 const airDataDir = join(inputDir, "airdata")
-const rawAirData = join(airDataDir, "raw")
-const interpolatedAirData = join(airDataDir, config.interpolationMethod)
+const rawAirData = join(airDataDir, `${config.pollutant}-raw`)
+const interpolatedAirData = join(airDataDir, `${config.pollutant}-${config.interpolationMethod}`)
 const outputDir = join(inputDir, "output")
 const sumoConfigFile = `${join(inputDir, simName)}.sumocfg`
 
