@@ -23447,6 +23447,43 @@
       ],
       "model": "homeV2WifiFeinstaub",
       "lastMeasurementAt": "2020-04-25T17:24:09.328Z"
+    },
+    {
+      "_id": "5eae7519712645001b0e625b",
+      "createdAt": "2020-05-03T07:39:05.163Z",
+      "updatedAt": "2020-05-04T10:14:01.092Z",
+      "name": "Dreipfuhl",
+      "currentLocation": {
+        "timestamp": "2020-05-03T07:39:05.158Z",
+        "coordinates": [
+          13.269409,
+          52.447118
+        ],
+        "type": "Point"
+      },
+      "exposure": "outdoor",
+      "sensors": [
+        {
+          "title": "PM10",
+          "unit": "µg/m³",
+          "sensorType": "SDS 011",
+          "icon": "osem-cloud",
+          "_id": "5eae7519712645001b0e625d",
+          "lastMeasurement": "5eafeae9712645001ba45cd0"
+        },
+        {
+          "title": "PM2.5",
+          "unit": "µg/m³",
+          "sensorType": "SDS 011",
+          "icon": "osem-cloud",
+          "_id": "5eae7519712645001b0e625c",
+          "lastMeasurement": "5eafeae9712645001ba45cd1"
+        }
+      ],
+      "model": "luftdaten_sds011",
+      "lastMeasurementAt": "2020-05-04T10:14:01.088Z",
+      "description": "OK Lab Feinstaubsensor",
+      "image": "5eae7519712645001b0e625b_q9qwjl.jpg"
     }
   ]
 }
