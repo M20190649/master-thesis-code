@@ -50,6 +50,8 @@ sumo_cmd = [
     args.sumo_config,
     "--log",
     os.path.join(sim_config["sim_outputDir"], "logs.txt"),
+    "--no-internal-links",
+    "true",
     # "--device.rerouting.probability",
     # "1",
     # "--device.rerouting.period",

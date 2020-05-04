@@ -12,9 +12,22 @@ async function convertOSMNetwork(callerOptions) {
 
   validateOptions(options, optionDefinitions)
 
-  await runBash(
-    `netconvert --osm-files ${options.input} --output-file ${options.output} --geometry.remove --ramps.guess --junctions.join --tls.guess-signals --tls.discard-simple --tls.join --tls.default-type actuated`
-  )
+  await runBash([
+    "netconvert",
+    `--osm-files ${options.input}`,
+    `--output-file ${options.output}`,
+    // Recommended OSM conversion options
+    "--geometry.remove",
+    "--ramps.guess",
+    "--junctions.join",
+    "--tls.guess-signals",
+    "--tls.discard-simple",
+    "--tls.join",
+    "--tls.default-type actuated",
+    // DLR used this one in their simulation
+    // http://sumo-user-mailing-list.90755.n8.nabble.com/sumo-user-Error-The-vehicle-type-type1-for-vehicle-veh0-is-not-known-tp3376p3390.html
+    "--no-internal-links true",
+  ])
 }
 
 if (CLIOptions.run) {
