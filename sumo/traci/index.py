@@ -48,14 +48,6 @@ sumo_cmd = [
     sumo_binary,
     "--configuration-file",
     args.sumo_config,
-    "--log",
-    os.path.join(sim_config["sim_outputDir"], "logs.txt"),
-    "--no-internal-links",
-    "true",
-    # "--device.rerouting.probability",
-    # "1",
-    # "--device.rerouting.period",
-    # "300"
 ]
 
 from simulation_controller import SimulationController

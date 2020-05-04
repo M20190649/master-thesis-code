@@ -4,6 +4,8 @@ const XMLBuilder = require("xmlbuilder")
 
 const guiConfig = join(__dirname, "gui-settings.cfg")
 
+// https://sumo.dlr.de/xsd/sumoConfiguration.xsd
+
 module.exports = (
   outputDir,
   { network, routes, routesVisualization, sumoConfigFile, polygonsFile }
@@ -13,6 +15,7 @@ module.exports = (
   const vehicleSummary = join(outputDir, "vehicle-summary.xml")
   const tripsInfo = join(outputDir, "trips-info.xml")
   const routesInfo = join(outputDir, "routes-info.xml")
+  const logFile = join(outputDir, "logs.txt")
 
   const configXML = XMLBuilder.create("configuration")
 
@@ -21,9 +24,6 @@ module.exports = (
   inputTag.element("route-files", { value: routes })
   // inputTag.element("additional-files", { value: routesVisualization })
   inputTag.element("gui_only").element("gui-settings-file", { value: guiConfig })
-
-  const emissionsTag = configXML.element("emissions")
-  emissionsTag.element("device.emissions.probability", { value: "1.0" })
 
   const outputTag = configXML.element("output")
   // outputTag.element("emission-output", { value: emissionsFile })
@@ -37,6 +37,19 @@ module.exports = (
   outputTag.element("vehroute-output.cost", { value: "true" })
   outputTag.element("vehroute-output.route-length", { value: "true" })
   outputTag.element("vehroute-output.intended-depart", { value: "true" })
+
+  const processingTag = configXML.element("processing")
+  processingTag.element("no-internal-links", { value: "true" })
+
+  // const routingTag = configXML.element("routing")
+  // routingTag.element("device.rerouting.probability", { value: "1.0" })
+  // routingTag.element("device.rerouting.period", { value: "300" })
+
+  const reportTag = configXML.element("report")
+  reportTag.element("log", { value: logFile })
+
+  const emissionsTag = configXML.element("emissions")
+  emissionsTag.element("device.emissions.probability", { value: "1.0" })
 
   fs.writeFileSync(sumoConfigFile, configXML.end({ pretty: true }))
 }
