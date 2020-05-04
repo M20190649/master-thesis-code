@@ -1,3 +1,4 @@
+const { basename } = require("path")
 const { runBash, validateOptions } = require("../shared/helpers")
 const parseCLIOptions = require("../shared/parseCLIOptions")
 
@@ -12,10 +13,14 @@ async function convertOSMNetwork(callerOptions) {
 
   validateOptions(options, optionDefinitions)
 
+  const logFile = options.output.replace(basename(options.output), "netconvert-logs.txt")
+
   await runBash([
     "netconvert",
     `--osm-files ${options.input}`,
     `--output-file ${options.output}`,
+    "--verbose",
+    `--log ${logFile}`,
     // Recommended OSM conversion options
     "--geometry.remove",
     "--ramps.guess",

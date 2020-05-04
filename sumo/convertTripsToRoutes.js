@@ -1,3 +1,4 @@
+const { basename } = require("path")
 const { runBash, validateOptions } = require("../shared/helpers")
 const parseCLIOptions = require("../shared/parseCLIOptions")
 
@@ -23,9 +24,22 @@ async function convertTripsToRoutes(callerOptions) {
 
   validateOptions(options, optionDefinitions)
 
-  await runBash(
-    `duarouter -v --route-files ${options.trips} --net-file ${options.network} --output-file ${options.output} --mapmatch.distance 1000 --human-readable-time --unsorted-input --ignore-errors`
-  )
+  const logFile = options.output.replace(basename(options.output), "duarouter-logs.txt")
+
+  await runBash([
+    "duarouter",
+    "--verbose",
+    `--route-files ${options.trips}`,
+    `--net-file ${options.network}`,
+    `--output-file ${options.output}`,
+    "--mapmatch.distance 1000",
+    "--human-readable-time",
+    "--unsorted-input",
+    "--no-internal-links",
+    "--repair",
+    `--log ${logFile}`,
+    "--ignore-errors",
+  ])
 }
 
 if (CLIOptions.run) {

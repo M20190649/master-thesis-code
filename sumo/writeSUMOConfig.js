@@ -15,7 +15,7 @@ module.exports = (
   const vehicleSummary = join(outputDir, "vehicle-summary.xml")
   const tripsInfo = join(outputDir, "trips-info.xml")
   const routesInfo = join(outputDir, "routes-info.xml")
-  const logFile = join(outputDir, "logs.txt")
+  const logFile = join(outputDir, "sumo-logs.txt")
 
   const configXML = XMLBuilder.create("configuration")
 
