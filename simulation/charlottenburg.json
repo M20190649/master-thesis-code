@@ -23,7 +23,8 @@
     1000
   ],
   "visualizeZones": true,
-  "enableRerouting": true,
+  "enablePeriodicRerouting": true,
+  "enableZoneRerouting": false,
   "reroutingDecisionMode": "percentage",
   "reroutingPercentage": 1,
   "dynamicRerouting": false,

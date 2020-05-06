@@ -23,7 +23,8 @@
     1000
   ],
   "visualizeZones": true,
-  "enableRerouting": false,
+  "enablePeriodicRerouting": false,
+  "enableZoneRerouting": false,
   "dynamicRerouting": false,
   "dynamicReroutingDistance": 300,
   "freezeZones": false

@@ -89,7 +89,13 @@ const configOptionDefinitions = [
     required: true,
   },
   {
-    name: "enableRerouting",
+    name: "enablePeriodicRerouting",
+    type: Boolean,
+    description: `Determines if SUMO should periodically reroute vehicle to check that they are on their optimal route. This helps to avoid unrealistic traffic jams.`,
+    required: true,
+  },
+  {
+    name: "enableZoneRerouting",
     type: Boolean,
     description: `Determines if agents in the simulation should be rerouted if they pass through air pollution zones`,
     required: true,

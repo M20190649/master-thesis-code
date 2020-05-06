@@ -103,6 +103,8 @@ class VehicleController(traci.StepListener):
 
         traci.vehicle.rerouteTraveltime(vid, False)
         traci.vehicle.setColor(vid, (255, 0, 0))
+        # Disable rerouting through the rerouting device so that vehicle will stay on this route
+        traci.vehicle.setParameter(vid, "device.rerouting.period", "0")
 
     def static_rerouting(self):
         # Rerouting for vehicles whose route crosses through air quality zones
@@ -213,11 +215,10 @@ class VehicleController(traci.StepListener):
             ])
 
     def reroute(self):
-        if self.sim_config["enableRerouting"]:
-            if self.sim_config["dynamicRerouting"]:
-                self.dynamic_rerouting()
-            else:
-                self.static_rerouting()
+        if self.sim_config["dynamicRerouting"]:
+            self.dynamic_rerouting()
+        else:
+            self.static_rerouting()
 
     def step(self, t):
         # Do something at every simulaton step
@@ -230,7 +231,8 @@ class VehicleController(traci.StepListener):
 
         self.prepare_new_vehicles()
 
-        self.reroute()
+        if self.sim_config["enableZoneRerouting"]:
+            self.reroute()
 
         # Return true to indicate that the step listener should stay active in the next step
         return True

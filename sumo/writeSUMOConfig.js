@@ -6,10 +6,7 @@ const guiConfig = join(__dirname, "gui-settings.cfg")
 
 // https://sumo.dlr.de/xsd/sumoConfiguration.xsd
 
-module.exports = (
-  outputDir,
-  { network, routes, routesVisualization, sumoConfigFile, polygonsFile }
-) => {
+module.exports = (sumoConfigFile, { network, routes, routesVisualization }, outputDir, config) => {
   const emissionsFile = join(outputDir, "emissions.xml")
   const floatingCarData = join(outputDir, "floating-car-data.xml")
   const vehicleSummary = join(outputDir, "vehicle-summary.xml")
@@ -43,9 +40,11 @@ module.exports = (
   const processingTag = configXML.element("processing")
   processingTag.element("no-internal-links", { value: "true" })
 
-  // const routingTag = configXML.element("routing")
-  // routingTag.element("device.rerouting.probability", { value: "1.0" })
-  // routingTag.element("device.rerouting.period", { value: "300" })
+  if (config.enablePeriodicRerouting) {
+    const routingTag = configXML.element("routing")
+    routingTag.element("device.rerouting.probability", { value: "1.0" })
+    routingTag.element("device.rerouting.period", { value: "300" })
+  }
 
   const reportTag = configXML.element("report")
   reportTag.element("log", { value: logFile })

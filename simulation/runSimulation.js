@@ -138,10 +138,14 @@ async function run() {
   // 3. Write SUMO config file
   logSection("Prepare SUMO Simulation")
   console.log("Writing SUMO config file...")
-  writeSUMOConfig(outputDir, {
-    ...inputFiles,
+  writeSUMOConfig(
     sumoConfigFile,
-  })
+    {
+      ...inputFiles,
+    },
+    outputDir,
+    config
+  )
 
   console.log("Done!\n")
 
