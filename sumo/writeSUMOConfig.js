@@ -16,6 +16,7 @@ module.exports = (
   const tripsInfo = join(outputDir, "trips-info.xml")
   const routesInfo = join(outputDir, "routes-info.xml")
   const logFile = join(outputDir, "sumo-logs.txt")
+  const statisticsFile = join(outputDir, "statistics.xml")
 
   const configXML = XMLBuilder.create("configuration")
 
@@ -37,6 +38,7 @@ module.exports = (
   outputTag.element("vehroute-output.cost", { value: "true" })
   outputTag.element("vehroute-output.route-length", { value: "true" })
   outputTag.element("vehroute-output.intended-depart", { value: "true" })
+  outputTag.element("statistic-output", { value: statisticsFile })
 
   const processingTag = configXML.element("processing")
   processingTag.element("no-internal-links", { value: "true" })
