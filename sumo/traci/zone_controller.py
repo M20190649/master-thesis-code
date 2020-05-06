@@ -7,6 +7,7 @@ from shapely.geometry import Polygon, MultiPolygon, mapping
 from shapely.geometry import box
 import geopandas as gpd
 
+from logger import log
 
 class ZoneController(traci.StepListener):
     def __init__(self, sim_config):
@@ -70,7 +71,7 @@ class ZoneController(traci.StepListener):
         for i in range(len(part_shapes)):
             s = part_shapes.pop(0)
             if len(s) > 255:
-                print(
+                log(
                     "Part is still too big (more than 255 points)! Splitting again..."
                 )
                 splitted_parts = self.split_polygon(s)
@@ -92,7 +93,7 @@ class ZoneController(traci.StepListener):
         traci.polygon.unsubscribeContext(pid, tc.CMD_GET_EDGE_VARIABLE, 0)
 
         if polygon_context is None:
-            print(
+            log(
                 f"Polygon {pid} will be removed because it is not covering any edges."
             )
             # Edges subscription can be None when the polygon doesn't cover any edges
@@ -110,7 +111,7 @@ class ZoneController(traci.StepListener):
         edges_in_polygon = [
             k for (k, v) in polygon_context.items() if k in edge_ids
         ]
-        print(f"Found {len(edges_in_polygon)} edges in polygon {pid}")
+        log(f"Found {len(edges_in_polygon)} edges in polygon {pid}")
         self.__polygon_edges[pid] = edges_in_polygon
 
     def load_polygons(self, t):
@@ -123,11 +124,11 @@ class ZoneController(traci.StepListener):
         # zone_file = f"zones_{date_string}T10-00-00.xml"
         self.current_timestep = timestep
 
-        print(f"Loading {zone_file}")
+        log(f"Loading {zone_file}")
         xml_tree = et.parse(os.path.join(self.sim_config["sim_airDataDir"], zone_file))
 
         # Traverse the XML tree and add all new polygons
-        print("Adding new polygons")
+        log("Adding new polygons")
         for child in xml_tree.getroot():
             if child.tag == "poly":
                 pid = f"{child.attrib['id']}_{self.current_timestep}"
@@ -141,12 +142,12 @@ class ZoneController(traci.StepListener):
 
                 # SUMO can't handle polygons with more than 255 coordinates so I need to split them into multiple polygons
                 if len(shape) > 255:
-                    print(
+                    log(
                         f"Warning: Zone polygon is too large ({len(shape)} points) (SUMO can't handle polygons with more than 255 points)"
                     )
-                    print("Splitting zone polygon into multiple parts...")
+                    log("Splitting zone polygon into multiple parts...")
                     shape_parts = self.split_polygon(shape)
-                    print(f"Split zone polygon into {len(shape_parts)} parts")
+                    log(f"Split zone polygon into {len(shape_parts)} parts")
 
                     for idx, shape_part in enumerate(shape_parts):
                         part_pid = f"{pid}_part-{pad(idx)}"
@@ -162,7 +163,7 @@ class ZoneController(traci.StepListener):
             return
 
         timestep = self.get_timestep_from_step(t)
-        print(f"Removing polygons from timestep {timestep}")
+        log(f"Removing polygons from timestep {timestep}")
         for pid in self.get_polygons_by_timestep(timestep=timestep):
             self.remove_polygon_subscriptions(pid)
             traci.polygon.remove(pid)
@@ -172,7 +173,7 @@ class ZoneController(traci.StepListener):
             return
             
         timestep = self.get_timestep_from_step(t)
-        print(f"Hiding polygons from timestep {timestep}")
+        log(f"Hiding polygons from timestep {timestep}")
         for pid in self.get_polygons_by_timestep(timestep=timestep):
             traci.polygon.setFilled(pid, False)
 
@@ -186,14 +187,14 @@ class ZoneController(traci.StepListener):
         interval = self.sim_config["zoneUpdateInterval"] * 60
         if t > 0 and t % interval == 0:
             # if t > 0 and t % 40 == 0:
-            print("New timestep! Zones will be updated...")
+            log("New timestep! Zones will be updated...")
             # Always keep the polygons up until three hours after they have been loaded
             keep_duration = 3 * 60 * 60
             self.remove_polygons(t - keep_duration)
             # Hide the polygons from last timestep
             self.hide_polygons(t - interval)
             self.load_polygons(t)
-            print("Done")
+            log("Done")
 
         # Return true to indicate that the step listener should stay active in the next step
         return True

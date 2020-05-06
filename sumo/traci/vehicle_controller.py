@@ -6,6 +6,7 @@ from shapely.geometry import Polygon, MultiPolygon, mapping
 from shapely.geometry import box
 import geopandas as gpd
 
+from logger import log
 import rerouting_decisions
 
 
@@ -88,7 +89,7 @@ class VehicleController(traci.StepListener):
         return decision
 
     def reroute_vehicle(self, vid, timestep=None):
-        print(f"Rerouting vehicle {vid}")
+        log(f"Rerouting vehicle {vid}")
 
         traveltime = 99999999
 
@@ -120,7 +121,7 @@ class VehicleController(traci.StepListener):
                     if route[-1] in polygon_edges:
                         # TODO: What to do?
                         # Don't reroute at all? Or maybe find the "cheapest" way to destination?
-                        print(f"Destination of vehicle {vid} is in polygon {pid}")
+                        log(f"Destination of vehicle {vid} is in polygon {pid}")
 
                     self.reroute_vehicle(vid)
                     break
@@ -134,7 +135,7 @@ class VehicleController(traci.StepListener):
             for pid in self.zone_controller.get_polygons_by_timestep(holes=False):
                 polygon_edges = self.zone_controller.get_polygon_edges(pid=pid)
                 if route[0] in polygon_edges:
-                    print(f"New vehicle {vid} was inserted inside polygon {pid}.")
+                    log(f"New vehicle {vid} was inserted inside polygon {pid}.")
                     # Make decision if to reroute at all
                     if not self.should_vehicle_reroute(vid):
                         break
@@ -143,7 +144,7 @@ class VehicleController(traci.StepListener):
                     if route[-1] in polygon_edges:
                         # TODO: What to do?
                         # Don't reroute at all? Or maybe find the "cheapest" way to destination?
-                        print(f"Destination of vehicle {vid} is in polygon {pid}")
+                        log(f"Destination of vehicle {vid} is in polygon {pid}")
 
                     self.reroute_vehicle(vid)
                     break
@@ -191,7 +192,7 @@ class VehicleController(traci.StepListener):
                     if upcoming_edges[-1] in polygon_edges:
                         # TODO: What to do in the case that the destination is inside a zone?
                         # Don't reroute at all? Or maybe find the "cheapest" way to destination?
-                        print(f"Destination of vehicle {vid} is in polygon {pid}")
+                        log(f"Destination of vehicle {vid} is in polygon {pid}")
 
                     self.reroute_vehicle(vid, timestep=p_timestep)
 

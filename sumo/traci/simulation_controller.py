@@ -4,6 +4,7 @@ import traci.constants as tc
 from tracker import Tracker
 from vehicle_controller import VehicleController
 from zone_controller import ZoneController
+from logger import open_log, log
 
 
 class SimulationController:
@@ -12,6 +13,9 @@ class SimulationController:
         self.zone_controller = ZoneController(sim_config)
         self.tracker = Tracker(sim_config, self.zone_controller)
         self.vehicle_controller = VehicleController(sim_config, self.zone_controller)
+
+        log_path = os.path.join(sim_config["sim_outputDir"], "simulation-logs.txt")
+        open_log(log_path)
 
     def __init(self):
         # Step listeners are always executed AFTER the simulation step (traci.simulationStep())
@@ -41,7 +45,7 @@ class SimulationController:
             step += 1
 
         # Finish and clean up
-        print(f"Finished at step {step}")
+        log(f"Finished at step {step}")
         self.__finish()
 
     def __finish(self):

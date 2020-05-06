@@ -6,10 +6,13 @@ __pycache__
 
 # Ignore all test or log data
 **test**
-**log**
+matsim/osm-mapper/logs
 
 # Ignore all simulation input/output data
 simulation/*/**
+
+# Ignore all evaluation data
+evaluation/*/**
 
 # Ignore all folders in the airdata directory with some exceptions
 airdata/*/**
