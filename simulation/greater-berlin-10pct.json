@@ -7,7 +7,6 @@
     52.778678,
     13.932037
   ],
-  "includeServiceRoads": true,
   "pollutant": "PM10",
   "simulationDate": "02.02.2020",
   "zoneUpdateInterval": 60,

@@ -12,12 +12,6 @@ const optionDefinitions = [
       "Bbox string (south,west,north,east) describing the boundaries which will be downloaded",
     required: true,
   },
-  {
-    name: "service",
-    type: Boolean,
-    description: "Query OSM with or without the road type 'service'",
-    defaultValue: false,
-  },
   { name: "output", type: String, description: "Filepath for the output XML file" },
 ]
 const CLIOptions = parseCLIOptions(optionDefinitions)
@@ -44,11 +38,6 @@ async function downloadFromOverpass(callerOptions) {
     "road",
     "unclassified",
   ]
-
-  if (options.service) {
-    // Files are significantly larger with service roads but a majority of service roads are useless for most of the cars
-    roadTypes.push("service")
-  }
 
   const query = `(way["highway"~"${roadTypes.join("|")}"](south,west,north,east);>;);out;`
 

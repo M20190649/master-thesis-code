@@ -38,13 +38,6 @@ const configOptionDefinitions = [
     required: true,
   },
   {
-    name: "includeServiceRoads",
-    type: Boolean,
-    description:
-      "Determines if the OSM Overpass Query should include the road type 'service'. Service roads increase the network size by a significant amount. They are usually not crucial but might be useful for some vehicles.",
-    required: true,
-  },
-  {
     name: "pollutant",
     type: String,
     description: `The pollutant for which the air pollution data should be downloaded \n (Possible values: ${pollutants.join(

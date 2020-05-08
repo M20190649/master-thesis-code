@@ -41,7 +41,6 @@ module.exports = async (inputDir, config) => {
   } else {
     await downloadFromOverpass({
       bbox: config.bbox,
-      service: config.includeServiceRoads,
       output: osmNetworkFile,
     })
   }
