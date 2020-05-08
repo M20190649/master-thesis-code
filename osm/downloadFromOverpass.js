@@ -39,14 +39,14 @@ async function downloadFromOverpass(callerOptions) {
     "unclassified",
   ]
 
-  const query = `(way["highway"~"${roadTypes.join("|")}"](south,west,north,east);>;);out;`
+  const query = `(way["highway"~"${roadTypes.join("|")}"](${options.bbox.join(",")});>;);out;`
 
   const outputStream = fs.createWriteStream(options.output || "./road-network.osm.xml")
   await axios
     .get("http://overpass-api.de/api/interpreter", {
       responseType: "stream",
       params: {
-        data: query.replace(/south,west,north,east/g, options.bbox.join(",")),
+        data: query,
       },
     })
     .then(res => res.data.pipe(outputStream))
