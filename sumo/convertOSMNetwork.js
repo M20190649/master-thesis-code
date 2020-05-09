@@ -24,11 +24,14 @@ async function convertOSMNetwork(callerOptions) {
     // Recommended OSM conversion options
     "--geometry.remove",
     "--ramps.guess",
+    "--roundabouts.guess",
     "--junctions.join",
     "--tls.guess-signals",
     "--tls.discard-simple",
     "--tls.join",
     "--tls.default-type actuated",
+    "--output.original-names",
+    "--output.street-names",
     // DLR used this one in their simulation
     // http://sumo-user-mailing-list.90755.n8.nabble.com/sumo-user-Error-The-vehicle-type-type1-for-vehicle-veh0-is-not-known-tp3376p3390.html
     // https://sumo.dlr.de/docs/Networks/Import/OpenStreetMap.html#importing_large_networks
