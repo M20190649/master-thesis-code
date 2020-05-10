@@ -81,8 +81,8 @@ class ZoneController(traci.StepListener):
 
         return part_shapes
 
-    def add_polygon(self, pid, shape, color):
-        traci.polygon.add(pid, shape, color, fill=True)
+    def add_polygon(self, pid, shape, color, layer):
+        traci.polygon.add(pid, shape, color, fill=True, layer=layer)
 
         # Calculate and store all edges that are covered by each new polygon
         # Add temporary subscription to be able to query for all edges
@@ -139,6 +139,7 @@ class ZoneController(traci.StepListener):
                     )
                 )
                 color = list(map(int, child.attrib["color"].split(",")))
+                layer = int(float(child.attrib["layer"]))
 
                 # SUMO can't handle polygons with more than 255 coordinates so I need to split them into multiple polygons
                 if len(shape) > 255:
@@ -151,9 +152,9 @@ class ZoneController(traci.StepListener):
 
                     for idx, shape_part in enumerate(shape_parts):
                         part_pid = f"{pid}_part-{pad(idx)}"
-                        self.add_polygon(part_pid, shape_part, color)
+                        self.add_polygon(part_pid, shape_part, color, layer)
                 else:
-                    self.add_polygon(pid, shape, color)
+                    self.add_polygon(pid, shape, color, layer)
 
         # Notify subscribers about the zone update
         zope.event.notify("zone-update")
