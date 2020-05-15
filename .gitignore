@@ -13,10 +13,12 @@ simulation/*/**
 
 # Ignore all evaluation data
 evaluation/*/**
+evaluation/*.png
 
 # Ignore all folders in the airdata directory with some exceptions
 airdata/*/**
 !airdata/data/*.json
+airdata/*.png
 
 *.pdf
 *.osm.pbf
