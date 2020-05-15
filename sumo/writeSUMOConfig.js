@@ -13,7 +13,7 @@ module.exports = (sumoConfigFile, { network, routes, routesVisualization }, outp
   const tripsInfo = join(outputDir, "trips-info.xml")
   const routesInfo = join(outputDir, "routes-info.xml")
   const logFile = join(outputDir, "sumo-logs.txt")
-  const statisticsFile = join(outputDir, "statistics.xml")
+  const statisticsFile = join(outputDir, "general-statistics.xml")
 
   const configXML = XMLBuilder.create("configuration")
 
