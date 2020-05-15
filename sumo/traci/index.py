@@ -48,6 +48,7 @@ sumo_cmd = [
     sumo_binary,
     "--configuration-file",
     args.sumo_config,
+    # "--mesosi"
 ]
 
 from simulation_controller import SimulationController
