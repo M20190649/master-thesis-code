@@ -26,9 +26,9 @@ async function test() {
   const options = {
     pollutant: "PM10",
     bbox: [52.25639, 12.874603, 52.778678, 13.932037],
-    date: "20.02.2020",
+    date: "02.02.2020",
     timestep: 60,
-    output: "validation-20-02-2020",
+    output: "validation-02-02-2020",
   }
   const filenames = await getAirData(options)
 
@@ -43,12 +43,19 @@ async function test() {
     // "kriging",
   ]
 
+  const zones = [0, 20, 35, 50, 100, 1000]
+
   for (const method of methods) {
     for (const file of filenames) {
       const dirName = `${options.output}/${method}`
-      await runBash(
-        `python interpolate.py --measurements=${file} --method=${method} --output=${dirName} --visualize=true`
-      )
+      await runBash([
+        "python interpolate.py",
+        `--measurements=${file}`,
+        `--method=${method}`,
+        `--output=${dirName}`,
+        `--zones=${zones.join(",")}`,
+        "--visualize=true",
+      ])
     }
   }
 }
@@ -109,6 +116,6 @@ async function download() {
   }
 }
 
-// test()
+test()
 // validate()
-download()
+// download()
