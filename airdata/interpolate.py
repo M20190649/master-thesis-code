@@ -190,7 +190,7 @@ def interpolate(
         contour.cmap.set_under("w")
         contour.set_clim(zones[1])
         fig.colorbar(contour, ax=ax)
-        fig.savefig(f"{output}/{filename}.png")
+        fig.savefig(f"{output}/{filename}.png", bbox_inches="tight")
 
         end = time.time()
         print(f"Done! ({format(end - start, '.3f')}s)")
