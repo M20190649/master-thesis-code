@@ -43,7 +43,7 @@ function onError(err) {
 function onOpenTag(node, options) {
   const currentTag = node.name
   if (currentTag === "trip") {
-    totalTripCounter++
+    totalTripCounter += 1
     const currentTrip = node.attributes
     const { fromLonLat, toLonLat } = currentTrip
     const [fromLong, fromLat] = fromLonLat.split(",").map(parseFloat)
@@ -60,14 +60,14 @@ function onOpenTag(node, options) {
       toLong > east
     ) {
       // trip is out of bounds
-      filteredTripCounter++
+      filteredTripCounter += 1
       return
     }
 
     // Filter all trips that start after 24h
     const tripDepartLimit = 24 * 60 * 60
     if (currentTrip.depart > tripDepartLimit) {
-      filteredTripCounter++
+      filteredTripCounter += 1
       return
     }
 
@@ -96,8 +96,6 @@ async function filterTrips(callerOptions) {
 
     const tripsFile = join(
       __dirname,
-      "..",
-      "matsim",
       "plans",
       `berlin-v5.4-${options.scenario}.output_plans.trips.xml`
     )

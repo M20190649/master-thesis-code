@@ -63,7 +63,9 @@ exports.validateOptions = (options, optionDefinitions) => {
     if (option.possibleValues && options[name] !== undefined) {
       if (!option.possibleValues.includes(options[name])) {
         throw new Error(
-          `Option "${name}" must be one of the following: ${option.possibleValues.join(", ")}`
+          `Option "${name}" must be one of the following: ${option.possibleValues.join(
+            ", "
+          )}`
         )
       }
     }
@@ -82,14 +84,13 @@ exports.logSection = sectionName => {
   console.log(`${"-".repeat(n1)} ${sectionName} ${"-".repeat(n2)}\n`)
 }
 
-exports.gunzip = (zipFile, output) => {
-  return new Promise((resolve, reject) => {
+exports.gunzip = (zipFile, output) =>
+  new Promise((resolve, reject) => {
     gunzip(zipFile, output, resolve)
   })
-}
 
-exports.downloadFile = (url, filepath, timeout) => {
-  return new Promise((resolve, reject) => {
+exports.downloadFile = (url, filepath, timeout) =>
+  new Promise((resolve, reject) => {
     axios
       .get(url, {
         responseType: "stream",
@@ -106,7 +107,6 @@ exports.downloadFile = (url, filepath, timeout) => {
       })
       .catch(error => reject(error))
   })
-}
 
 exports.getAllTimesteps = (date, timestep) => {
   const timesteps = []

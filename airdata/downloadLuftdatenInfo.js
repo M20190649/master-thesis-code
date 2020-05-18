@@ -22,7 +22,9 @@ function aggregateMeasurements(filepath, options) {
   const header = rows.shift().split(";")
 
   const values = {}
-  let currentTimeStep = new Date(options.date.getTime() + options.timestep * 60 * 1000)
+  let currentTimeStep = new Date(
+    options.date.getTime() + options.timestep * 60 * 1000
+  )
   let sum = 0
   let counter = 0
   for (const row of rows) {
@@ -35,7 +37,7 @@ function aggregateMeasurements(filepath, options) {
     if (tsDate <= currentTimeStep) {
       // When measurement value is within current timestep add it to sum
       sum += parseFloat(rowData[pollutant])
-      counter++
+      counter += 1
     } else {
       // We reached the end of the time step
       // Calculate the average and add it to the result object
@@ -43,7 +45,9 @@ function aggregateMeasurements(filepath, options) {
         values[currentTimeStep.toISOString()] = sum / counter
       }
 
-      currentTimeStep = new Date(currentTimeStep.getTime() + options.timestep * 60 * 1000)
+      currentTimeStep = new Date(
+        currentTimeStep.getTime() + options.timestep * 60 * 1000
+      )
       sum = 0
       counter = 0
     }
@@ -75,7 +79,7 @@ async function downloadFromLuftdatenInfoArchive(options) {
         // Sensor is already in the list
         // luftdatenInfoSensors.sensors[sensorIndex] = measurement
       } else {
-        newSensorCounter++
+        newSensorCounter += 1
         luftdatenInfoSensors.sensors.push(measurement)
       }
     }
@@ -101,15 +105,14 @@ async function downloadFromLuftdatenInfoArchive(options) {
     const isMalfunctioning = malfunctioningSensors.includes(s.sensor.id)
     if (isMalfunctioning) return false
 
-    const isPM = s.sensordatavalues.some(v => {
-      return v.value_type === pollutant
-    })
+    const isPM = s.sensordatavalues.some(v => v.value_type === pollutant)
     if (!isPM) return false
 
     let { latitude: lat, longitude: long } = s.location
     lat = parseFloat(lat)
     long = parseFloat(long)
-    const isInBbox = lat >= south && lat <= north && long >= west && long <= east
+    const isInBbox =
+      lat >= south && lat <= north && long >= west && long <= east
     if (!isInBbox) return false
 
     return true
@@ -121,7 +124,7 @@ async function downloadFromLuftdatenInfoArchive(options) {
   // const sensorTypeCount = filteredSensors.reduce((counts, m) => {
   //   const { name } = m.sensor.sensor_type
   //   if (counts[name]) {
-  //     counts[name]++
+  //     counts[name] += 1
   //   } else {
   //     counts[name] = 1
   //   }
@@ -141,7 +144,9 @@ async function downloadFromLuftdatenInfoArchive(options) {
   for (const s of filteredSensors) {
     let timestepValues = {}
 
-    const filename = `${s.sensor.sensor_type.name.toLowerCase()}_sensor_${s.sensor.id}.csv`
+    const filename = `${s.sensor.sensor_type.name.toLowerCase()}_sensor_${
+      s.sensor.id
+    }.csv`
     // Check if sensor data for the given date has already been downloaded
     const dir = join(__dirname, "data", dateString, "luftdaten.info")
     const filepath = join(dir, filename)
@@ -161,10 +166,10 @@ async function downloadFromLuftdatenInfoArchive(options) {
           filename,
         ].join("")
         await downloadFile(requestURL, filepath, timeout)
-        newFileCount++
+        newFileCount += 1
       } catch (error) {
         if (error.message.match(/timeout/gi)) {
-          timeoutCounter++
+          timeoutCounter += 1
         }
 
         const timeoutLimit = 5
@@ -174,11 +179,11 @@ async function downloadFromLuftdatenInfoArchive(options) {
           return measurements
         }
 
-        errorCounter++
+        errorCounter += 1
         continue
       }
     } else {
-      fileReuseCount++
+      fileReuseCount += 1
     }
 
     timestepValues = aggregateMeasurements(filepath, options)

@@ -3,7 +3,12 @@ const { runBash, validateOptions } = require("../shared/helpers")
 const parseCLIOptions = require("../shared/parseCLIOptions")
 
 const optionDefinitions = [
-  { name: "trips", type: String, description: "Filepath to the trip XML file", required: true },
+  {
+    name: "trips",
+    type: String,
+    description: "Filepath to the trip XML file",
+    required: true,
+  },
   {
     name: "network",
     type: String,
@@ -24,7 +29,10 @@ async function convertTripsToRoutes(callerOptions) {
 
   validateOptions(options, optionDefinitions)
 
-  const logFile = options.output.replace(basename(options.output), "duarouter-logs.txt")
+  const logFile = options.output.replace(
+    basename(options.output),
+    "duarouter-logs.txt"
+  )
 
   await runBash([
     "duarouter",

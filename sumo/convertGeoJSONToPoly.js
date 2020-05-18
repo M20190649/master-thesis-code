@@ -5,8 +5,18 @@ const parseCLIOptions = require("../shared/parseCLIOptions")
 const { runBash, validateOptions, pad } = require("../shared/helpers")
 
 const optionDefinitions = [
-  { name: "geojson", type: String, description: "Filepath to GeoJSON file", required: true },
-  { name: "network", type: String, description: "Filepath to SUMO network file", required: true },
+  {
+    name: "geojson",
+    type: String,
+    description: "Filepath to GeoJSON file",
+    required: true,
+  },
+  {
+    name: "network",
+    type: String,
+    description: "Filepath to SUMO network file",
+    required: true,
+  },
   {
     name: "output",
     type: String,
@@ -44,13 +54,14 @@ async function convertGeoJSONToPoly(callerOptions) {
     const { zone } = properties
 
     if (zonePolygonCounter[zone] !== undefined) {
-      zonePolygonCounter[zone]++
+      zonePolygonCounter[zone] += 1
     } else {
       zonePolygonCounter[zone] = 0
     }
 
     const polyId = `${pad(zone)}-${pad(zonePolygonCounter[zone])}`
-    const getShape = polygon => polygon.map(([long, lat]) => `${long},${lat}`).join(" ")
+    const getShape = polygon =>
+      polygon.map(([long, lat]) => `${long},${lat}`).join(" ")
     const layer = `${-nZones + zone}.0`
 
     // Since SUMO can't handle polygons with holes we split into the main polygon and the holes
@@ -95,7 +106,9 @@ async function convertGeoJSONToPoly(callerOptions) {
   fs.writeFileSync("tmp/polygon.xml", xml.end({ pretty: true }))
 
   await runBash(
-    `polyconvert --xml-files tmp/polygon.xml --net-file ${options.network} --output-file ${options.output}`
+    `polyconvert --xml-files tmp/polygon.xml --net-file ${
+      options.network
+    } --output-file ${options.output}`
   )
 
   fs.unlinkSync("tmp/polygon.xml")

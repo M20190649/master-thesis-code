@@ -47,7 +47,9 @@ function buildNetwork() {
 
   const xml = XMLBuilder.begin()
     .raw(`<?xml version="1.0" encoding="UTF-8"?>`)
-    .raw(`<!DOCTYPE network SYSTEM "http://www.matsim.org/files/dtd/network_v2.dtd">`)
+    .raw(
+      `<!DOCTYPE network SYSTEM "http://www.matsim.org/files/dtd/network_v2.dtd">`
+    )
     .element("network")
     .importDocument(nodesXML)
     .importDocument(linksXML)
@@ -66,8 +68,11 @@ saxStream.on("opentag", node => {
   if (node.name === "node") {
     const { id, x, y } = node.attributes
     if (id.startsWith("pt_")) return // skip public transport nodes
-    nNodes++
-    const { latitude, longitude } = gk.toWGS({ x: parseFloat(x), y: parseFloat(y) })
+    nNodes += 1
+    const { latitude, longitude } = gk.toWGS({
+      x: parseFloat(x),
+      y: parseFloat(y),
+    })
     nodes[id] = { id, x, y, latitude, longitude }
     return
   }
@@ -75,7 +80,7 @@ saxStream.on("opentag", node => {
   if (node.name === "link") {
     const { id, from, to } = node.attributes
     if (id.startsWith("pt_")) return // skip public transport linkMappings
-    nLinks++
+    nLinks += 1
     links[id] = { id, from, to }
   }
 })
@@ -90,5 +95,8 @@ saxStream.on("end", () => {
 })
 
 timestamp = new Date().getTime()
+
 console.log("Parsing MATSim network...")
-fs.createReadStream(join(__dirname, "..", "berlin-v5-network.xml")).pipe(saxStream)
+fs.createReadStream(
+  join(__dirname, "..", "matsim", "network", "berlin-v5-network.xml")
+).pipe(saxStream)

@@ -1,10 +1,20 @@
 const { basename } = require("path")
-const { runBash, validateOptions } = require("../shared/helpers")
-const parseCLIOptions = require("../shared/parseCLIOptions")
+const { runBash, validateOptions } = require("../../shared/helpers")
+const parseCLIOptions = require("../../shared/parseCLIOptions")
 
 const optionDefinitions = [
-  { name: "input", type: String, description: "Filepath to OSM network file", required: true },
-  { name: "output", type: String, description: "Filepath to output XML file", required: true },
+  {
+    name: "input",
+    type: String,
+    description: "Filepath to OSM network file",
+    required: true,
+  },
+  {
+    name: "output",
+    type: String,
+    description: "Filepath to output XML file",
+    required: true,
+  },
 ]
 const CLIOptions = parseCLIOptions(optionDefinitions)
 
@@ -13,7 +23,10 @@ async function convertOSMNetwork(callerOptions) {
 
   validateOptions(options, optionDefinitions)
 
-  const logFile = options.output.replace(basename(options.output), "netconvert-logs.txt")
+  const logFile = options.output.replace(
+    basename(options.output),
+    "netconvert-logs.txt"
+  )
 
   await runBash([
     "netconvert",

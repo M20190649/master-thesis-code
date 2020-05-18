@@ -1,11 +1,15 @@
+/* eslint-disable prefer-destructuring */
 const fs = require("fs")
 const axios = require("axios")
 
-const stationsGeoJSON = JSON.parse(fs.readFileSync("../shared/berlinSensorStations.geojson"))
+const stationsGeoJSON = JSON.parse(
+  fs.readFileSync("../shared/berlinSensorStations.geojson")
+)
 
 function getUmweltBundesamtBerlinStations() {
   const berlinStations = []
-  const url = "https://www.umweltbundesamt.de/api/air_data/v2/meta/json?use=measure"
+  const url =
+    "https://www.umweltbundesamt.de/api/air_data/v2/meta/json?use=measure"
   return axios.get(url).then(res => {
     for (const [id, station] of Object.entries(res.data.stations)) {
       if (station[13] === "Berlin") {
@@ -37,7 +41,7 @@ async function downloadFromUmweltBundesamt(
     `&date_to=${dateTo}` +
     `&time_to=${timeTo}`
 
-  for (let i = 0; i < stationsGeoJSON.features.length; i++) {
+  for (let i = 0; i < stationsGeoJSON.features.length; i += 1) {
     const station = stationsGeoJSON.features[i]
 
     if (station.properties.ubaId === undefined) {
@@ -51,15 +55,21 @@ async function downloadFromUmweltBundesamt(
     }
 
     station.properties.pollutant = getPollutantFromId(pollutant)
-    station.properties.value = Object.values(res.data.data[station.properties.ubaId])[0][2]
-    station.properties.measurementDateTime = Object.keys(res.data.data[station.properties.ubaId])[0]
+    station.properties.value = Object.values(
+      res.data.data[station.properties.ubaId]
+    )[0][2]
+    station.properties.measurementDateTime = Object.keys(
+      res.data.data[station.properties.ubaId]
+    )[0]
     // console.log(res.data.data)
     // console.log(res.data.indices.data["station id"])
     // console.log(station.properties)
   }
 
   fs.writeFileSync(
-    `./data/measurement_${getPollutantFromId(pollutant)}_${dateFrom}_${timeFrom}.geojson`,
+    `./data/measurement_${getPollutantFromId(
+      pollutant
+    )}_${dateFrom}_${timeFrom}.geojson`,
     JSON.stringify(stationsGeoJSON, null, 2)
   )
 }

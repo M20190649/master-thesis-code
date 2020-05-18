@@ -3,12 +3,12 @@ const fs = require("fs")
 
 const { logSection } = require("../shared/helpers")
 
-const downloadFromOverpass = require("../osm/downloadFromOverpass")
+const downloadFromOverpass = require("../network/osm/downloadFromOverpass")
+const convertOSMNetwork = require("../network/osm/convertOSMNetwork")
 
-const convertOSMNetwork = require("../sumo/convertOSMNetwork")
-const convertTripsToRoutes = require("../sumo/convertTripsToRoutes")
-const filterTrips = require("../sumo/filterTrips")
-const visualizeRoutes = require("../sumo/visualizeRoutes")
+const convertTripsToRoutes = require("../demand/convertTripsToRoutes")
+const filterTrips = require("../demand/filterTrips")
+const visualizeRoutes = require("../demand/visualizeRoutes")
 
 module.exports = async (inputDir, config) => {
   const networkDir = join(inputDir, "network")
@@ -30,7 +30,10 @@ module.exports = async (inputDir, config) => {
   const networkFile = `${join(networkDir, networkName)}.net.xml`
   const tripsFile = `${join(demandDir, routesName)}.trips.xml`
   const routesFile = `${join(demandDir, routesName)}.rou.xml`
-  const routesVisualizationFile = `${join(demandDir, routesName)}.rou.visualization.xml`
+  const routesVisualizationFile = `${join(
+    demandDir,
+    routesName
+  )}.rou.visualization.xml`
 
   // 1. Prepare network data
   logSection("Prepare Network Data")

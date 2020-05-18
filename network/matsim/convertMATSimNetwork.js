@@ -1,15 +1,26 @@
 const fs = require("fs")
 const { join } = require("path")
-const parseCLIOptions = require("../shared/parseCLIOptions")
-const { runBash, validateOptions } = require("../shared/helpers")
+const parseCLIOptions = require("../../shared/parseCLIOptions")
+const { runBash, validateOptions } = require("../../shared/helpers")
 
 const optionDefinitions = [
-  { name: "network", type: String, description: "Filepath to the MATSim network", required: true },
+  {
+    name: "network",
+    type: String,
+    description: "Filepath to the MATSim network",
+    required: true,
+  },
   {
     name: "output",
     type: String,
     description: "Filepath for the converted MATSim network",
-    defaultValue: join(__dirname, "..", "matsim", "network", "berlin-v5-network-converted.net.xml"),
+    defaultValue: join(
+      __dirname,
+      "..",
+      "matsim",
+      "network",
+      "berlin-v5-network-converted.net.xml"
+    ),
   },
 ]
 

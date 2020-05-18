@@ -7,7 +7,8 @@ const defaultOptions = [
     name: "run",
     alias: "r",
     type: Boolean,
-    description: "Run the code \n (Otherwise this file just exports a node module)",
+    description:
+      "Run the code \n (Otherwise this file just exports a node module)",
   },
   {
     name: "help",

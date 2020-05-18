@@ -44,7 +44,8 @@ const optionDefinitions = [
   {
     name: "output",
     type: String,
-    description: "Filepath to a directory for all the measurements GeoJSON files",
+    description:
+      "Filepath to a directory for all the measurements GeoJSON files",
     required: true,
   },
 ]
@@ -69,9 +70,13 @@ async function getAirData(callerOptions) {
   }
 
   if (fs.readdirSync(outputDir).length > 0) {
-    const filesForGivenDate = fs.readdirSync(outputDir).filter(file => {
-      return file.startsWith(`data_${getDateString(options.date)}`) && file.endsWith(".geojson")
-    })
+    const filesForGivenDate = fs
+      .readdirSync(outputDir)
+      .filter(
+        file =>
+          file.startsWith(`data_${getDateString(options.date)}`) &&
+          file.endsWith(".geojson")
+      )
 
     if (filesForGivenDate.length > 0) {
       console.log("Air data for given date already exists")
@@ -114,7 +119,10 @@ async function getAirData(callerOptions) {
       features: geoJSONFeatures,
     }
 
-    console.log(`Total numbers of measurements for ${timestep}:`, outputGeojson.features.length)
+    console.log(
+      `Total numbers of measurements for ${timestep}:`,
+      outputGeojson.features.length
+    )
 
     const tsDate = new Date(timestep)
     const filepath = join(
@@ -146,7 +154,11 @@ async function getAirData(callerOptions) {
 
   // Get data from previous day to calculate the data for 00:00:00
   const previousDate = new Date(options.date - 24 * 60 * 60 * 1000)
-  console.log(`\nFetching data from the previous day (${getDateString(previousDate)})...\n`)
+  console.log(
+    `\nFetching data from the previous day (${getDateString(
+      previousDate
+    )})...\n`
+  )
   const adaptedOptions = { ...options, date: previousDate }
   measurementsPerSource = await getMeasurementsPerSource(adaptedOptions)
   console.log("Done!\n")
@@ -162,7 +174,9 @@ async function getAirData(callerOptions) {
         lastTimestepData.push(...lastMeasurements)
       }
     } else {
-      console.log(`Warning: No measurements data from ${source} for timestep ${firstTimestep}`)
+      console.log(
+        `Warning: No measurements data from ${source} for timestep ${firstTimestep}`
+      )
     }
   }
 
@@ -175,18 +189,24 @@ async function getAirData(callerOptions) {
   measurementsPerSource = {}
 
   // Get measurements from actual date
-  console.log(`\nFetching data from specified day (${getDateString(options.date)})...\n`)
+  console.log(
+    `\nFetching data from specified day (${getDateString(options.date)})...\n`
+  )
   measurementsPerSource = await getMeasurementsPerSource(options)
   console.log("Done!\n")
 
   for (const timestep of timesteps) {
     const timestepData = []
-    for (const [source, measurements] of Object.entries(measurementsPerSource)) {
+    for (const [source, measurements] of Object.entries(
+      measurementsPerSource
+    )) {
       const timestepMeasurements = measurements[timestep] || []
       if (timestepMeasurements.length > 0) {
         timestepData.push(...timestepMeasurements)
       } else {
-        console.log(`Warning: No measurements data from ${source} for timestep ${timestep}`)
+        console.log(
+          `Warning: No measurements data from ${source} for timestep ${timestep}`
+        )
       }
     }
 

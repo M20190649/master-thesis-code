@@ -1,22 +1,7 @@
 {
   "extends": [
-    "airbnb-base",
-    "plugin:prettier/recommended"
+    "wesbos"
   ],
-  "env": {
-    "node": true,
-    "es6": true,
-    "browser": true,
-    "jest": true
-  },
-  "parserOptions": {
-    "parser": "babel-eslint",
-    "ecmaVersion": 2020,
-    "ecmaFeatures": {
-      "impliedStrict": true,
-      "classes": true
-    }
-  },
   "rules": {
     "prettier/prettier": [
       "error",
@@ -25,7 +10,7 @@
         "tabWidth": 2,
         "semi": false,
         "singleQuote": false,
-        "printWidth": 100
+        "printWidth": 80
       }
     ],
     "quotes": [
@@ -36,28 +21,14 @@
         "allowTemplateLiterals": true
       }
     ],
-    "func-names": 0,
-    "no-new": 0,
-    "prefer-destructuring": 1,
-    "no-restricted-globals": 0,
-    "no-plusplus": 0,
-    "no-useless-escape": 0,
-    "no-await-in-loop": 0,
-    "no-console": 0,
-    "no-param-reassign": [
-      2,
-      {
-        "props": false
-      }
-    ],
+    "no-continue": "off",
+    "no-shadow": "off",
     "no-unused-vars": [
       1,
       {
         "ignoreSiblings": true,
         "argsIgnorePattern": "res|next|^err|reject"
       }
-    ],
-    "no-restricted-syntax": 0,
-    "no-continue": 0
+    ]
   }
 }

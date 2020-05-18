@@ -3,14 +3,12 @@ const fs = require("fs")
 
 const { logSection } = require("../shared/helpers")
 
-const convertMATSimNetwork = require("../sumo/convertMATSimNetwork")
-const filterTrips = require("../sumo/filterTrips")
-const convertTripsToRoutes = require("../sumo/convertTripsToRoutes")
-const visualizeRoutes = require("../sumo/visualizeRoutes")
+const filterTrips = require("../demand/filterTrips")
+const convertTripsToRoutes = require("../demand/convertTripsToRoutes")
+const visualizeRoutes = require("../demand/visualizeRoutes")
 
 module.exports = async (inputDir, config) => {
   const rootDir = join(__dirname, "..")
-  const matsimDir = join(rootDir, "matsim")
   const demandDir = join(inputDir, "demand")
 
   if (!fs.existsSync(demandDir)) {
@@ -20,24 +18,24 @@ module.exports = async (inputDir, config) => {
   // const networkName = `matsim-network`
   const routesName = `${basename(inputDir)}-routes`
 
-  const matsimNetworkFile = join(matsimDir, "network", "berlin-v5-network.xml")
-  const networkFile = join(matsimDir, "network", "berlin-v5-network-converted.net.xml")
+  const networkFile = join(
+    rootDir,
+    "network",
+    "matsim",
+    "network",
+    "berlin-v5-network-converted.net.xml"
+  )
   const tripsFile = `${join(demandDir, routesName)}.trips.xml`
   const routesFile = `${join(demandDir, routesName)}.rou.xml`
-  const routesVisualizationFile = `${join(demandDir, routesName)}.rou.visualization.xml`
+  const routesVisualizationFile = `${join(
+    demandDir,
+    routesName
+  )}.rou.visualization.xml`
 
   // 1. Prepare network data
   logSection("Prepare Network Data")
   // Convert MATSim network to SUMO network
-  console.log("Converting MATSim network to SUMO network...")
-  if (fs.existsSync(networkFile)) {
-    console.log("Converted network already exists")
-  } else {
-    await convertMATSimNetwork({
-      network: matsimNetworkFile,
-      output: networkFile,
-    })
-  }
+  console.log("Using pre-converted MATSim network...")
 
   console.log("Done!\n")
 

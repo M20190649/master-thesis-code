@@ -3,7 +3,12 @@ const { runBash, validateOptions } = require("../shared/helpers")
 const parseCLIOptions = require("../shared/parseCLIOptions")
 
 const optionDefinitions = [
-  { name: "routes", type: String, description: "Filepath to the routes XML file", required: true },
+  {
+    name: "routes",
+    type: String,
+    description: "Filepath to the routes XML file",
+    required: true,
+  },
   {
     name: "network",
     type: String,

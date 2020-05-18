@@ -89,7 +89,7 @@ function onOpenTag(node, options) {
     // const randomB = Math.floor(Math.random() * 256)
     // currentPerson.color = `${randomR},${randomG},${randomB}`
 
-    personCounter++
+    personCounter += 1
     timeTracker = 0
     // console.log(`New person: ${currentPerson}`)
   }
@@ -100,17 +100,23 @@ function onOpenTag(node, options) {
 
   if (parsePlan) {
     if (node.attributes.end_time) {
-      const [hour, minute, second] = node.attributes.end_time.split(":").map(parseFloat)
+      const [hour, minute, second] = node.attributes.end_time
+        .split(":")
+        .map(parseFloat)
       timeTracker = hour * 60 * 60 + minute * 60 + second
     }
 
     if (node.attributes.trav_time) {
-      const [hour, minute, second] = node.attributes.trav_time.split(":").map(parseFloat)
+      const [hour, minute, second] = node.attributes.trav_time
+        .split(":")
+        .map(parseFloat)
       timeTracker += hour * 60 * 60 + minute * 60 + second
     }
 
     if (node.attributes.max_dur) {
-      const [hour, minute, second] = node.attributes.max_dur.split(":").map(parseFloat)
+      const [hour, minute, second] = node.attributes.max_dur
+        .split(":")
+        .map(parseFloat)
       timeTracker += hour * 60 * 60 + minute * 60 + second
     }
   }
@@ -152,8 +158,12 @@ function onOpenTag(node, options) {
       }
 
       if (options.mode === outputModes.geo) {
-        attributes.fromLonLat = `${currentTrip.fromCoordinates.longitude},${currentTrip.fromCoordinates.latitude}`
-        attributes.toLonLat = `${currentTrip.toCoordinates.longitude},${currentTrip.toCoordinates.latitude}`
+        attributes.fromLonLat = `${currentTrip.fromCoordinates.longitude},${
+          currentTrip.fromCoordinates.latitude
+        }`
+        attributes.toLonLat = `${currentTrip.toCoordinates.longitude},${
+          currentTrip.toCoordinates.latitude
+        }`
       }
 
       if (options.mode === outputModes.matsim) {
@@ -162,7 +172,7 @@ function onOpenTag(node, options) {
       }
 
       tripsXML.element("trip", attributes)
-      totalTripCounter++
+      totalTripCounter += 1
       parseRoute = false
     }
   }
@@ -176,12 +186,14 @@ function onOpenTag(node, options) {
         )
         currentTrip.depart = timeTracker
       } else {
-        const [hour, minute, second] = node.attributes.dep_time.split(":").map(parseFloat)
+        const [hour, minute, second] = node.attributes.dep_time
+          .split(":")
+          .map(parseFloat)
         currentTrip.depart = hour * 60 * 60 + minute * 60 + second
       }
 
       parseRoute = true
-      personTripCounter++
+      personTripCounter += 1
     }
   }
 

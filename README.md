@@ -22,9 +22,9 @@ The simulation is built using the following technologies and software:
 
 ## Setup
 
-### [Setup Guide for Windows](setup/windows.md)
+### [Setup Guide for Windows](docs/windows.md)
 
-### [Setup Guide for Linux](setup/linux.md)
+### [Setup Guide for Linux](docs/linux.md)
 
 ## Preparation
 

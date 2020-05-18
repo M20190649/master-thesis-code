@@ -1,8 +1,8 @@
 const { join } = require("path")
 const fs = require("fs")
 
-const parseCLIOptions = require("../shared/parseCLIOptions")
-const { gunzip, downloadFile } = require("../shared/helpers")
+const parseCLIOptions = require("../../shared/parseCLIOptions")
+const { gunzip, downloadFile } = require("../../shared/helpers")
 
 const CLIOptions = parseCLIOptions()
 

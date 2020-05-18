@@ -20,7 +20,9 @@ function aggregateMeasurements(filepath, options) {
   const header = rows.shift().split(";")
 
   const values = {}
-  let currentTimeStep = new Date(options.date.getTime() + options.timestep * 60 * 1000)
+  let currentTimeStep = new Date(
+    options.date.getTime() + options.timestep * 60 * 1000
+  )
   let sum = 0
   let counter = 0
   for (const row of rows) {
@@ -29,7 +31,7 @@ function aggregateMeasurements(filepath, options) {
     if (tsDate <= currentTimeStep) {
       // When measurement value is within current timestep add it to sum
       sum += parseFloat(value)
-      counter++
+      counter += 1
     } else {
       // We reached the end of the time step
       // Calculate the average and add it to the result object
@@ -37,7 +39,9 @@ function aggregateMeasurements(filepath, options) {
         values[currentTimeStep.toISOString()] = sum / counter
       }
 
-      currentTimeStep = new Date(currentTimeStep.getTime() + options.timestep * 60 * 1000)
+      currentTimeStep = new Date(
+        currentTimeStep.getTime() + options.timestep * 60 * 1000
+      )
       sum = 0
       counter = 0
     }
@@ -78,7 +82,7 @@ async function downloadOpenSenseMapArchive(options) {
         // Sensor is already in the list
         // openSenseMapSensors.sensors[sensorIndex] = sensor
       } else {
-        newSensorCounter++
+        newSensorCounter += 1
         openSenseMapSensors.sensors.push(sensor)
       }
     }
@@ -100,13 +104,12 @@ async function downloadOpenSenseMapArchive(options) {
   // 1. Reports PM (or other given pollutant)
   // 2. Is inside given bbox
   const filteredSensors = openSenseMapSensors.sensors.filter(s => {
-    const isPM = s.sensors.some(v => {
-      return v.title === pollutant
-    })
+    const isPM = s.sensors.some(v => v.title === pollutant)
     if (!isPM) return false
 
     const [long, lat] = s.currentLocation.coordinates
-    const isInBbox = lat >= south && lat <= north && long >= west && long <= east
+    const isInBbox =
+      lat >= south && lat <= north && long >= west && long <= east
     if (!isInBbox) return false
 
     return true
@@ -142,10 +145,10 @@ async function downloadOpenSenseMapArchive(options) {
       // Access the archives for the specific sensor
       try {
         await downloadFile(archiveURL, filepath, timeout)
-        newFileCount++
+        newFileCount += 1
       } catch (error) {
         if (error.message.match(/timeout/gi)) {
-          timeoutCounter++
+          timeoutCounter += 1
         }
 
         const timeoutLimit = 5
@@ -155,11 +158,11 @@ async function downloadOpenSenseMapArchive(options) {
           return measurements
         }
 
-        errorCounter++
+        errorCounter += 1
         continue
       }
     } else {
-      fileReuseCount++
+      fileReuseCount += 1
     }
 
     timestepValues = aggregateMeasurements(filepath, options)

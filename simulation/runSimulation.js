@@ -55,11 +55,20 @@ const simName = basename(CLIOptions.config).match(/.*(?=\.)/)[0]
 const inputDir = join(__dirname, simName)
 const airDataDir = join(inputDir, "airdata")
 const rawAirData = join(airDataDir, `${config.pollutant}-raw`)
-const interpolatedAirData = join(airDataDir, `${config.pollutant}-${config.interpolationMethod}`)
+const interpolatedAirData = join(
+  airDataDir,
+  `${config.pollutant}-${config.interpolationMethod}`
+)
 const outputDir = join(inputDir, "output")
 const sumoConfigFile = `${join(inputDir, simName)}.sumocfg`
 
-const requiredDirs = [inputDir, outputDir, airDataDir, rawAirData, interpolatedAirData]
+const requiredDirs = [
+  inputDir,
+  outputDir,
+  airDataDir,
+  rawAirData,
+  interpolatedAirData,
+]
 
 for (const dir of requiredDirs) {
   if (!fs.existsSync(dir)) {
@@ -119,7 +128,10 @@ async function run() {
 
       // Convert the resulting zones into SUMO poly format
       await convertGeoJSONToPoly({
-        geojson: join(interpolatedAirData, `${basename(airDataFile).replace("data", "zones")}`),
+        geojson: join(
+          interpolatedAirData,
+          `${basename(airDataFile).replace("data", "zones")}`
+        ),
         network: inputFiles.network,
         output: join(
           interpolatedAirData,

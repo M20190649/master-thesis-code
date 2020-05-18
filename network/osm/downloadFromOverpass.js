@@ -1,7 +1,7 @@
 const fs = require("fs")
 const axios = require("axios")
-const { validateOptions } = require("../shared/helpers")
-const parseCLIOptions = require("../shared/parseCLIOptions")
+const { validateOptions } = require("../../shared/helpers")
+const parseCLIOptions = require("../../shared/parseCLIOptions")
 
 const optionDefinitions = [
   {
@@ -12,7 +12,11 @@ const optionDefinitions = [
       "Bbox string (south,west,north,east) describing the boundaries which will be downloaded",
     required: true,
   },
-  { name: "output", type: String, description: "Filepath for the output XML file" },
+  {
+    name: "output",
+    type: String,
+    description: "Filepath for the output XML file",
+  },
 ]
 const CLIOptions = parseCLIOptions(optionDefinitions)
 
@@ -39,9 +43,13 @@ async function downloadFromOverpass(callerOptions) {
     "unclassified",
   ]
 
-  const query = `(way["highway"~"${roadTypes.join("|")}"](${options.bbox.join(",")});>;);out;`
+  const query = `(way["highway"~"${roadTypes.join("|")}"](${options.bbox.join(
+    ","
+  )});>;);out;`
 
-  const outputStream = fs.createWriteStream(options.output || "./road-network.osm.xml")
+  const outputStream = fs.createWriteStream(
+    options.output || "./road-network.osm.xml"
+  )
   await axios
     .get("http://overpass-api.de/api/interpreter", {
       responseType: "stream",
