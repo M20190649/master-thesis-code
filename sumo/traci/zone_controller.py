@@ -37,19 +37,9 @@ class ZoneController(traci.StepListener):
 
     def add_polygon_subscriptions(self, pid):
         # Polygon context used for dynamic routing
-        traci.polygon.subscribeContext(
-            pid,
-            tc.CMD_GET_VEHICLE_VARIABLE,
-            self.sim_config["dynamicReroutingDistance"],
-        )
         traci.polygon.subscribe(pid, [tc.VAR_SHAPE])
 
     def remove_polygon_subscriptions(self, pid):
-        traci.polygon.unsubscribeContext(
-            pid,
-            tc.CMD_GET_VEHICLE_VARIABLE,
-            self.sim_config["dynamicReroutingDistance"],
-        )
         traci.polygon.unsubscribe(pid)
 
     def split_polygon(self, shape, parts=2):
@@ -105,7 +95,7 @@ class ZoneController(traci.StepListener):
         traci.polygon.setParameter(pid, "zone_timestep", self.current_timestep)
 
         # Add all necessary context subscriptions
-        # self.add_polygon_subscriptions(pid)
+        self.add_polygon_subscriptions(pid)
 
         # Filter out edge data
         edge_ids = traci.edge.getIDList()
@@ -193,7 +183,7 @@ class ZoneController(traci.StepListener):
             # if t > 0 and t % 40 == 0:
             log("New timestep! Zones will be updated...")
             # Always keep the polygons up until three hours after they have been loaded
-            keep_duration = 3 * 60 * 60
+            keep_duration = 2 * 60 * 60
             self.remove_polygons(t - keep_duration)
             # Hide the polygons from last timestep
             self.hide_polygons(t - interval)
