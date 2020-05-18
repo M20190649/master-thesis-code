@@ -22,9 +22,10 @@
     1000
   ],
   "periodicRerouting": true,
-  "zoneRerouting": "none",
+  "zoneRerouting": "dynamic",
   "reroutingDecisionMode": "percentage",
   "reroutingPercentage": 1,
-  "dynamicReroutingDistance": 1000,
-  "snapshotZones": true
+  "dynamicReroutingDistance": 200,
+  "snapshotZones": true,
+  "rerouteOnZoneUpdate": false
 }

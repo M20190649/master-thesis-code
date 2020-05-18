@@ -24,5 +24,6 @@
   "periodicRerouting": false,
   "zoneRerouting": "none",
   "dynamicReroutingDistance": 300,
-  "snapshotZones": false
+  "snapshotZones": false,
+  "rerouteOnZoneUpdate": false
 }

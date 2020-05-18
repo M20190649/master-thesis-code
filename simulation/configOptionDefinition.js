@@ -102,6 +102,12 @@ const configOptionDefinitions = [
     description: `Determines if agents only see the zones from the timestep when they were inserted or if they always see the most recent zones`,
     required: true,
   },
+  {
+    name: "rerouteOnZoneUpdate",
+    type: Boolean,
+    description: `Determines if a static/dynamic reroute should be triggered when the zones update`,
+    required: true,
+  },
 ]
 
 module.exports = configOptionDefinitions

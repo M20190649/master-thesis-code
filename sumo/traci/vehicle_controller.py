@@ -25,8 +25,11 @@ class VehicleController(traci.StepListener):
     def event_handler(self, event):
         if event == "zone-update":
             # Do everything that needs to be done after the zones have updated
-            # TODO: Do rerouting again after zones have changed?
-            pass
+            if self.sim_config["rerouteOnZoneUpdate"]:
+                if self.sim_config["zoneRerouting"] != "none":
+                    if not self.sim_config["snapshotZones"]:
+                        self.update_subscription_results()
+                        self.reroute(zone_update=True)
 
     def should_vehicle_avoid_polygon(self, vid, pid):
         # This function can be used to avoid only specific zones/polygons
@@ -88,6 +91,11 @@ class VehicleController(traci.StepListener):
 
         return decision
 
+    def has_vehicle_rerouted(self, vid):
+        # Check if vehicle has already made a decision if to reroute at all or not
+        rerouting_decision = traci.vehicle.getParameter(vid, "rerouting_decision")
+        return rerouting_decision != ""
+
     def reroute_vehicle(self, vid, timestep=None):
         log(f"Rerouting vehicle {vid}")
 
@@ -108,9 +116,18 @@ class VehicleController(traci.StepListener):
         # Disable rerouting through the rerouting device so that vehicle will stay on this route
         traci.vehicle.setParameter(vid, "device.rerouting.period", "0")
 
-    def static_rerouting(self):
+    def static_rerouting(self, zone_update=False):
+        vehicleToCheck = []
+        if zone_update:
+            # Only executed when rerouteOnZoneUpdate is true
+            # Zones have updated so we want to check all vehicles, not only the new ones
+            vehicleToCheck = traci.vehicle.getIDList()
+        else:
+            # Only check the new ones
+            vehicleToCheck = self.newly_inserted_vehicles
+
         # Rerouting for vehicles whose route crosses through air quality zones
-        for vid in self.newly_inserted_vehicles:
+        for vid in vehicleToCheck:
             route = self.vehicle_subs[vid][tc.VAR_EDGES]
 
             # Check if route includes edges that are within air quality zone polygons of current timestep
@@ -130,15 +147,26 @@ class VehicleController(traci.StepListener):
                     self.reroute_vehicle(vid)
                     break
 
-    def dynamic_rerouting(self):
+    def dynamic_rerouting(self, zone_update=False):
+        # 1. Check for new/all vehicles if current edge is within one of the polygons
+        vehicleToCheck = []
+        if zone_update:
+            # Zones have updated so we want to check all vehicles, not only the new ones
+            vehicleToCheck = traci.vehicle.getIDList()
+        else:
+            # Only check the new ones
+            vehicleToCheck = self.newly_inserted_vehicles
+
         # Check all the newly spawned vehicles if any of them are located within the zone
-        for vid in self.newly_inserted_vehicles:
+        for vid in vehicleToCheck:
             route = self.vehicle_subs[vid][tc.VAR_EDGES]
+            route_index = self.vehicle_subs[vid][tc.VAR_ROUTE_INDEX]
+            current_edge = route[route_index]
 
             # Check if starting edge is within any of the polygons
             for pid in self.zone_controller.get_polygons_by_timestep(holes=False):
                 polygon_edges = self.zone_controller.get_polygon_edges(pid=pid)
-                if route[0] in polygon_edges:
+                if current_edge in polygon_edges:
                     log(f"New vehicle {vid} was inserted inside polygon {pid}.")
                     # Make decision if to reroute at all
                     if not self.should_vehicle_reroute(vid):
@@ -152,6 +180,9 @@ class VehicleController(traci.StepListener):
 
                     self.reroute_vehicle(vid)
                     break
+
+        # 2. Check for all vehicles that are within the dynamic rerouting range
+        # if any of their upcoming edges are within any of the polygons
 
         # Go through all polygons and get all vehicles within dynamic rerouting range
         vehicle_ids = traci.vehicle.getIDList()
@@ -167,12 +198,10 @@ class VehicleController(traci.StepListener):
             polygon_edges = self.zone_controller.get_polygon_edges(pid=pid)
 
             for vid in vehicle_context:
-                # Check if vehicle has already made a decision if to reroute at all or not
-                rerouting_decision = traci.vehicle.getParameter(
-                    vid, "rerouting_decision"
-                )
-                if rerouting_decision != "":
-                    continue
+                if not zone_update:
+                    if self.has_vehicle_rerouted(vid):
+                        # When vehicle has already rerouted we don't want it to reroute again
+                        continue
 
                 v_timestep = traci.vehicle.getParameter(vid, "zone_timestep")
                 if self.sim_config["snapshotZones"]:
@@ -223,27 +252,30 @@ class VehicleController(traci.StepListener):
                 ],
             )
 
-    def reroute(self):
+    def reroute(self, zone_update=False):
         if self.sim_config["zoneRerouting"] == "static":
-            self.static_rerouting()
+            self.static_rerouting(zone_update)
         elif self.sim_config["zoneRerouting"] == "dynamic":
-            self.dynamic_rerouting()
+            self.dynamic_rerouting(zone_update)
         else:
             raise ValueError("Unknown zoneRerouting value")
 
-    def step(self, t):
-        # Do something at every simulaton step
-
-        # Get subscriptions
+    def update_subscription_results(self):
         simulation_sub = traci.simulation.getSubscriptionResults()
         self.newly_inserted_vehicles = simulation_sub[tc.VAR_DEPARTED_VEHICLES_IDS]
         self.vehicle_subs = traci.vehicle.getAllSubscriptionResults()
         self.polygon_subs = traci.polygon.getAllContextSubscriptionResults()
 
+    def step(self, t):
+        # Do something at every simulaton step
+
+        # Get subscriptions
+        self.update_subscription_results()
+
         self.prepare_new_vehicles()
 
         if self.sim_config["zoneRerouting"] != "none":
-            self.reroute()
+            self.reroute(zone_update=False)
 
         # Return true to indicate that the step listener should stay active in the next step
         return True
