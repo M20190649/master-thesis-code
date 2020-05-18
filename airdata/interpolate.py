@@ -107,7 +107,6 @@ def interpolate(
     method="nearest_neighbor",
     output="interpolation-data",
     zones=[0, 20, 40, 100, 200, 400],  # Took these values for PM10 from Umweltbundesamt
-    visualize=False,
 ):
     berlin_districts = gpd.read_file("../shared/berlinDistricts.geojson")
     measurements = gpd.read_file(measurements_fp)
@@ -181,22 +180,18 @@ def interpolate(
     end = time.time()
     print(f"Done! ({format(end - start, '.3f')}s)")
 
-    if visualize:
-        print("Creating visualization...")
-        start = time.time()
-        fig, ax = plt.subplots()
-        contour = ax.contourf(xnew, ynew, interpolated_values, zones, cmap="winter_r")
-        berlin_districts.boundary.plot(ax=ax, edgecolor="black")
-        contour.cmap.set_under("w")
-        contour.set_clim(zones[1])
-        fig.colorbar(contour, ax=ax)
-        fig.savefig(f"{output}/{filename}.png", bbox_inches="tight")
+    print("Creating visualization...")
+    start = time.time()
+    fig, ax = plt.subplots()
+    contour = ax.contourf(xnew, ynew, interpolated_values, zones, cmap="winter_r")
+    berlin_districts.boundary.plot(ax=ax, edgecolor="black")
+    contour.cmap.set_under("w")
+    contour.set_clim(zones[1])
+    fig.colorbar(contour, ax=ax)
+    fig.savefig(f"{output}/{filename}.png", bbox_inches="tight")
 
-        end = time.time()
-        print(f"Done! ({format(end - start, '.3f')}s)")
-
-        # plt.show()
-        # plt.close()
+    end = time.time()
+    print(f"Done! ({format(end - start, '.3f')}s)")
 
 
 interpolator_functions = {
@@ -240,12 +235,6 @@ parser.add_argument(
 parser.add_argument(
     "--output", dest="output", help="Filepath for output files", metavar="FILE",
 )
-parser.add_argument(
-    "--visualize",
-    dest="visualize",
-    help="Create visualizations of the interpolated data",
-    metavar="BOOLEAN",
-)
 
 args = parser.parse_args()
 
@@ -265,8 +254,5 @@ if "method" in args:
 
 if "zones" in args:
     args["zones"] = list(map(int, args["zones"].split(",")))
-
-if "visualize" in args:
-    args["visualize"] = bool(args["visualize"])
 
 interpolate(**args)

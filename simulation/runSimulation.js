@@ -123,7 +123,6 @@ async function run() {
         `--method=${config.interpolationMethod}`,
         `--zones=${config.zones.join(",")}`,
         `--output=${interpolatedAirData}`,
-        `${config.visualizeZones ? `--visualize=true` : ""}`,
       ])
 
       // Convert the resulting zones into SUMO poly format

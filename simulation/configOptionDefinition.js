@@ -76,12 +76,6 @@ const configOptionDefinitions = [
     required: true,
   },
   {
-    name: "visualizeZones",
-    type: Boolean,
-    description: `Determines if the interpolation script should create images of the resulting zones`,
-    required: true,
-  },
-  {
     name: "enablePeriodicRerouting",
     type: Boolean,
     description: `Determines if SUMO should periodically reroute vehicle to check that they are on their optimal route. This helps to avoid unrealistic traffic jams.`,

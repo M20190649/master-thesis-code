@@ -62,7 +62,6 @@ node runSimulation.js --config <path to the config file>
 | simulationDate | String | - | `"02.02.2020"` | Determines from which day the pollutant measurements should be fetched |
 | zoneUpdateInterval | Number | - | `60` | Determines in which interval (in minutes) the zones should be updated. For example every 60 minutes. |
 | interpolationMethod | String | `"idw"`, `"nearest-neighbor"`, `"natural-neighbor"`, `"linear_barycentric"` | `"idw"` | Determined the interpolation method to be used to create the air quality zones |
-| visualizeZones | Boolean | - | `true` | Determines if the simulation should create images of the interpolated air quality zones |
 | snapshotZones | Boolean | - | `true` | Determines if the zones are "frozen" for when vehicles enter the simulation. If it true, vehicles are only being tracked according to the zones that were active when they entered the simulation. If it is false, vehicles are always being tracked according to the most recent zones.  |
 | enableZoneRerouting | Boolean | - | `true` | Determines if vehicles should be rerouted |
 | dynamicRerouting | Boolean | - | `true` | Determines if vehicles should be rerouted at insertion or dynamically when they approach an air pollution zone |
