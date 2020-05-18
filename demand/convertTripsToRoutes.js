@@ -21,6 +21,12 @@ const optionDefinitions = [
     description: "Filepath for the output routes file XML file",
     required: true,
   },
+  {
+    name: "write-trips",
+    type: Boolean,
+    description: "Write the output as <trip> tags instead <route> tags",
+    defaultValue: false,
+  },
 ]
 const CLIOptions = parseCLIOptions(optionDefinitions)
 
@@ -47,6 +53,7 @@ async function convertTripsToRoutes(callerOptions) {
     "--repair",
     `--log ${logFile}`,
     "--ignore-errors",
+    options["write-trips"] ? "--write-trips" : "",
   ])
 }
 

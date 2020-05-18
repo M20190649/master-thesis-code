@@ -88,6 +88,7 @@ module.exports = async (inputDir, config) => {
       trips: tripsFile,
       network: networkFile,
       output: routesFile,
+      "write-trips": true,
     })
   }
   console.log("Done!\n")
