@@ -2,12 +2,14 @@ const modes = ["osm", "matsim"]
 const scenarios = ["1pct", "10pct"]
 const pollutants = ["PM10", "PM2.5"]
 const interpolationMethods = [
-  "nearest_neighbor",
-  "discrete_natural_neighbor",
-  "metpy_natural_neighbor",
-  "scipy_natural_neighbor",
+  "nearest-neighbor",
+  "natural-neighbor",
   "idw",
-  "linear_barycentric",
+  "linear-rbf",
+  "mq-rbf",
+  "imq-rbf",
+  "thin-plate-rbf",
+  "kriging",
 ]
 
 const configOptionDefinitions = [
