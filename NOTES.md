@@ -502,8 +502,6 @@ TODO:
   * My solution would be to create the holes as polygons in SUMO (with no background color) and make them clearly identifiable as holes (through their ID for example)
     * Makes it lot easier to track the driven distances inside the holes and subtract them afterwards
     * Easy to know which edges are within holes and which are not
-  ![Problem screenshot](screenshots/polygon-holes-in-sumo.png)
-  ![Fixed screenshot](screenshots/polygon-holes-in-sumo-fixed.png)
 
 * Do more bug fixing and ensuring TraCI is behaving correctly
 * Refactoring of code to make it easily extendable
