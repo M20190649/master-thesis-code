@@ -28,5 +28,5 @@
   "reroutingPercentage": 1,
   "dynamicRerouting": false,
   "dynamicReroutingDistance": 1000,
-  "freezeZones": true
+  "snapshotZones": true
 }

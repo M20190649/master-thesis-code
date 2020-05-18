@@ -534,14 +534,14 @@ TODO:
     * How many vehicles were loaded, inserted, running, waiting, arrived etc.
     * Mean waiting time, mean travel time, mean speed, mean speed relative
 
-* Add freezeZones simulation config parameter
+* Add snapshotZones simulation config parameter
   * When zones are frozen the agents only reroute and are charged based on the zones that existed during the timestep where they were inserted into the simulation
   * When zones are NOT frozen agents always reroute and are charged according to the most recent zones
 
-QUESTION: What to do in the freezeZones: false case when zones change? Are vehicles rerouted?
+QUESTION: What to do in the snapshotZones: false case when zones change? Are vehicles rerouted?
 
 TODO: 
-* ~~Test freezeZones~~
+* ~~Test snapshotZones~~
 * ~~Explore SUMO outputs for evaluation~~
 
 # 26.03.2020

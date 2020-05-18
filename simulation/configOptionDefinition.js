@@ -106,7 +106,7 @@ const configOptionDefinitions = [
     required: true,
   },
   {
-    name: "freezeZones",
+    name: "snapshotZones",
     type: Boolean,
     description: `Determines if agents only see the zones from the timestep when they were inserted or if they always see the most recent zones`,
     required: true,

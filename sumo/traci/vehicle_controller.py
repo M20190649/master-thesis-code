@@ -43,7 +43,7 @@ class VehicleController(traci.StepListener):
 
         v_timestep = traci.vehicle.getParameter(vid, "zone_timestep")
         p_timestep = traci.polygon.getParameter(pid, "zone_timestep")
-        if self.sim_config["freezeZones"]:
+        if self.sim_config["snapshotZones"]:
             # When zones are frozen only consider the polygons that existed at the time when the vehicle was inserted
             if p_timestep != v_timestep:
                 return False
@@ -171,7 +171,7 @@ class VehicleController(traci.StepListener):
                     continue
 
                 v_timestep = traci.vehicle.getParameter(vid, "zone_timestep")
-                if self.sim_config["freezeZones"]:
+                if self.sim_config["snapshotZones"]:
                     # When zones are frozen only consider the polygons that existed at the time when the vehicle was inserted
                     if p_timestep != v_timestep:
                         continue

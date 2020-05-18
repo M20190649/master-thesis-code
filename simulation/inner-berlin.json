@@ -26,5 +26,5 @@
   "enableZoneRerouting": false,
   "dynamicRerouting": false,
   "dynamicReroutingDistance": 300,
-  "freezeZones": false
+  "snapshotZones": false
 }
