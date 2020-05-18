@@ -90,7 +90,7 @@ class ZoneController(traci.StepListener):
         # Calculate and store all edges that are covered by each new polygon
         # Add temporary subscription to be able to query for all edges
         # Get all edges for polygon pid that are within distance of 0
-        traci.polygon.subscribeContext(pid, tc.CMD_GET_EDGE_VARIABLE, 0)
+        traci.polygon.subscribeContext(pid, tc.CMD_GET_EDGE_VARIABLE, 0, [tc.ID_COUNT])
         polygon_context = traci.polygon.getContextSubscriptionResults(pid)
         # Remove context subscription because we don't need it anymore
         traci.polygon.unsubscribeContext(pid, tc.CMD_GET_EDGE_VARIABLE, 0)
