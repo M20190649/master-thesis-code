@@ -63,8 +63,7 @@ node runSimulation.js --config <path to the config file>
 | zoneUpdateInterval | Number | - | `60` | Determines in which interval (in minutes) the zones should be updated. For example every 60 minutes. |
 | interpolationMethod | String | `"nearest-neighbor"`, `"natural-neighbor"`, `"idw"`, `"linear-rbf"`, `"mq-rbf"`, `"imq-rbf"`, `"thin-plate-rbf"`, `"kriging"` | `"idw"` | Determined the interpolation method to be used to create the air quality zones |
 | snapshotZones | Boolean | - | `true` | Determines if the zones are "frozen" for when vehicles enter the simulation. If it true, vehicles are only being tracked according to the zones that were active when they entered the simulation. If it is false, vehicles are always being tracked according to the most recent zones.  |
-| enableZoneRerouting | Boolean | - | `true` | Determines if vehicles should be rerouted |
-| dynamicRerouting | Boolean | - | `true` | Determines if vehicles should be rerouted at insertion or dynamically when they approach an air pollution zone |
+| zoneRerouting | String | `"none"`, `"static"`, `"dynamic"` | `"static"` | Determines if vehicles should reroute to avoid the critical zones. `"static"` reroutes vehicles at insertion, `"dynamic"` reroutes vehicles when vehicles get close (`dynamicReroutingDistance`) to any of the zones. |
 | dynamicReroutingDistance | Boolean | - | `true` | Determines the distance to the zones when vehicles should be dynamically rerouted
 
 ## Known Errors

@@ -94,7 +94,9 @@ class VehicleController(traci.StepListener):
         traveltime = 99999999
 
         # Decide per polygon if to avoid it or not
-        for pid in self.zone_controller.get_polygons_by_timestep(timestep=timestep, holes=False):
+        for pid in self.zone_controller.get_polygons_by_timestep(
+            timestep=timestep, holes=False
+        ):
             if self.should_vehicle_avoid_polygon(vid, pid):
                 polygon_edges = self.zone_controller.get_polygon_edges(pid=pid)
                 for eid in polygon_edges:
@@ -166,7 +168,9 @@ class VehicleController(traci.StepListener):
 
             for vid in vehicle_context:
                 # Check if vehicle has already made a decision if to reroute at all or not
-                rerouting_decision = traci.vehicle.getParameter(vid, "rerouting_decision")
+                rerouting_decision = traci.vehicle.getParameter(
+                    vid, "rerouting_decision"
+                )
                 if rerouting_decision != "":
                     continue
 
@@ -189,7 +193,7 @@ class VehicleController(traci.StepListener):
                     # Make decision if to reroute at all
                     if not self.should_vehicle_reroute(vid):
                         continue
-                        
+
                     # Check if destination is within polygon
                     if upcoming_edges[-1] in polygon_edges:
                         # TODO: What to do in the case that the destination is inside a zone?
@@ -202,23 +206,30 @@ class VehicleController(traci.StepListener):
         # n_new = len(self.newly_inserted_vehicles)
         # if n_new != 0:
         #     print(f"{n_new} new vehicle{'' if n_new == 1 else 's'} {'was' if n_new == 1 else 'were'} inserted")
-        
+
         for vid in self.newly_inserted_vehicles:
             # Store the timestep when a vehicle was inserted into the simulation
-            traci.vehicle.setParameter(vid, "zone_timestep", self.zone_controller.current_timestep)
-            traci.vehicle.subscribe(vid, [
-                tc.VAR_POSITION, # Used to check if vehicles are inside a zones
-                tc.VAR_SPEED, # Used to track vehicle distances in the zones
-                tc.VAR_EDGES, # Used to check if the route passes through zones
-                tc.VAR_ROUTE_INDEX, # Vehicles that have their destination within the zone shouldn't be rerouted
-                tc.VAR_EMISSIONCLASS, # Used to distinguish between gas, electric and other car types
-            ])
+            traci.vehicle.setParameter(
+                vid, "zone_timestep", self.zone_controller.current_timestep
+            )
+            traci.vehicle.subscribe(
+                vid,
+                [
+                    tc.VAR_POSITION,  # Used to check if vehicles are inside a zones
+                    tc.VAR_SPEED,  # Used to track vehicle distances in the zones
+                    tc.VAR_EDGES,  # Used to check if the route passes through zones
+                    tc.VAR_ROUTE_INDEX,  # Vehicles that have their destination within the zone shouldn't be rerouted
+                    tc.VAR_EMISSIONCLASS,  # Used to distinguish between gas, electric and other car types
+                ],
+            )
 
     def reroute(self):
-        if self.sim_config["dynamicRerouting"]:
+        if self.sim_config["zoneRerouting"] == "static":
+            self.static_rerouting()
+        elif self.sim_config["zoneRerouting"] == "dynamic":
             self.dynamic_rerouting()
         else:
-            self.static_rerouting()
+            raise ValueError("Unknown zoneRerouting value")
 
     def step(self, t):
         # Do something at every simulaton step
@@ -231,7 +242,7 @@ class VehicleController(traci.StepListener):
 
         self.prepare_new_vehicles()
 
-        if self.sim_config["enableZoneRerouting"]:
+        if self.sim_config["zoneRerouting"] != "none":
             self.reroute()
 
         # Return true to indicate that the step listener should stay active in the next step

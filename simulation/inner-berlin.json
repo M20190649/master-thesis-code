@@ -21,9 +21,8 @@
     400,
     1000
   ],
-  "enablePeriodicRerouting": false,
-  "enableZoneRerouting": false,
-  "dynamicRerouting": false,
+  "periodicRerouting": false,
+  "zoneRerouting": "none",
   "dynamicReroutingDistance": 300,
   "snapshotZones": false
 }

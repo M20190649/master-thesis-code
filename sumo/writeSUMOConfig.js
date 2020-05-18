@@ -47,7 +47,7 @@ module.exports = (
   const processingTag = configXML.element("processing")
   processingTag.element("no-internal-links", { value: "true" })
 
-  if (config.enablePeriodicRerouting) {
+  if (config.periodicRerouting) {
     const routingTag = configXML.element("routing")
     routingTag.element("device.rerouting.probability", { value: "1.0" })
     routingTag.element("device.rerouting.period", { value: "300" })

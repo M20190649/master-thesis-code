@@ -19,11 +19,10 @@
     100,
     1000
   ],
-  "enablePeriodicRerouting": false,
-  "enableZoneRerouting": false,
+  "periodicRerouting": false,
+  "zoneRerouting": "none",
   "reroutingDecisionMode": "percentage",
   "reroutingPercentage": 0.5,
-  "dynamicRerouting": false,
   "dynamicReroutingDistance": 300,
   "snapshotZones": true
 }
