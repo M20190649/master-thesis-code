@@ -9,6 +9,7 @@ import geopandas as gpd
 
 from logger import log
 
+
 class ZoneController(traci.StepListener):
     def __init__(self, sim_config):
         self.sim_config = sim_config
@@ -28,22 +29,26 @@ class ZoneController(traci.StepListener):
             if not holes:
                 if pid.startswith("hole"):
                     return False
-                    
+
             p_timestep = traci.polygon.getParameter(pid, "zone_timestep")
             return p_timestep == (timestep or self.current_timestep)
-        
+
         return list(filter(check_polygon, polygons))
 
     def add_polygon_subscriptions(self, pid):
         # Polygon context used for dynamic routing
         traci.polygon.subscribeContext(
-            pid, tc.CMD_GET_VEHICLE_VARIABLE, self.sim_config["dynamicReroutingDistance"]
+            pid,
+            tc.CMD_GET_VEHICLE_VARIABLE,
+            self.sim_config["dynamicReroutingDistance"],
         )
         traci.polygon.subscribe(pid, [tc.VAR_SHAPE])
 
     def remove_polygon_subscriptions(self, pid):
         traci.polygon.unsubscribeContext(
-            pid, tc.CMD_GET_VEHICLE_VARIABLE, self.sim_config["dynamicReroutingDistance"]
+            pid,
+            tc.CMD_GET_VEHICLE_VARIABLE,
+            self.sim_config["dynamicReroutingDistance"],
         )
         traci.polygon.unsubscribe(pid)
 
@@ -71,9 +76,7 @@ class ZoneController(traci.StepListener):
         for i in range(len(part_shapes)):
             s = part_shapes.pop(0)
             if len(s) > 255:
-                log(
-                    "Part is still too big (more than 255 points)! Splitting again..."
-                )
+                log("Part is still too big (more than 255 points)! Splitting again...")
                 splitted_parts = self.split_polygon(s)
                 part_shapes.extend(splitted_parts)
             else:
@@ -93,31 +96,31 @@ class ZoneController(traci.StepListener):
         traci.polygon.unsubscribeContext(pid, tc.CMD_GET_EDGE_VARIABLE, 0)
 
         if polygon_context is None:
-            log(
-                f"Polygon {pid} will be removed because it is not covering any edges."
-            )
+            log(f"Polygon {pid} will be removed because it is not covering any edges.")
             # Edges subscription can be None when the polygon doesn't cover any edges
             # Since it doesn't cover any edges it can be removed
             traci.polygon.remove(pid)
             return
-        
+
         traci.polygon.setParameter(pid, "zone_timestep", self.current_timestep)
 
         # Add all necessary context subscriptions
-        self.add_polygon_subscriptions(pid)
+        # self.add_polygon_subscriptions(pid)
 
         # Filter out edge data
         edge_ids = traci.edge.getIDList()
-        edges_in_polygon = [
-            k for (k, v) in polygon_context.items() if k in edge_ids
-        ]
+        edges_in_polygon = [k for (k, v) in polygon_context.items() if k in edge_ids]
         log(f"Found {len(edges_in_polygon)} edges in polygon {pid}")
         self.__polygon_edges[pid] = edges_in_polygon
 
     def load_polygons(self, t):
         # Load the XML file for the current timestep
         pad = lambda n: f"0{n}" if n < 10 else n
-        date_parts = list(map(lambda n: str(pad(int(n))), self.sim_config["simulationDate"].split(".")))
+        date_parts = list(
+            map(
+                lambda n: str(pad(int(n))), self.sim_config["simulationDate"].split(".")
+            )
+        )
         date_string = "-".join(date_parts[::-1])
         timestep = self.get_timestep_from_step(t)
         zone_file = f"zones_{date_string}T{timestep}.xml"
@@ -172,7 +175,7 @@ class ZoneController(traci.StepListener):
     def hide_polygons(self, t):
         if t < 0:
             return
-            
+
         timestep = self.get_timestep_from_step(t)
         log(f"Hiding polygons from timestep {timestep}")
         for pid in self.get_polygons_by_timestep(timestep=timestep):
