@@ -10,7 +10,7 @@ import geopandas as gpd
 from logger import log
 
 
-class ZoneController(traci.StepListener):
+class ZoneController():
     def __init__(self, sim_config):
         self.sim_config = sim_config
         self.current_timestep = ""
@@ -197,19 +197,3 @@ class ZoneController(traci.StepListener):
         self.hide_polygons(step - interval)
         self.load_polygons(step)
         log("Done")
-
-    def step(self, t):
-        interval = self.sim_config["zoneUpdateInterval"] * 60
-        if t > 0 and t % interval == 0:
-            # if t > 0 and t % 40 == 0:
-            log("New timestep! Zones will be updated...")
-            # Always keep the polygons up until three hours after they have been loaded
-            keep_duration = 3 * 60 * 60
-            self.remove_polygons(t - keep_duration)
-            # Hide the polygons from last timestep
-            self.hide_polygons(t - interval)
-            self.load_polygons(t)
-            log("Done")
-
-        # Return true to indicate that the step listener should stay active in the next step
-        return True

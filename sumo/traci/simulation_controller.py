@@ -40,9 +40,7 @@ class SimulationController:
         # Connect
         traci.start(self.traci_config["sumo_cmd"])
 
-        # Add step listeners, subscriptions, etc.
-        # self.__init()
-
+        # We need the ID list of departed vehicles every step so we add a subscription
         traci.simulation.subscribe([tc.VAR_DEPARTED_VEHICLES_IDS])
 
         # Load initial zones
@@ -56,22 +54,22 @@ class SimulationController:
         # Run the simulation
         step = 0
         while traci.simulation.getMinExpectedNumber() > 0:
-            log(f"Before step {step}")
+            # log(f"Before step {step}")
             traci.simulationStep(step)
-            log(f"After step {step}")
+            # log(f"After step {step}")
             self.vehicle_controller.prepare_new_vehicles()
-            log(f"After new vehicle prep")
+            # log(f"After new vehicle prep")
 
             self.tracker.track_vehicles_in_polygons(step)
-            log(f"After tracking")
+            # log(f"After tracking")
 
             if step > 0 and step % interval == 0:
                 self.zone_controller.update_zones(step)
-                log(f"After zone update")
+                # log(f"After zone update")
 
             if self.sim_config["zoneRerouting"] != "none":
                 self.vehicle_controller.reroute()
-                log(f"After reroute")
+                # log(f"After reroute")
 
             step += 1
 

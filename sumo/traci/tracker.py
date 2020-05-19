@@ -15,7 +15,7 @@ def prettify(elem, indent=4):
     return root.toprettyxml(indent=" " * indent)
 
 
-class Tracker(traci.StepListener):
+class Tracker:
     def __init__(self, sim_config, zone_controller):
         self.sim_config = sim_config
         self.zone_controller = zone_controller
@@ -94,11 +94,3 @@ class Tracker(traci.StepListener):
 
     def finish(self):
         self.output_file.write("</vehicle-zone-tracking>")
-        pass
-
-    def step(self, t):
-        # Track all distances driven in each polygon
-        self.track_vehicles_in_polygons(t)
-
-        # Return true to indicate that the step listener should stay active in the next step
-        return True

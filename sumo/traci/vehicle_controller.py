@@ -10,7 +10,7 @@ from logger import log
 import rerouting_decisions
 
 
-class VehicleController(traci.StepListener):
+class VehicleController():
     def __init__(self, sim_config, zone_controller):
         self.sim_config = sim_config
         self.zone_controller = zone_controller
@@ -275,28 +275,3 @@ class VehicleController(traci.StepListener):
 
         if self.zoneUpdateReroute:
             self.zoneUpdateReroute = False
-
-    def step(self, t):
-        # Do something at every simulaton step
-
-        # Prepare new vehicles
-        simulation_sub = traci.simulation.getSubscriptionResults()
-        self.newly_inserted_vehicles = simulation_sub[tc.VAR_DEPARTED_VEHICLES_IDS]
-        self.prepare_new_vehicles()
-
-        # Get subscriptions
-        self.vehicle_vars = traci.vehicle.getAllSubscriptionResults()
-        self.vehicle_polygons = traci.vehicle.getAllContextSubscriptionResults()
-        self.polygon_subs = traci.polygon.getAllContextSubscriptionResults()
-
-        # log(self.vehicle_polygons)
-
-        if self.sim_config["zoneRerouting"] != "none":
-            if self.zoneUpdateReroute:
-                self.reroute(zone_update=True)
-                self.zoneUpdateReroute = False
-            else:
-                self.reroute(zone_update=False)
-
-        # Return true to indicate that the step listener should stay active in the next step
-        return True
