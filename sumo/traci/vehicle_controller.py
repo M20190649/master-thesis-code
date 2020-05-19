@@ -114,7 +114,8 @@ class VehicleController(traci.StepListener):
         traci.vehicle.rerouteTraveltime(vid, False)
         traci.vehicle.setColor(vid, (255, 0, 0))
         # Disable rerouting through the rerouting device so that vehicle will stay on this route
-        traci.vehicle.setParameter(vid, "device.rerouting.period", "0")
+        if self.sim_config["periodicRerouting"]:
+            traci.vehicle.setParameter(vid, "device.rerouting.period", "0")
 
     def static_rerouting(self, zone_update=False):
         vehicleToCheck = []
@@ -259,17 +260,10 @@ class VehicleController(traci.StepListener):
                     tc.VAR_EMISSIONCLASS,  # Used to distinguish between gas, electric and other car types
                 ],
             )
-            traci.vehicle.subscribeContext(
-                vid,
-                tc.CMD_GET_POLYGON_VARIABLE,
-                self.sim_config["dynamicReroutingDistance"],
-                [tc.ID_COUNT],
-            )
 
     def reroute(self, zone_update=False):
         # Get subscriptions
         self.vehicle_vars = traci.vehicle.getAllSubscriptionResults()
-        self.vehicle_polygons = traci.vehicle.getAllContextSubscriptionResults()
         self.polygon_subs = traci.polygon.getAllContextSubscriptionResults()
 
         if self.sim_config["zoneRerouting"] == "static":
