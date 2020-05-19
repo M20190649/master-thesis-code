@@ -18,20 +18,6 @@ class SimulationController:
         log_path = os.path.join(sim_config["sim_outputDir"], "simulation-logs.txt")
         open_log(log_path)
 
-    def __init(self):
-        # Step listeners are always executed AFTER the simulation step (traci.simulationStep())
-        # Adding tracker first because we want to track the vehicle movement in the previous step
-        traci.addStepListener(self.tracker)
-        # Then add the zone manager to check if the zones need to be updated
-        traci.addStepListener(self.zone_controller)
-        # After zones were checked and possibly adjusted we want to reroute the vehicles if necessary
-        traci.addStepListener(self.vehicle_controller)
-
-        traci.simulation.subscribe([tc.VAR_DEPARTED_VEHICLES_IDS])
-
-        # Load initial zones
-        self.zone_controller.load_polygons(0)
-
     def start(self):
         log("Simulation starting with the following options:\n")
         log(self.sim_config)
