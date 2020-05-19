@@ -187,6 +187,17 @@ class ZoneController(traci.StepListener):
         time_string = f"{pad(utc.hour)}-{pad(utc.minute)}-{pad(utc.second)}"
         return time_string
 
+    def update_zones(self, step):
+        log("New timestep! Zones will be updated...")
+        interval = self.sim_config["zoneUpdateInterval"] * 60
+        # Always keep the polygons up until three hours after they have been loaded
+        keep_duration = 3 * 60 * 60
+        self.remove_polygons(step - keep_duration)
+        # Hide the polygons from last timestep
+        self.hide_polygons(step - interval)
+        self.load_polygons(step)
+        log("Done")
+
     def step(self, t):
         interval = self.sim_config["zoneUpdateInterval"] * 60
         if t > 0 and t % interval == 0:

@@ -241,6 +241,9 @@ class VehicleController(traci.StepListener):
         # if n_new != 0:
         #     print(f"{n_new} new vehicle{'' if n_new == 1 else 's'} {'was' if n_new == 1 else 'were'} inserted")
 
+        simulation_sub = traci.simulation.getSubscriptionResults()
+        self.newly_inserted_vehicles = simulation_sub[tc.VAR_DEPARTED_VEHICLES_IDS]
+
         for vid in self.newly_inserted_vehicles:
             # Store the timestep when a vehicle was inserted into the simulation
             traci.vehicle.setParameter(
@@ -264,12 +267,20 @@ class VehicleController(traci.StepListener):
             )
 
     def reroute(self, zone_update=False):
+        # Get subscriptions
+        self.vehicle_vars = traci.vehicle.getAllSubscriptionResults()
+        self.vehicle_polygons = traci.vehicle.getAllContextSubscriptionResults()
+        self.polygon_subs = traci.polygon.getAllContextSubscriptionResults()
+
         if self.sim_config["zoneRerouting"] == "static":
-            self.static_rerouting(zone_update)
+            self.static_rerouting(zone_update=self.zoneUpdateReroute)
         elif self.sim_config["zoneRerouting"] == "dynamic":
-            self.dynamic_rerouting(zone_update)
+            self.dynamic_rerouting(zone_update=self.zoneUpdateReroute)
         else:
             raise ValueError("Unknown zoneRerouting value")
+
+        if self.zoneUpdateReroute:
+            self.zoneUpdateReroute = False
 
     def step(self, t):
         # Do something at every simulaton step

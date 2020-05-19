@@ -10,6 +10,7 @@ from logger import open_log, log
 class SimulationController:
     def __init__(self, traci_config, sim_config):
         self.traci_config = traci_config
+        self.sim_config = sim_config
         self.zone_controller = ZoneController(sim_config)
         self.tracker = Tracker(sim_config, self.zone_controller)
         self.vehicle_controller = VehicleController(sim_config, self.zone_controller)
@@ -36,12 +37,38 @@ class SimulationController:
         traci.start(self.traci_config["sumo_cmd"])
 
         # Add step listeners, subscriptions, etc.
-        self.__init()
+        # self.__init()
+
+        traci.simulation.subscribe([tc.VAR_DEPARTED_VEHICLES_IDS])
+
+        # Load initial zones
+        self.zone_controller.load_polygons(0)
+
+        # Prepare initial vehicles
+        self.vehicle_controller.prepare_new_vehicles()
+
+        interval = self.sim_config["zoneUpdateInterval"] * 60
 
         # Run the simulation
         step = 0
         while traci.simulation.getMinExpectedNumber() > 0:
+            log(f"Before step {step}")
             traci.simulationStep(step)
+            log(f"After step {step}")
+            self.vehicle_controller.prepare_new_vehicles()
+            log(f"After new vehicle prep")
+
+            self.tracker.track_vehicles_in_polygons(step)
+            log(f"After tracking")
+
+            if step > 0 and step % interval == 0:
+                self.zone_controller.update_zones(step)
+                log(f"After zone update")
+
+            if self.sim_config["zoneRerouting"] != "none":
+                self.vehicle_controller.reroute()
+                log(f"After reroute")
+
             step += 1
 
         # Finish and clean up

@@ -41,11 +41,11 @@ class Tracker(traci.StepListener):
 
         timestep_xml = Element("timestep", {"time": str(t), "zone-timestep": timestep})
 
-        for vid in vehicle_subs:
+        for vid in traci.vehicle.getIDList():
             vehicle_xml = None
             x, y = vehicle_subs[vid][tc.VAR_POSITION]
             speed = vehicle_subs[vid][tc.VAR_SPEED]
-            for pid in polygon_subs:
+            for pid in traci.polygon.getIDList():
                 polygon_shape = polygon_subs[pid][tc.VAR_SHAPE]
                 location = Point(x, y)
                 polygon = Polygon(polygon_shape)
