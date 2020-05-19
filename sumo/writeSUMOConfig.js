@@ -44,9 +44,6 @@ module.exports = (
   outputTag.element("vehroute-output.intended-depart", { value: "true" })
   outputTag.element("statistic-output", { value: statisticsFile })
 
-  const processingTag = configXML.element("processing")
-  processingTag.element("no-internal-links", { value: "true" })
-
   if (config.periodicRerouting) {
     const routingTag = configXML.element("routing")
     routingTag.element("device.rerouting.probability", { value: "1.0" })
