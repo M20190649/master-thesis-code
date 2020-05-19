@@ -7,18 +7,20 @@ from xml.dom import minidom
 from lxml import etree
 from lxml.etree import Element, SubElement
 
+
 def prettify(elem, indent=4):
     ugly_string = etree.tostring(elem, encoding="utf-8")
     reparsed = minidom.parseString(ugly_string)
-    root = reparsed.childNodes[0] # remove declaration header
+    root = reparsed.childNodes[0]  # remove declaration header
     return root.toprettyxml(indent=" " * indent)
+
 
 class Tracker(traci.StepListener):
     def __init__(self, sim_config, zone_controller):
         self.sim_config = sim_config
         self.zone_controller = zone_controller
         self.vehicle_distances = {}
-        
+
         output_file_path = f"{sim_config['sim_outputDir']}/vehicle-zone-tracking.xml"
         self.output_file = open(output_file_path, "w")
         self.output_file.write('<?xml version="1.0" encoding="UTF-8"?>\n')
@@ -37,17 +39,13 @@ class Tracker(traci.StepListener):
         polygon_subs = traci.polygon.getAllSubscriptionResults()
         some_vehicle_in_polygon = False
 
-        timestep_xml = Element(
-            "timestep", 
-            {"time": str(t), "zone-timestep": timestep}
-        )
+        timestep_xml = Element("timestep", {"time": str(t), "zone-timestep": timestep})
 
         for vid in vehicle_subs:
             vehicle_xml = None
+            x, y = vehicle_subs[vid][tc.VAR_POSITION]
+            speed = vehicle_subs[vid][tc.VAR_SPEED]
             for pid in polygon_subs:
-                x, y = vehicle_subs[vid][tc.VAR_POSITION]
-                speed = vehicle_subs[vid][tc.VAR_SPEED]
-                
                 polygon_shape = polygon_subs[pid][tc.VAR_SHAPE]
                 location = Point(x, y)
                 polygon = Polygon(polygon_shape)
@@ -58,25 +56,23 @@ class Tracker(traci.StepListener):
                     if vehicle_xml is None:
                         v_timestep = traci.vehicle.getParameter(vid, "zone_timestep")
                         vehicle_xml = SubElement(
-                            timestep_xml, 
-                            "vehicle", 
+                            timestep_xml,
+                            "vehicle",
                             {
-                                "id": vid, 
+                                "id": vid,
                                 "zone-timestep": v_timestep,
-                                "speed": str(speed)
-                            }
+                                "speed": str(speed),
+                            },
                         )
 
                     p_timestep = traci.polygon.getParameter(pid, "zone_timestep")
                     polygon_xml = SubElement(
-                        vehicle_xml, 
-                        "polygon", 
-                        {"id": pid, "zone-timestep": p_timestep}
+                        vehicle_xml, "polygon", {"id": pid, "zone-timestep": p_timestep}
                     )
 
                     if vid not in self.vehicle_distances:
                         self.vehicle_distances[vid] = {}
-                    
+
                     if timestep not in self.vehicle_distances[vid]:
                         self.vehicle_distances[vid][timestep] = {}
 

@@ -16,7 +16,8 @@ class VehicleController(traci.StepListener):
         self.zone_controller = zone_controller
         self.rerouted_vehicles = []
         self.newly_inserted_vehicles = []
-        self.vehicle_subs = {}
+        self.vehicle_vars = {}
+        self.vehicle_polygons = {}
         self.polygon_subs = {}
 
         # Register event handler
@@ -28,7 +29,6 @@ class VehicleController(traci.StepListener):
             if self.sim_config["rerouteOnZoneUpdate"]:
                 if self.sim_config["zoneRerouting"] != "none":
                     if not self.sim_config["snapshotZones"]:
-                        self.update_subscription_results()
                         self.reroute(zone_update=True)
 
     def should_vehicle_avoid_polygon(self, vid, pid):
@@ -128,7 +128,7 @@ class VehicleController(traci.StepListener):
 
         # Rerouting for vehicles whose route crosses through air quality zones
         for vid in vehicleToCheck:
-            route = self.vehicle_subs[vid][tc.VAR_EDGES]
+            route = self.vehicle_vars[vid][tc.VAR_EDGES]
 
             # Check if route includes edges that are within air quality zone polygons of current timestep
             for pid in self.zone_controller.get_polygons_by_timestep(holes=False):
@@ -159,8 +159,8 @@ class VehicleController(traci.StepListener):
 
         # Check all the newly spawned vehicles if any of them are located within the zone
         for vid in vehicleToCheck:
-            route = self.vehicle_subs[vid][tc.VAR_EDGES]
-            route_index = self.vehicle_subs[vid][tc.VAR_ROUTE_INDEX]
+            route = self.vehicle_vars[vid][tc.VAR_EDGES]
+            route_index = self.vehicle_vars[vid][tc.VAR_ROUTE_INDEX]
             current_edge = route[route_index]
 
             # Check if starting edge is within any of the polygons
@@ -213,8 +213,8 @@ class VehicleController(traci.StepListener):
                     if p_timestep != self.zone_controller.current_timestep:
                         continue
 
-                route = self.vehicle_subs[vid][tc.VAR_EDGES]
-                current_route_index = self.vehicle_subs[vid][tc.VAR_ROUTE_INDEX]
+                route = self.vehicle_vars[vid][tc.VAR_EDGES]
+                current_route_index = self.vehicle_vars[vid][tc.VAR_ROUTE_INDEX]
                 upcoming_edges = route[current_route_index:]
 
                 # Check if any edge of vehicle route goes through polygon
@@ -251,6 +251,12 @@ class VehicleController(traci.StepListener):
                     tc.VAR_EMISSIONCLASS,  # Used to distinguish between gas, electric and other car types
                 ],
             )
+            traci.vehicle.subscribeContext(
+                vid,
+                tc.CMD_GET_POLYGON_VARIABLE,
+                self.sim_config["dynamicReroutingDistance"],
+                [tc.ID_COUNT],
+            )
 
     def reroute(self, zone_update=False):
         if self.sim_config["zoneRerouting"] == "static":
@@ -260,19 +266,20 @@ class VehicleController(traci.StepListener):
         else:
             raise ValueError("Unknown zoneRerouting value")
 
-    def update_subscription_results(self):
-        simulation_sub = traci.simulation.getSubscriptionResults()
-        self.newly_inserted_vehicles = simulation_sub[tc.VAR_DEPARTED_VEHICLES_IDS]
-        self.vehicle_subs = traci.vehicle.getAllSubscriptionResults()
-        self.polygon_subs = traci.polygon.getAllContextSubscriptionResults()
-
     def step(self, t):
         # Do something at every simulaton step
 
-        # Get subscriptions
-        self.update_subscription_results()
-
+        # Prepare new vehicles
+        simulation_sub = traci.simulation.getSubscriptionResults()
+        self.newly_inserted_vehicles = simulation_sub[tc.VAR_DEPARTED_VEHICLES_IDS]
         self.prepare_new_vehicles()
+
+        # Get subscriptions
+        self.vehicle_vars = traci.vehicle.getAllSubscriptionResults()
+        self.vehicle_polygons = traci.vehicle.getAllContextSubscriptionResults()
+        self.polygon_subs = traci.polygon.getAllContextSubscriptionResults()
+
+        # log(self.vehicle_polygons)
 
         if self.sim_config["zoneRerouting"] != "none":
             self.reroute(zone_update=False)
