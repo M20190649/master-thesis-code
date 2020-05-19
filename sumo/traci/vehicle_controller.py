@@ -8,16 +8,16 @@ import geopandas as gpd
 
 from logger import log
 import rerouting_decisions
+import depart_decisions
 
 
-class VehicleController():
+class VehicleController:
     def __init__(self, sim_config, zone_controller):
         self.sim_config = sim_config
         self.zone_controller = zone_controller
         self.rerouted_vehicles = []
-        self.newly_inserted_vehicles = []
+        self.new_vehicles = []
         self.vehicle_vars = {}
-        self.vehicle_polygons = {}
         self.polygon_subs = {}
         self.zoneUpdateReroute = False
 
@@ -125,7 +125,7 @@ class VehicleController():
             vehicleToCheck = traci.vehicle.getIDList()
         else:
             # Only check the new ones
-            vehicleToCheck = self.newly_inserted_vehicles
+            vehicleToCheck = self.new_vehicles
 
         # Rerouting for vehicles whose route crosses through air quality zones
         for vid in vehicleToCheck:
@@ -156,7 +156,7 @@ class VehicleController():
             vehicleToCheck = traci.vehicle.getIDList()
         else:
             # Only check the new ones
-            vehicleToCheck = self.newly_inserted_vehicles
+            vehicleToCheck = self.new_vehicles
 
         # Check all the newly spawned vehicles if any of them are located within the zone
         for vid in vehicleToCheck:
@@ -238,14 +238,48 @@ class VehicleController():
                     self.reroute_vehicle(vid, timestep=p_timestep)
 
     def prepare_new_vehicles(self):
-        # n_new = len(self.newly_inserted_vehicles)
+        # n_new = len(self.new_vehicles)
         # if n_new != 0:
         #     print(f"{n_new} new vehicle{'' if n_new == 1 else 's'} {'was' if n_new == 1 else 'were'} inserted")
 
-        simulation_sub = traci.simulation.getSubscriptionResults()
-        self.newly_inserted_vehicles = simulation_sub[tc.VAR_DEPARTED_VEHICLES_IDS]
+        def should_vehicle_depart():
+            decision = True
+            if "nonDepartDecisionMode" in self.sim_config:
+                mode = self.sim_config["nonDepartDecisionMode"]
+                if mode == "percentage":
+                    p = 1 - self.sim_config["nonDepartPercentage"]
+                    decision = depart_decisions.percentage(p=p)
+                if mode == "random":
+                    decision = depart_decisions.random()
 
-        for vid in self.newly_inserted_vehicles:
+            return decision
+
+        simulation_sub = traci.simulation.getSubscriptionResults()
+
+        # Can't remove them from the LOADED list because otherwise
+        # the simulation will end because of while condition in simulation_controller
+        # Would be better though because then the vehicles
+        # will not show in the output files (even not for 1 step)
+
+        # loaded_vehicles = simulation_sub[tc.VAR_LOADED_VEHICLES_IDS]
+        # for vid in loaded_vehicles:
+        #     if not should_vehicle_depart():
+        #         traci.vehicle.remove(vid)
+        #         log(f"Remove vehicle {vid} due to non-depart")
+        #         continue
+
+        departed_vehicles = simulation_sub[tc.VAR_DEPARTED_VEHICLES_IDS]
+
+        self.new_vehicles = []
+
+        for vid in departed_vehicles:
+            if not should_vehicle_depart():
+                traci.vehicle.remove(vid)
+                log(f"Remove vehicle {vid} due to non-depart")
+                continue
+            else:
+                self.new_vehicles.append(vid)
+
             # Store the timestep when a vehicle was inserted into the simulation
             traci.vehicle.setParameter(
                 vid, "zone_timestep", self.zone_controller.current_timestep
@@ -261,7 +295,7 @@ class VehicleController():
                 ],
             )
 
-    def reroute(self, zone_update=False):
+    def reroute(self):
         # Get subscriptions
         self.vehicle_vars = traci.vehicle.getAllSubscriptionResults()
         self.polygon_subs = traci.polygon.getAllContextSubscriptionResults()

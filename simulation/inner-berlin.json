@@ -25,5 +25,7 @@
   "zoneRerouting": "none",
   "dynamicReroutingDistance": 300,
   "snapshotZones": false,
-  "rerouteOnZoneUpdate": false
+  "rerouteOnZoneUpdate": false,
+  "nonDepartDecisionMode": "percentage",
+  "nonDepartPercentage": 0
 }

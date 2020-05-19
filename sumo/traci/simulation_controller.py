@@ -27,7 +27,9 @@ class SimulationController:
         traci.start(self.traci_config["sumo_cmd"])
 
         # We need the ID list of departed vehicles every step so we add a subscription
-        traci.simulation.subscribe([tc.VAR_DEPARTED_VEHICLES_IDS])
+        traci.simulation.subscribe(
+            [tc.VAR_LOADED_VEHICLES_IDS, tc.VAR_DEPARTED_VEHICLES_IDS]
+        )
 
         # Load initial zones
         self.zone_controller.load_polygons(0)

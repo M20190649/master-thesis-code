@@ -91,6 +91,19 @@ const configOptionDefinitions = [
     possibleValues: ["none", "static", "dynamic"],
   },
   {
+    name: "reroutingDecisionMode",
+    type: String,
+    description: `Determines according to which strategy the agent should make their decision to reroute`,
+    required: true,
+    possibleValues: ["percentage", "random"],
+  },
+  {
+    name: "reroutingPercentage",
+    type: Number,
+    description: `For reroutingDecisionMode = "percentage": Determines what percentage of agent decide to reroute`,
+    required: false,
+  },
+  {
     name: "dynamicReroutingDistance",
     type: Number,
     description: `Determines the distance for when agents should be dynamically rerouted (Requires zoneRerouting to be "dynamic")`,
@@ -107,6 +120,19 @@ const configOptionDefinitions = [
     type: Boolean,
     description: `Determines if a static/dynamic reroute should be triggered when the zones update`,
     required: true,
+  },
+  {
+    name: "nonDepartDecisionMode",
+    type: String,
+    description: `Determines according to which strategy the agent should make their decision if to use the car or not`,
+    required: true,
+    possibleValues: ["percentage", "random"],
+  },
+  {
+    name: "nonDepartPercentage",
+    type: Number,
+    description: `For nonDepartDecisionMode = "percentage": Determines what percentage of agent decide not to use the car`,
+    required: false,
   },
 ]
 
