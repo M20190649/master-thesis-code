@@ -18,6 +18,7 @@ class VehicleController(traci.StepListener):
         self.newly_inserted_vehicles = []
         self.vehicle_subs = {}
         self.polygon_subs = {}
+        self.zoneUpdateReroute = False
 
         # Register event handler
         zope.event.subscribers.append(self.event_handler)
@@ -26,10 +27,8 @@ class VehicleController(traci.StepListener):
         if event == "zone-update":
             # Do everything that needs to be done after the zones have updated
             if self.sim_config["rerouteOnZoneUpdate"]:
-                if self.sim_config["zoneRerouting"] != "none":
-                    if not self.sim_config["snapshotZones"]:
-                        self.update_subscription_results()
-                        self.reroute(zone_update=True)
+                if not self.sim_config["snapshotZones"]:
+                    self.zoneUpdateReroute = True
 
     def should_vehicle_avoid_polygon(self, vid, pid):
         # This function can be used to avoid only specific zones/polygons
@@ -186,8 +185,13 @@ class VehicleController(traci.StepListener):
 
         # Go through all polygons and get all vehicles within dynamic rerouting range
         vehicle_ids = traci.vehicle.getIDList()
+        polygon_ids = traci.polygon.getIDList()
         for pid in self.polygon_subs:
             if pid.startswith("hole"):
+                continue
+
+            if pid not in polygon_ids:
+                # Skip possibly removed polygons
                 continue
 
             p_timestep = traci.polygon.getParameter(pid, "zone_timestep")
@@ -275,7 +279,11 @@ class VehicleController(traci.StepListener):
         self.prepare_new_vehicles()
 
         if self.sim_config["zoneRerouting"] != "none":
-            self.reroute(zone_update=False)
+            if self.zoneUpdateReroute:
+                self.reroute(zone_update=True)
+                self.zoneUpdateReroute = False
+            else:
+                self.reroute(zone_update=False)
 
         # Return true to indicate that the step listener should stay active in the next step
         return True
