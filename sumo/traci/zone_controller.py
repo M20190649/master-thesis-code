@@ -105,7 +105,7 @@ class ZoneController(traci.StepListener):
         traci.polygon.setParameter(pid, "zone_timestep", self.current_timestep)
 
         # Add all necessary context subscriptions
-        # self.add_polygon_subscriptions(pid)
+        self.add_polygon_subscriptions(pid)
 
         # Filter out edge data
         edge_ids = traci.edge.getIDList()
