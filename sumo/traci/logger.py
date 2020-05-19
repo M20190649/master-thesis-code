@@ -1,3 +1,5 @@
+import pprint
+
 log_file = None
 
 
@@ -8,8 +10,10 @@ def open_log(log_path):
     path = log_path
 
 
-def log(msg, print_msg=True):
-    msg = str(msg)
+def log(msg="", print_msg=True):
+    if not isinstance(msg, str):
+        msg = pprint.pformat(msg)
+
     if print_msg:
         print(msg)
     log_file.write(msg + "\n")

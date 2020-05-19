@@ -33,6 +33,10 @@ class SimulationController:
         self.zone_controller.load_polygons(0)
 
     def start(self):
+        log("Simulation starting with the following options:\n")
+        log(self.sim_config)
+        log()
+
         # Connect
         traci.start(self.traci_config["sumo_cmd"])
 
