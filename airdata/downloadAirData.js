@@ -56,7 +56,7 @@ const parseDate = dateString => {
 
 const CLIOptions = parseCLIOptions(optionDefinitions)
 
-async function getAirData(callerOptions) {
+async function downloadAirData(callerOptions) {
   const options = { ...CLIOptions, ...callerOptions }
 
   validateOptions(options, optionDefinitions)
@@ -221,7 +221,7 @@ async function getAirData(callerOptions) {
 }
 
 if (CLIOptions.run) {
-  getAirData()
+  downloadAirData()
 }
 
-module.exports = getAirData
+module.exports = downloadAirData

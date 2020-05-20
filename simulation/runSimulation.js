@@ -78,7 +78,7 @@ for (const dir of requiredDirs) {
 
 // Importing necessary helper scripts
 // I import them here because I need to call "parseCLIOptions" first to make my generalized CLI printing work correctly
-const getAirData = require("../airdata/getAirData")
+const downloadAirData = require("../airdata/downloadAirData")
 const convertGeoJSONToPoly = require("../sumo/convertGeoJSONToPoly")
 const writeSUMOConfig = require("../sumo/writeSUMOConfig")
 const prepareMATSim = require("./prepareMATSim")
@@ -102,7 +102,7 @@ async function run() {
   logSection("Prepare Air Data")
   // Download air data
   console.log("Downloading air pollution data...")
-  const airDataFiles = await getAirData({
+  const airDataFiles = await downloadAirData({
     pollutant: config.pollutant,
     bbox: config.bbox,
     date: config.simulationDate,
