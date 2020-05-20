@@ -23484,6 +23484,825 @@
       "lastMeasurementAt": "2020-05-04T10:14:01.088Z",
       "description": "OK Lab Feinstaubsensor",
       "image": "5eae7519712645001b0e625b_q9qwjl.jpg"
+    },
+    {
+      "_id": "5ead8dfe712645001bb2fea3",
+      "createdAt": "2020-05-02T15:13:02.568Z",
+      "updatedAt": "2020-05-20T19:15:48.581Z",
+      "name": "Kiepenheuerallee 28",
+      "currentLocation": {
+        "timestamp": "2020-05-02T15:13:02.566Z",
+        "coordinates": [
+          13.046303,
+          52.415015
+        ],
+        "type": "Point"
+      },
+      "exposure": "outdoor",
+      "sensors": [
+        {
+          "title": "PM10",
+          "unit": "µg/m³",
+          "sensorType": "SDS 011",
+          "icon": "osem-cloud",
+          "_id": "5ead8dfe712645001bb2fea8",
+          "lastMeasurement": "5ec581e4590098001c215a44"
+        },
+        {
+          "title": "PM2.5",
+          "unit": "µg/m³",
+          "sensorType": "SDS 011",
+          "icon": "osem-cloud",
+          "_id": "5ead8dfe712645001bb2fea7",
+          "lastMeasurement": "5ec581e4590098001c215a45"
+        },
+        {
+          "title": "Temperatur",
+          "unit": "°C",
+          "sensorType": "BME280",
+          "icon": "osem-thermometer",
+          "_id": "5ead8dfe712645001bb2fea6",
+          "lastMeasurement": "5ec581e4590098001c215a46"
+        },
+        {
+          "title": "rel. Luftfeuchte",
+          "unit": "%",
+          "sensorType": "BME280",
+          "icon": "osem-humidity",
+          "_id": "5ead8dfe712645001bb2fea5",
+          "lastMeasurement": "5ec581e4590098001c215a48"
+        },
+        {
+          "title": "Luftdruck",
+          "unit": "Pa",
+          "sensorType": "BME280",
+          "icon": "osem-barometer",
+          "_id": "5ead8dfe712645001bb2fea4",
+          "lastMeasurement": "5ec581e4590098001c215a47"
+        }
+      ],
+      "model": "luftdaten_sds011_bme280",
+      "lastMeasurementAt": "2020-05-20T19:15:48.568Z"
+    },
+    {
+      "_id": "5eb174ef9724e9001cf3592d",
+      "createdAt": "2020-05-05T14:15:11.442Z",
+      "updatedAt": "2020-05-05T14:15:11.442Z",
+      "name": "Eisenbahner",
+      "currentLocation": {
+        "timestamp": "2020-05-05T14:15:11.437Z",
+        "coordinates": [
+          13.477964,
+          52.506718
+        ],
+        "type": "Point"
+      },
+      "exposure": "outdoor",
+      "sensors": [
+        {
+          "title": "PM10",
+          "unit": "µg/m³",
+          "sensorType": "SDS 011",
+          "icon": "osem-cloud",
+          "_id": "5eb174ef9724e9001cf35931"
+        },
+        {
+          "title": "PM2.5",
+          "unit": "µg/m³",
+          "sensorType": "SDS 011",
+          "icon": "osem-cloud",
+          "_id": "5eb174ef9724e9001cf35930"
+        },
+        {
+          "title": "Temperatur",
+          "unit": "°C",
+          "sensorType": "DHT22",
+          "icon": "osem-thermometer",
+          "_id": "5eb174ef9724e9001cf3592f"
+        },
+        {
+          "title": "rel. Luftfeuchte",
+          "unit": "%",
+          "sensorType": "DHT22",
+          "icon": "osem-humidity",
+          "_id": "5eb174ef9724e9001cf3592e"
+        }
+      ],
+      "model": "luftdaten_sds011_dht22"
+    },
+    {
+      "_id": "5eb1a8d39724e9001c07e23a",
+      "createdAt": "2020-05-05T17:56:35.557Z",
+      "updatedAt": "2020-05-20T19:12:54.092Z",
+      "name": "Marienfelder Tor",
+      "currentLocation": {
+        "timestamp": "2020-05-05T17:56:35.553Z",
+        "coordinates": [
+          13.356728,
+          52.407691,
+          50
+        ],
+        "type": "Point"
+      },
+      "exposure": "outdoor",
+      "sensors": [
+        {
+          "title": "PM10",
+          "unit": "µg/m³",
+          "sensorType": "SDS 011",
+          "icon": "osem-cloud",
+          "_id": "5eb1a8d39724e9001c07e23f",
+          "lastMeasurement": "5ec58136590098001c2115d9"
+        },
+        {
+          "title": "PM2.5",
+          "unit": "µg/m³",
+          "sensorType": "SDS 011",
+          "icon": "osem-cloud",
+          "_id": "5eb1a8d39724e9001c07e23e",
+          "lastMeasurement": "5ec58136590098001c2115da"
+        },
+        {
+          "title": "Temperatur",
+          "unit": "°C",
+          "sensorType": "BME280",
+          "icon": "osem-thermometer",
+          "_id": "5eb1a8d39724e9001c07e23d",
+          "lastMeasurement": "5ec58136590098001c2115db"
+        },
+        {
+          "title": "rel. Luftfeuchte",
+          "unit": "%",
+          "sensorType": "BME280",
+          "icon": "osem-humidity",
+          "_id": "5eb1a8d39724e9001c07e23c",
+          "lastMeasurement": "5ec58136590098001c2115dd"
+        },
+        {
+          "title": "Luftdruck",
+          "unit": "Pa",
+          "sensorType": "BME280",
+          "icon": "osem-barometer",
+          "_id": "5eb1a8d39724e9001c07e23b",
+          "lastMeasurement": "5ec58136590098001c2115dc"
+        }
+      ],
+      "model": "luftdaten_sds011_bme280",
+      "lastMeasurementAt": "2020-05-20T19:12:54.084Z",
+      "description": "B101 (in 100 m)\nMehrfamilienhaus, 3. OG, Balkon zur Grünanlage\nLuftdaten.info: airRohr-12974175\nKontakt: airRohr-12974175 gmx.de"
+    },
+    {
+      "_id": "5eb3ca239724e9001ce38a9f",
+      "createdAt": "2020-05-07T08:43:15.557Z",
+      "updatedAt": "2020-05-20T19:13:33.248Z",
+      "name": "Abendruh",
+      "currentLocation": {
+        "timestamp": "2020-05-07T08:43:15.552Z",
+        "coordinates": [
+          13.284441,
+          52.426468,
+          36
+        ],
+        "type": "Point"
+      },
+      "exposure": "outdoor",
+      "sensors": [
+        {
+          "title": "PM10",
+          "unit": "µg/m³",
+          "sensorType": "SDS 011",
+          "icon": "osem-cloud",
+          "_id": "5eb3ca239724e9001ce38aa4",
+          "lastMeasurement": "5ec5815d590098001c212271"
+        },
+        {
+          "title": "PM2.5",
+          "unit": "µg/m³",
+          "sensorType": "SDS 011",
+          "icon": "osem-cloud",
+          "_id": "5eb3ca239724e9001ce38aa3",
+          "lastMeasurement": "5ec5815d590098001c212272"
+        },
+        {
+          "title": "Temperatur",
+          "unit": "°C",
+          "sensorType": "BME280",
+          "icon": "osem-thermometer",
+          "_id": "5eb3ca239724e9001ce38aa2",
+          "lastMeasurement": "5ec5815d590098001c212273"
+        },
+        {
+          "title": "rel. Luftfeuchte",
+          "unit": "%",
+          "sensorType": "BME280",
+          "icon": "osem-humidity",
+          "_id": "5eb3ca239724e9001ce38aa1",
+          "lastMeasurement": "5ec5815d590098001c212275"
+        },
+        {
+          "title": "Luftdruck",
+          "unit": "Pa",
+          "sensorType": "BME280",
+          "icon": "osem-barometer",
+          "_id": "5eb3ca239724e9001ce38aa0",
+          "lastMeasurement": "5ec5815d590098001c212274"
+        }
+      ],
+      "model": "luftdaten_sds011_bme280",
+      "lastMeasurementAt": "2020-05-20T19:13:33.240Z",
+      "description": "OK-Lab Feinstaubsensor https://luftdaten.info/",
+      "grouptag": "bbumm",
+      "image": "5eb3ca239724e9001ce38a9f_qa0i6f.jpg"
+    },
+    {
+      "_id": "5eb3d22a9724e9001ce6d240",
+      "createdAt": "2020-05-07T09:17:30.329Z",
+      "updatedAt": "2020-05-20T19:15:08.079Z",
+      "name": "Potsdam Hbf",
+      "currentLocation": {
+        "timestamp": "2020-05-07T09:17:30.324Z",
+        "coordinates": [
+          13.066043,
+          52.391346,
+          36
+        ],
+        "type": "Point"
+      },
+      "grouptag": "bbumm",
+      "exposure": "outdoor",
+      "sensors": [
+        {
+          "title": "PM10",
+          "unit": "µg/m³",
+          "sensorType": "SDS 011",
+          "icon": "osem-cloud",
+          "_id": "5eb3d22a9724e9001ce6d242",
+          "lastMeasurement": "5ec581bc590098001c2148fc"
+        },
+        {
+          "title": "PM2.5",
+          "unit": "µg/m³",
+          "sensorType": "SDS 011",
+          "icon": "osem-cloud",
+          "_id": "5eb3d22a9724e9001ce6d241",
+          "lastMeasurement": "5ec581bc590098001c2148fd"
+        }
+      ],
+      "model": "luftdaten_sds011",
+      "description": "ok-Lab Feinstaubsensor https://luftdaten.info/",
+      "lastMeasurementAt": "2020-05-20T19:15:08.059Z",
+      "image": "5eb3d22a9724e9001ce6d240_qa5hl8.jpg"
+    },
+    {
+      "_id": "5eb3d2ea9724e9001ce71aa9",
+      "createdAt": "2020-05-07T09:20:42.753Z",
+      "updatedAt": "2020-05-20T19:13:35.068Z",
+      "name": "Potsdam Hbf innen",
+      "currentLocation": {
+        "timestamp": "2020-05-07T09:20:42.750Z",
+        "coordinates": [
+          13.065715,
+          52.391218,
+          30
+        ],
+        "type": "Point"
+      },
+      "grouptag": "bbumm",
+      "exposure": "indoor",
+      "sensors": [
+        {
+          "title": "PM10",
+          "unit": "µg/m³",
+          "sensorType": "SDS 011",
+          "icon": "osem-cloud",
+          "_id": "5eb3d2ea9724e9001ce71aad",
+          "lastMeasurement": "5ec5815f590098001c21235a"
+        },
+        {
+          "title": "PM2.5",
+          "unit": "µg/m³",
+          "sensorType": "SDS 011",
+          "icon": "osem-cloud",
+          "_id": "5eb3d2ea9724e9001ce71aac",
+          "lastMeasurement": "5ec5815f590098001c21235b"
+        },
+        {
+          "title": "Temperatur",
+          "unit": "°C",
+          "sensorType": "DHT22",
+          "icon": "osem-thermometer",
+          "_id": "5eb3d2ea9724e9001ce71aab",
+          "lastMeasurement": "5ec5815f590098001c21235c"
+        },
+        {
+          "title": "rel. Luftfeuchte",
+          "unit": "%",
+          "sensorType": "DHT22",
+          "icon": "osem-humidity",
+          "_id": "5eb3d2ea9724e9001ce71aaa",
+          "lastMeasurement": "5ec5815f590098001c21235d"
+        }
+      ],
+      "model": "luftdaten_sds011_dht22",
+      "description": "ok-Lab Feinstaubsensor https://luftdaten.info/",
+      "lastMeasurementAt": "2020-05-20T19:13:35.060Z",
+      "image": "5eb3d2ea9724e9001ce71aa9_qa5hlz.jpg"
+    },
+    {
+      "_id": "5eb99cacd46fb8001b2ce04c",
+      "createdAt": "2020-05-11T18:42:52.274Z",
+      "updatedAt": "2020-05-20T19:15:50.886Z",
+      "name": "mobile_temp",
+      "currentLocation": {
+        "timestamp": "2020-05-11T18:42:52.271Z",
+        "coordinates": [
+          13.125059,
+          52.475426
+        ],
+        "type": "Point"
+      },
+      "exposure": "outdoor",
+      "sensors": [
+        {
+          "title": "PM10",
+          "unit": "µg/m³",
+          "sensorType": "SDS 011",
+          "icon": "osem-cloud",
+          "_id": "5eb99cacd46fb8001b2ce051"
+        },
+        {
+          "title": "PM2.5",
+          "unit": "µg/m³",
+          "sensorType": "SDS 011",
+          "icon": "osem-cloud",
+          "_id": "5eb99cacd46fb8001b2ce050"
+        },
+        {
+          "title": "Temperatur",
+          "unit": "°C",
+          "sensorType": "BME280",
+          "icon": "osem-thermometer",
+          "_id": "5eb99cacd46fb8001b2ce04f",
+          "lastMeasurement": "5ec581e6590098001c215af0"
+        },
+        {
+          "title": "rel. Luftfeuchte",
+          "unit": "%",
+          "sensorType": "BME280",
+          "icon": "osem-humidity",
+          "_id": "5eb99cacd46fb8001b2ce04e",
+          "lastMeasurement": "5ec581e6590098001c215af2"
+        },
+        {
+          "title": "Luftdruck",
+          "unit": "Pa",
+          "sensorType": "BME280",
+          "icon": "osem-barometer",
+          "_id": "5eb99cacd46fb8001b2ce04d",
+          "lastMeasurement": "5ec581e6590098001c215af1"
+        }
+      ],
+      "model": "luftdaten_sds011_bme280",
+      "lastMeasurementAt": "2020-05-20T19:15:50.874Z",
+      "description": "just a temperature monitor ESP with BME280"
+    },
+    {
+      "_id": "5eba5fbad46fb8001b799786",
+      "createdAt": "2020-05-12T08:35:06.591Z",
+      "updatedAt": "2020-05-20T04:59:04.946Z",
+      "name": "Dreipfuhl",
+      "currentLocation": {
+        "timestamp": "2020-05-12T08:35:06.586Z",
+        "coordinates": [
+          13.269526,
+          52.447074
+        ],
+        "type": "Point"
+      },
+      "grouptag": "bbumm",
+      "exposure": "outdoor",
+      "sensors": [
+        {
+          "title": "PM10",
+          "unit": "µg/m³",
+          "sensorType": "SDS 011",
+          "icon": "osem-cloud",
+          "_id": "5eba5fbad46fb8001b79978b",
+          "lastMeasurement": "5ec372956b46c9001c0818ac"
+        },
+        {
+          "title": "PM2.5",
+          "unit": "µg/m³",
+          "sensorType": "SDS 011",
+          "icon": "osem-cloud",
+          "_id": "5eba5fbad46fb8001b79978a",
+          "lastMeasurement": "5ec372956b46c9001c0818ad"
+        },
+        {
+          "title": "Temperatur",
+          "unit": "°C",
+          "sensorType": "BME280",
+          "icon": "osem-thermometer",
+          "_id": "5eba5fbad46fb8001b799789",
+          "lastMeasurement": "5ec4b918590098001ccf34e9"
+        },
+        {
+          "title": "rel. Luftfeuchte",
+          "unit": "%",
+          "sensorType": "BME280",
+          "icon": "osem-humidity",
+          "_id": "5eba5fbad46fb8001b799788",
+          "lastMeasurement": "5ec4b918590098001ccf34eb"
+        },
+        {
+          "title": "Luftdruck",
+          "unit": "Pa",
+          "sensorType": "BME280",
+          "icon": "osem-barometer",
+          "_id": "5eba5fbad46fb8001b799787",
+          "lastMeasurement": "5ec4b918590098001ccf34ea"
+        }
+      ],
+      "model": "luftdaten_sds011_bme280",
+      "lastMeasurementAt": "2020-05-20T04:59:04.942Z",
+      "description": "ok-Lab Feinstaubsensor https://luftdaten.info/\n\nBalkon Hofseite",
+      "image": "5eba5fbad46fb8001b799786_qa7mrg.jpg"
+    },
+    {
+      "_id": "5ebb48dfd46fb8001bd4ba20",
+      "createdAt": "2020-05-13T01:09:51.272Z",
+      "updatedAt": "2020-05-20T19:15:40.615Z",
+      "name": "DL7PZ-Wetterstation",
+      "currentLocation": {
+        "timestamp": "2020-05-13T01:09:51.267Z",
+        "coordinates": [
+          13.499043,
+          52.407714,
+          43
+        ],
+        "type": "Point"
+      },
+      "exposure": "outdoor",
+      "sensors": [
+        {
+          "title": "Beleuchtungsstärke",
+          "unit": "lx",
+          "sensorType": "TSL45315",
+          "icon": "osem-brightness",
+          "_id": "5ebb48dfd46fb8001bd4ba2b",
+          "lastMeasurement": "5ec581dc590098001c2157d3"
+        },
+        {
+          "title": "UV-Intensität",
+          "unit": "μW/cm²",
+          "sensorType": "VEML6070",
+          "icon": "osem-brightness",
+          "_id": "5ebb48dfd46fb8001bd4ba2a",
+          "lastMeasurement": "5ec581dc590098001c2157d4"
+        },
+        {
+          "title": "PM10",
+          "unit": "µg/m³",
+          "sensorType": "SDS 011",
+          "icon": "osem-cloud",
+          "_id": "5ebb48dfd46fb8001bd4ba29",
+          "lastMeasurement": "5ec581dc590098001c2157d5"
+        },
+        {
+          "title": "PM2.5",
+          "unit": "µg/m³",
+          "sensorType": "SDS 011",
+          "icon": "osem-cloud",
+          "_id": "5ebb48dfd46fb8001bd4ba28",
+          "lastMeasurement": "5ec581dc590098001c2157d6"
+        },
+        {
+          "title": "Luftfeuchte",
+          "unit": "%",
+          "sensorType": "BME680",
+          "icon": "osem-humidity",
+          "_id": "5ebb48dfd46fb8001bd4ba27",
+          "lastMeasurement": "5ec581dc590098001c2157db"
+        },
+        {
+          "title": "Lufttemperatur",
+          "unit": "°C",
+          "sensorType": "BME680",
+          "icon": "osem-thermometer",
+          "_id": "5ebb48dfd46fb8001bd4ba26",
+          "lastMeasurement": "5ec581dc590098001c2157da"
+        },
+        {
+          "title": "atm. Luftdruck",
+          "unit": "hPa",
+          "sensorType": "BME680",
+          "icon": "osem-barometer",
+          "_id": "5ebb48dfd46fb8001bd4ba25",
+          "lastMeasurement": "5ec581dc590098001c2157dc"
+        },
+        {
+          "title": "VOC",
+          "unit": "kOhm",
+          "sensorType": "BME680",
+          "icon": "osem-thermometer",
+          "_id": "5ebb48dfd46fb8001bd4ba24"
+        },
+        {
+          "title": "Bodenfeuchte",
+          "unit": "%",
+          "sensorType": "SMT50",
+          "icon": "osem-thermometer",
+          "_id": "5ebb48dfd46fb8001bd4ba23",
+          "lastMeasurement": "5ec581dc590098001c2157d8"
+        },
+        {
+          "title": "Bodentemperatur",
+          "unit": "°C",
+          "sensorType": "SMT50",
+          "icon": "osem-thermometer",
+          "_id": "5ebb48dfd46fb8001bd4ba22",
+          "lastMeasurement": "5ec581dc590098001c2157d7"
+        },
+        {
+          "title": "Lautstärke",
+          "unit": "dB (A)",
+          "sensorType": "SOUNDLEVELMETER",
+          "icon": "osem-thermometer",
+          "_id": "5ebb48dfd46fb8001bd4ba21",
+          "lastMeasurement": "5ec581dc590098001c2157d9"
+        }
+      ],
+      "model": "homeV2WifiFeinstaub",
+      "lastMeasurementAt": "2020-05-20T19:15:40.605Z"
+    },
+    {
+      "_id": "5ebc0c99d46fb8001b2182b0",
+      "createdAt": "2020-05-13T15:04:57.530Z",
+      "updatedAt": "2020-05-20T19:13:24.024Z",
+      "name": "B-LiRa",
+      "currentLocation": {
+        "timestamp": "2020-05-13T15:04:57.527Z",
+        "coordinates": [
+          13.389625,
+          52.3874
+        ],
+        "type": "Point"
+      },
+      "exposure": "outdoor",
+      "sensors": [
+        {
+          "title": "PM10",
+          "unit": "µg/m³",
+          "sensorType": "SDS 011",
+          "icon": "osem-cloud",
+          "_id": "5ebc0c99d46fb8001b2182b5",
+          "lastMeasurement": "5ec58154590098001c211ddb"
+        },
+        {
+          "title": "PM2.5",
+          "unit": "µg/m³",
+          "sensorType": "SDS 011",
+          "icon": "osem-cloud",
+          "_id": "5ebc0c99d46fb8001b2182b4",
+          "lastMeasurement": "5ec58154590098001c211ddc"
+        },
+        {
+          "title": "Temperatur",
+          "unit": "°C",
+          "sensorType": "BME280",
+          "icon": "osem-thermometer",
+          "_id": "5ebc0c99d46fb8001b2182b3",
+          "lastMeasurement": "5ec58154590098001c211ddd"
+        },
+        {
+          "title": "rel. Luftfeuchte",
+          "unit": "%",
+          "sensorType": "BME280",
+          "icon": "osem-humidity",
+          "_id": "5ebc0c99d46fb8001b2182b2",
+          "lastMeasurement": "5ec58154590098001c211ddf"
+        },
+        {
+          "title": "Luftdruck",
+          "unit": "Pa",
+          "sensorType": "BME280",
+          "icon": "osem-barometer",
+          "_id": "5ebc0c99d46fb8001b2182b1",
+          "lastMeasurement": "5ec58154590098001c211dde"
+        }
+      ],
+      "model": "luftdaten_sds011_bme280",
+      "description": "Lufteinlass ca. 1.8m über Boden. Sensor befindet sich im Garten, ca. 30m von der Straße entfernt.",
+      "lastMeasurementAt": "2020-05-20T19:13:24.016Z"
+    },
+    {
+      "_id": "5ebc1089d46fb8001b231fcb",
+      "createdAt": "2020-05-13T15:21:45.852Z",
+      "updatedAt": "2020-05-20T19:15:14.799Z",
+      "name": "TomSense",
+      "currentLocation": {
+        "timestamp": "2020-05-13T15:21:45.848Z",
+        "coordinates": [
+          13.594197,
+          52.342056,
+          47
+        ],
+        "type": "Point"
+      },
+      "exposure": "outdoor",
+      "sensors": [
+        {
+          "_id": "5ebc1089d46fb8001b231fd5",
+          "title": "Temperatur (HDC1080)",
+          "unit": "°C",
+          "sensorType": "HDC1080",
+          "icon": "osem-thermometer",
+          "lastMeasurement": "5ec581c2590098001c214d36"
+        },
+        {
+          "_id": "5ebc1089d46fb8001b231fd4",
+          "title": "rel. Luftfeuchte (HDC1080)",
+          "unit": "%",
+          "sensorType": "HDC1080",
+          "icon": "osem-humidity",
+          "lastMeasurement": "5ec581c2590098001c214d37"
+        },
+        {
+          "_id": "5ebc1089d46fb8001b231fd3",
+          "title": "Beleuchtungsstärke (TSL45315)",
+          "unit": "lx",
+          "sensorType": "TSL45315",
+          "icon": "osem-brightness",
+          "lastMeasurement": "5ec581c2590098001c214d34"
+        },
+        {
+          "_id": "5ebc1089d46fb8001b231fd2",
+          "title": "UV-Intensität (VEML6070)",
+          "unit": "μW/cm²",
+          "sensorType": "VEML6070",
+          "icon": "osem-brightness",
+          "lastMeasurement": "5ec581c2590098001c214d35"
+        },
+        {
+          "_id": "5ebc1089d46fb8001b231fd1",
+          "title": "PM10 (SDS 011)",
+          "unit": "µg/m³",
+          "sensorType": "SDS 011",
+          "icon": "osem-cloud",
+          "lastMeasurement": "5ec581c2590098001c214d33"
+        },
+        {
+          "_id": "5ebc1089d46fb8001b231fd0",
+          "title": "PM2.5 (SDS 011)",
+          "unit": "µg/m³",
+          "sensorType": "SDS 011",
+          "icon": "osem-cloud",
+          "lastMeasurement": "5ec581c2590098001c214d32"
+        },
+        {
+          "_id": "5ebc1089d46fb8001b231fcf",
+          "title": "Luftfeuchte (BME680)",
+          "unit": "%",
+          "sensorType": "BME680",
+          "icon": "osem-humidity",
+          "lastMeasurement": "5ec581c2590098001c214d2c"
+        },
+        {
+          "_id": "5ebc1089d46fb8001b231fce",
+          "title": "Lufttemperatur (BME680)",
+          "unit": "°C",
+          "sensorType": "BME680",
+          "icon": "osem-thermometer",
+          "lastMeasurement": "5ec581c2590098001c214d2b"
+        },
+        {
+          "_id": "5ebc1089d46fb8001b231fcd",
+          "title": "atm. Luftdruck (BME680)",
+          "unit": "Pa",
+          "sensorType": "BME680",
+          "icon": "osem-barometer",
+          "lastMeasurement": "5ec581c2590098001c214d2d"
+        },
+        {
+          "_id": "5ebc1089d46fb8001b231fcc",
+          "title": "VOC (BME680)",
+          "unit": "kOhm",
+          "sensorType": "BME680",
+          "icon": "osem-thermometer",
+          "lastMeasurement": "5ec581c2590098001c214d2f"
+        },
+        {
+          "_id": "5ebea54fe0b0b3001bbeb284",
+          "title": "IAQ (BME680)",
+          "unit": "IAQ",
+          "sensorType": "BME680",
+          "icon": "osem-particulate-matter",
+          "lastMeasurement": "5ec581c2590098001c214d2e"
+        },
+        {
+          "_id": "5ebea5a3e0b0b3001bbed780",
+          "title": "CO2 Äquivalent (BME680)",
+          "unit": "ppm",
+          "sensorType": "BME680",
+          "icon": "osem-particulate-matter",
+          "lastMeasurement": "5ec581c2590098001c214d30"
+        },
+        {
+          "_id": "5ebea5f6e0b0b3001bbef877",
+          "title": "Kalibrierungswert (BME680)",
+          "unit": ".",
+          "sensorType": "BME680",
+          "icon": "osem-barometer",
+          "lastMeasurement": "5ec581c2590098001c214d31"
+        }
+      ],
+      "model": "homeV2WifiFeinstaub",
+      "lastMeasurementAt": "2020-05-20T19:15:14.789Z",
+      "description": "Aktuell zum Testen noch in der Wohnung!"
+    },
+    {
+      "_id": "5ec1177c3803f3001b5c463b",
+      "createdAt": "2020-05-17T10:52:44.361Z",
+      "updatedAt": "2020-05-20T19:15:31.175Z",
+      "name": "Enviro",
+      "currentLocation": {
+        "timestamp": "2020-05-17T10:52:44.357Z",
+        "coordinates": [
+          13.49716,
+          52.41963,
+          1
+        ],
+        "type": "Point"
+      },
+      "exposure": "indoor",
+      "sensors": [
+        {
+          "icon": "osem-temperature-celsius",
+          "title": "Temperature",
+          "unit": "°C",
+          "sensorType": "BME280",
+          "_id": "5ec1177c3803f3001b5c463c",
+          "lastMeasurement": "5ec581d3590098001c215474"
+        },
+        {
+          "_id": "5ec212f2dbe1cf001c45063a",
+          "icon": "osem-radioactive",
+          "sensorType": "MICS6814",
+          "unit": "kΩ",
+          "title": "Gas NH3",
+          "lastMeasurement": "5ec581d3590098001c21547a"
+        },
+        {
+          "_id": "5ec212f2dbe1cf001c45063b",
+          "icon": "osem-radioactive",
+          "sensorType": "MICS6814",
+          "unit": "kΩ",
+          "title": "Gas Oxidising",
+          "lastMeasurement": "5ec581d3590098001c215478"
+        },
+        {
+          "_id": "5ec212f2dbe1cf001c45063c",
+          "icon": "osem-radioactive",
+          "sensorType": "MICS6814",
+          "unit": "kΩ",
+          "title": "Gas Reducing",
+          "lastMeasurement": "5ec581d3590098001c215479"
+        },
+        {
+          "_id": "5ec2137cdbe1cf001c453b8b",
+          "icon": "osem-gauge",
+          "sensorType": "Enviro",
+          "unit": "m",
+          "title": "Altitude",
+          "lastMeasurement": "5ec581d3590098001c215476"
+        },
+        {
+          "_id": "5ec2137cdbe1cf001c453b8c",
+          "icon": "osem-humidity",
+          "sensorType": "BME280",
+          "unit": "%",
+          "title": "Humidity",
+          "lastMeasurement": "5ec581d3590098001c215477"
+        },
+        {
+          "_id": "5ec2137cdbe1cf001c453b8d",
+          "icon": "osem-barometer",
+          "sensorType": "BME280",
+          "unit": "hPa",
+          "title": "Pressure",
+          "lastMeasurement": "5ec581d3590098001c215475"
+        },
+        {
+          "_id": "5ec2137cdbe1cf001c453b8e",
+          "icon": "osem-brightness",
+          "sensorType": "LTR-559",
+          "unit": "lm",
+          "title": "Lumen",
+          "lastMeasurement": "5ec581d3590098001c21547b"
+        }
+      ],
+      "model": "custom",
+      "lastMeasurementAt": "2020-05-20T19:15:31.167Z"
     }
   ]
 }
