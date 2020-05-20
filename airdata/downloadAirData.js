@@ -11,6 +11,7 @@ const {
 } = require("../shared/helpers")
 const downloadFromLuftdatenInfo = require("./downloadLuftdatenInfo")
 const downloadOpenSenseMap = require("./downloadOpenSenseMap")
+const downloadUBA = require("./downloadUBA")
 
 const optionDefinitions = [
   {
@@ -136,6 +137,10 @@ async function downloadAirData(callerOptions) {
   const sources = {
     luftdatenInfo: downloadFromLuftdatenInfo,
     openSenseMap: downloadOpenSenseMap,
+  }
+
+  if (options.pollutant === "PM10" && options.timestep === 60) {
+    sources.uba = downloadUBA
   }
 
   async function getMeasurementsPerSource(downloadOptions) {

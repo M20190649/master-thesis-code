@@ -1,0 +1,325 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "address": "10247 Berlin, Friedrichshain-Kreuzberg, Frankfurter Allee 86b",
+        "id": 172,
+        "code": "DEBE065",
+        "name": "Berlin Frankfurter Allee",
+        "long": 13.4699,
+        "lat": 52.5141,
+        "type": "urban area, urban, traffic",
+        "PM10": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.47022533416748,
+          52.5141478919602
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "address": "12587 Berlin Treptow-Köpenick, Ortsteil Friedrichshagen, Müggelseedamm 307-310",
+        "id": 163,
+        "code": "DEBE056",
+        "name": "Berlin Friedrichshagen",
+        "long": 13.6471,
+        "lat": 52.4477,
+        "type": "rural near town, rural, background",
+        "PM10": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.647068738937378,
+          52.44773825493454
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "address": "10318 Berlin, Lichtenberg, Ortsteil Karlshorst, Johanna-und-Willy-Brauer-Platz",
+        "id": 173,
+        "code": "DEBE066",
+        "name": "Berlin Karlshorst",
+        "long": 13.5295,
+        "lat": 52.4853,
+        "type": "urban area, urban, background",
+        "PM10": false
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.529502153396606,
+          52.48532018659733
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "address": "12307 Berlin, Tempelhof-Schöneberg, Schichauweg 60",
+        "id": 138,
+        "code": "DEBE027",
+        "name": "Berlin Marienfelde",
+        "long": 13.3681,
+        "lat": 52.3984,
+        "type": "rural near town, rural, background",
+        "PM10": false
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.368076086044312,
+          52.39840939630484
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "address": "12099 Berlin, Tempelhof-Schöneberg, Mariendorfer Damm 148",
+        "id": 176,
+        "code": "DEBE069",
+        "name": "Berlin Mariendorfer Damm",
+        "long": 13.3877,
+        "lat": 52.4381,
+        "type": "urban area, urban, traffic",
+        "PM10": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.387650847434998,
+          52.438155851108064
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "address": "12051 Berlin, Neukölln, Silbersteinstr. 1",
+        "id": 170,
+        "code": "DEBE063",
+        "name": "Berlin Silbersteinstraße",
+        "long": 13.4417,
+        "lat": 52.4675,
+        "type": "urban area, urban, traffic",
+        "PM10": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.441665172576904,
+          52.467517746641136
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "address": "12043 Berlin, Neukölln, Karl-Marx-Str. 76",
+        "id": 171,
+        "code": "DEBE064",
+        "name": "Berlin Karl-Marx-Straße",
+        "long": 13.434,
+        "lat": 52.4817,
+        "type": "urban area, urban, traffic",
+        "PM10": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.433932363986969,
+          52.48168252000161
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "address": "12047 Berlin, Neukölln, Nansenstr. 10",
+        "id": 145,
+        "code": "DEBE034",
+        "name": "Berlin Neukölln",
+        "long": 13.4308,
+        "lat": 52.4895,
+        "type": "urban area, urban, background",
+        "PM10": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.430847823619843,
+          52.48943935421994
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "address": "10179 Berlin, Mitte, Brückenstr. 6",
+        "id": 175,
+        "code": "DEBE068",
+        "name": "Berlin Mitte",
+        "long": 13.4188,
+        "lat": 52.5136,
+        "type": "urban area, urban, background",
+        "PM10": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.418858349323271,
+          52.51358964184953
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "address": "10823 Berlin, Tempelhof-Schöneberg, Belziger Str. 52",
+        "id": 129,
+        "code": "DEBE018",
+        "name": "Berlin Schöneberg",
+        "long": 13.3488,
+        "lat": 52.4858,
+        "type": "urban area, urban, background",
+        "PM10": false
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.348815143108366,
+          52.485762827786786
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "address": "12163 Berlin, Steglitz-Zehlendorf, Schildhornstr. 76",
+        "id": 168,
+        "code": "DEBE061",
+        "name": "Berlin Schildhornstraße",
+        "long": 13.3183,
+        "lat": 52.4636,
+        "type": "urban area, urban, traffic",
+        "PM10": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.318323791027069,
+          52.46361714061715
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "address": "14193 Berlin, Charlottenburg-Wilmersdorf, Forst Grunewald, Jagen 91",
+        "id": 143,
+        "code": "DEBE032",
+        "name": "Berlin Grunewald (3.5 m)",
+        "long": 13.2251,
+        "lat": 52.4732,
+        "type": "rural near town, rural, background",
+        "PM10": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.225114345550537,
+          52.473174400200236
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "address": "10623 Berlin, Charlottenburg-Wilmersdorf, Hardenbergplatz",
+        "id": 174,
+        "code": "DEBE067",
+        "name": "Berlin Hardenbergplatz",
+        "long": 13.333,
+        "lat": 52.5066,
+        "type": "urban area, urban, traffic",
+        "PM10": false
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.332968652248383,
+          52.50662887543474
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "address": "13353 Mitte, Amrumer Str./Limburger Str.",
+        "id": 121,
+        "code": "DEBE010",
+        "name": "Berlin Wedding",
+        "long": 13.3493,
+        "lat": 52.543,
+        "type": "urban area, urban, background",
+        "PM10": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.349241614341736,
+          52.54292407304787
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "address": "13125 Berlin, Pankow, Ortsteil Buch, Hobrechtsfelder Chaussee 112, Waldschmiede",
+        "id": 158,
+        "code": "DEBE051",
+        "name": "Berlin Buch",
+        "long": 13.4831,
+        "lat": 52.6442,
+        "type": "suburban area, suburban, background",
+        "PM10": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.483282327651978,
+          52.64409200898614
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "address": "13465 Berlin, Reinickendorf, Frohnau, Jägerstieg 1",
+        "id": 169,
+        "code": "DEBE062",
+        "name": "Berlin Frohnau (3.5 m)",
+        "long": 13.2961,
+        "lat": 52.6533,
+        "type": "rural near town, rural, background",
+        "PM10": false
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          13.296149969100952,
+          52.6533480714511
+        ]
+      }
+    }
+  ]
+}
