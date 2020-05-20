@@ -1,21 +1,14 @@
 # Setup Guide for Linux (Ubuntu)
 
-1. Clone the GitHub Repository
-
-2. Install NodeJS
+1. Install NodeJS
 
 ```bash
-curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
-sudo apt-get install nodejs
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash
+source ~/.bashrc
+nvm install lts/erbium
 ```
 
-3. Install NodeJS dependencies
-
-```
-npm install
-```
-
-4. Install Miniconda
+2. Install Miniconda
 
 ```bash
 # Download + Install Miniconda
@@ -30,10 +23,23 @@ conda init bash
 exec bash -l
 ```
 
+3. Clone the GitHub Repository
+
+```
+git clone https://github.com/marcelreppi/master-thesis-code
+cd master-thesis-code
+```
+
+4. Install NodeJS dependencies
+
+```
+npm install
+```
+
 5. Create the conda environment with all Python dependencies
 
 ```bash
-conda env create -f environment-ubuntu18.04.yml
+conda env create -f environment-ubuntu.yml
 ```
 
 If the above does not work you can also create the environment manually
@@ -47,9 +53,9 @@ conda activate apats-sim
 conda config --add channels conda-forge
 
 # Install all packages
-conda install numpy scipy shapely pandas geopandas matplotlib notebook scikit-learn scikit-image metpy pykrige zope.event lxml
-
 pip install naturalneighbor
+
+conda install numpy scipy shapely pandas geopandas matplotlib notebook scikit-learn scikit-image metpy pykrige zope.event lxml
 ```
 
 Make sure Python 3.x.x is callable via "python"
