@@ -6,6 +6,8 @@ const XMLBuilder = require("xmlbuilder")
 const parseCLIOptions = require("../shared/parseCLIOptions")
 const { validateOptions } = require("../shared/helpers")
 
+const { getAllEmissionClasses, getEmissionClass } = require("./emissions")
+
 const optionDefinitions = [
   {
     name: "scenario",
@@ -35,6 +37,16 @@ const CLIOptions = parseCLIOptions(optionDefinitions)
 let totalTripCounter = 0
 let filteredTripCounter = 0
 const tripsXML = XMLBuilder.create("trips")
+
+// Add vehicle types with all supported emission types to begining of trips file
+// Assign vTypes to individual trips according to official distribution later during copy process
+const vTypeIdTemplate = "type-{emissionClass}"
+getAllEmissionClasses().forEach(ec => {
+  tripsXML.element("vType", {
+    id: vTypeIdTemplate.replace("{emissionClass}", ec),
+    emissionClass: `HBEFA3/${ec}`,
+  })
+})
 
 function onError(err) {
   console.error(err)
@@ -71,6 +83,11 @@ function onOpenTag(node, options) {
       return
     }
 
+    // Add emission class according to distribution
+    const ec = getEmissionClass()
+    currentTrip.type = vTypeIdTemplate.replace("{emissionClass}", ec)
+
+    // Do some modifications if necessary
     // currentTrip.depart = (totalTripCounter - filteredTripCounter) * 60
 
     tripsXML.element("trip", currentTrip)
