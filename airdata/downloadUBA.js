@@ -5,7 +5,10 @@ const axios = require("axios")
 const Measurement = require("./Measurement")
 const { getDateString } = require("../shared/helpers")
 
-const ubaSensorFile = fs.readFileSync("./data/uba-sensors.geojson", "utf-8")
+const ubaSensorFile = fs.readFileSync(
+  join(__dirname, "data", "uba-sensors.geojson"),
+  "utf-8"
+)
 const { features: ubaSensors } = JSON.parse(ubaSensorFile)
 
 const pollutantMapping = {
