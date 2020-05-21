@@ -36,10 +36,12 @@ const CLIOptions = parseCLIOptions(optionDefinitions)
 
 let totalTripCounter = 0
 let filteredTripCounter = 0
+const emissionClassPerPerson = {}
+
 const tripsXML = XMLBuilder.create("trips")
 
 // Add vehicle types with all supported emission types to begining of trips file
-// Assign vTypes to individual trips according to official distribution later during copy process
+// Assign vTypes to individual persons according to official distribution later during parsing process
 const vTypeIdTemplate = "type-{emissionClass}"
 getAllEmissionClasses().forEach(ec => {
   tripsXML.element("vType", {
@@ -57,7 +59,7 @@ function onOpenTag(node, options) {
   if (currentTag === "trip") {
     totalTripCounter += 1
     const currentTrip = node.attributes
-    const { fromLonLat, toLonLat } = currentTrip
+    const { id, fromLonLat, toLonLat } = currentTrip
     const [fromLong, fromLat] = fromLonLat.split(",").map(parseFloat)
     const [toLong, toLat] = toLonLat.split(",").map(parseFloat)
     const [south, west, north, east] = options.bbox
@@ -84,7 +86,17 @@ function onOpenTag(node, options) {
     }
 
     // Add emission class according to distribution
-    const ec = getEmissionClass()
+    // We must assign emission type PER PERSON and NOT PER TRIP
+    const [person, counter] = id.split("_")
+
+    let ec = ""
+    if (emissionClassPerPerson[person]) {
+      ec = emissionClassPerPerson[person]
+    } else {
+      ec = getEmissionClass()
+      emissionClassPerPerson[person] = ec
+    }
+
     currentTrip.type = vTypeIdTemplate.replace("{emissionClass}", ec)
 
     // Do some modifications if necessary
