@@ -45,6 +45,10 @@ class Tracker:
             vehicle_xml = None
             x, y = vehicle_subs[vid][tc.VAR_POSITION]
             speed = vehicle_subs[vid][tc.VAR_SPEED]
+            emission_class = vehicle_subs[vid][tc.VAR_EMISSIONCLASS]
+            route = vehicle_subs[vid][tc.VAR_EDGES]
+            route_index = vehicle_subs[vid][tc.VAR_ROUTE_INDEX]
+            current_edge = route[route_index]
             for pid in traci.polygon.getIDList():
                 polygon_shape = polygon_subs[pid][tc.VAR_SHAPE]
                 location = Point(x, y)
@@ -62,6 +66,8 @@ class Tracker:
                                 "id": vid,
                                 "zone-timestep": v_timestep,
                                 "speed": str(speed),
+                                "edge": current_edge,
+                                "emission-class": emission_class,
                             },
                         )
 
