@@ -1,0 +1,33 @@
+{
+  "mode": "matsim",
+  "scenario": "1pct",
+  "bbox": [
+    52.4828,
+    13.2136,
+    52.5330,
+    13.3594
+  ],
+  "pollutant": "PM10",
+  "simulationDate": "02.02.2020",
+  "zoneUpdateInterval": 60,
+  "interpolationMethod": "idw",
+  "zones": [
+    0,
+    20,
+    35,
+    50,
+    100,
+    200,
+    400,
+    1000
+  ],
+  "periodicRerouting": true,
+  "zoneRerouting": "none",
+  "reroutingDecisionMode": "percentage",
+  "reroutingPercentage": 1,
+  "dynamicReroutingDistance": 500,
+  "snapshotZones": true,
+  "rerouteOnZoneUpdate": false,
+  "nonDepartDecisionMode": "percentage",
+  "nonDepartPercentage": 0
+}
