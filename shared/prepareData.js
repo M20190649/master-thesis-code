@@ -1,18 +1,11 @@
 const fs = require("fs")
 
 const downloadMATSimNetwork = require("../network/matsim/downloadMATSimNetwork")
-const convertMATSimNetwork = require("../network/matsim/convertMATSimNetwork")
 const downloadMATSimPlans = require("../demand/downloadMATSimPlans")
 const convertPlansToTrips = require("../demand/convertPlansToTrips")
 
 const run = async () => {
-  const networkFile = await downloadMATSimNetwork()
-
-  console.log()
-
-  await convertMATSimNetwork({
-    network: networkFile,
-  })
+  await downloadMATSimNetwork()
 
   console.log()
 
