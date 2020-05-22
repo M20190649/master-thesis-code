@@ -34,8 +34,8 @@ const optionDefinitions = [
 
 const CLIOptions = parseCLIOptions(optionDefinitions)
 
+let initialTripCounter = 0
 let totalTripCounter = 0
-let filteredTripCounter = 0
 const emissionClassPerPerson = {}
 
 const tripsXML = XMLBuilder.create("trips")
@@ -57,7 +57,7 @@ function onError(err) {
 function onOpenTag(node, options) {
   const currentTag = node.name
   if (currentTag === "trip") {
-    totalTripCounter += 1
+    initialTripCounter += 1
     const currentTrip = node.attributes
     const { id, fromLonLat, toLonLat } = currentTrip
     const [fromLong, fromLat] = fromLonLat.split(",").map(parseFloat)
@@ -74,14 +74,12 @@ function onOpenTag(node, options) {
       toLong > east
     ) {
       // trip is out of bounds
-      filteredTripCounter += 1
       return
     }
 
     // Filter all trips that start after 24h
     const tripDepartLimit = 24 * 60 * 60
     if (currentTrip.depart > tripDepartLimit) {
-      filteredTripCounter += 1
       return
     }
 
@@ -103,6 +101,7 @@ function onOpenTag(node, options) {
     // currentTrip.depart = (totalTripCounter - filteredTripCounter) * 60
 
     tripsXML.element("trip", currentTrip)
+    totalTripCounter += 1
   }
 }
 
@@ -116,9 +115,11 @@ async function filterTrips(callerOptions) {
     saxStream.on("error", onError)
     saxStream.on("opentag", node => onOpenTag(node, options))
     saxStream.on("end", () => {
+      console.log("Initial trips: ", initialTripCounter)
+      console.log()
+      console.log("Filtered trips: ", initialTripCounter - totalTripCounter)
+      console.log()
       console.log("Total trips: ", totalTripCounter)
-      console.log("Filtered trips: ", filteredTripCounter)
-      console.log("Output trips: ", totalTripCounter - filteredTripCounter)
       fs.writeFileSync(options.output, tripsXML.end({ pretty: true }))
       resolve()
     })
