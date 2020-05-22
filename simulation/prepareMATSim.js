@@ -5,7 +5,6 @@ const { logSection } = require("../shared/helpers")
 
 const filterTrips = require("../demand/filterTrips")
 const convertTripsToRoutes = require("../demand/convertTripsToRoutes")
-const visualizeRoutes = require("../demand/visualizeRoutes")
 
 module.exports = async (inputDir, config) => {
   const rootDir = join(__dirname, "..")
@@ -27,10 +26,6 @@ module.exports = async (inputDir, config) => {
   )
   const tripsFile = `${join(demandDir, routesName)}.trips.xml`
   const routesFile = `${join(demandDir, routesName)}.rou.xml`
-  const routesVisualizationFile = `${join(
-    demandDir,
-    routesName
-  )}.rou.visualization.xml`
 
   // 1. Prepare network data
   logSection("Prepare Network Data")
@@ -68,24 +63,10 @@ module.exports = async (inputDir, config) => {
 
   console.log("Done!\n")
 
-  // Create visualization of routes for preview
-  // console.log("Creating a visualization of SUMO routes...")
-  // if (fs.existsSync(routesVisualizationFile)) {
-  //   console.log("Routes visualization file already exists")
-  // } else {
-  //   await visualizeRoutes({
-  //     routes: routesFile,
-  //     network: networkFile,
-  //     output: routesVisualizationFile,
-  //   })
-  // }
-  // console.log("Done!\n")
-
   const outputFiles = {
     network: networkFile,
     trips: tripsFile,
     routes: routesFile,
-    routesVisualization: routesVisualizationFile,
   }
 
   // Return object of filepaths for all newly generated input data
