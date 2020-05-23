@@ -19,7 +19,6 @@ class Tracker:
     def __init__(self, sim_config, zone_controller):
         self.sim_config = sim_config
         self.zone_controller = zone_controller
-        self.vehicle_distances = {}
 
         output_file_path = f"{sim_config['sim_outputDir']}/vehicle-zone-tracking.xml"
         self.output_file = open(output_file_path, "w")
@@ -76,22 +75,7 @@ class Tracker:
                         vehicle_xml, "polygon", {"id": pid, "zone-timestep": p_timestep}
                     )
 
-                    if vid not in self.vehicle_distances:
-                        self.vehicle_distances[vid] = {}
-
-                    if timestep not in self.vehicle_distances[vid]:
-                        self.vehicle_distances[vid][timestep] = {}
-
-                    if pid in self.vehicle_distances[vid][timestep]:
-                        self.vehicle_distances[vid][timestep][pid] += speed
-                    else:
-                        self.vehicle_distances[vid][timestep][pid] = 0
-
                     # print(f"Vehicle {vid} in polygon {pid}")
-
-        if some_vehicle_in_polygon:
-            # pprint.pprint(self.vehicle_distances)
-            pass
 
         indent = 4
         xml = prettify(timestep_xml, indent=indent)
