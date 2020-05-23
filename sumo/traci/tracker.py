@@ -34,7 +34,6 @@ class Tracker:
     def track_vehicles_in_polygons(self, t):
         timestep = self.zone_controller.current_timestep
         vehicle_subs = traci.vehicle.getAllSubscriptionResults()
-        polygon_subs = traci.polygon.getAllSubscriptionResults()
         some_vehicle_in_polygon = False
 
         timestep_xml = Element("timestep", {"time": str(t), "zone-timestep": timestep})
