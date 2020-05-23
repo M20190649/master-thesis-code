@@ -10,30 +10,35 @@ import geopandas as gpd
 from logger import log
 
 
-class ZoneController():
+class ZoneController:
     def __init__(self, sim_config):
         self.sim_config = sim_config
         self.current_timestep = ""
-        self.__polygon_edges = {}
+        self.__polygons = {}
+
+    def get_polygons(self):
+        return self.__polygons.values()
+
+    def get_polygon_ids(self):
+        return list(self.__polygons.keys())
 
     def get_polygon_edges(self, pid=None):
         if pid is None:
-            return list(chain(*self.__polygon_edges.values()))
+            return list(map(lambda p: p["edges"], self.__polygons.values()))
         else:
-            return self.__polygon_edges[pid]
+            print(pid)
+            return self.__polygons[pid]["edges"]
 
     def get_polygons_by_timestep(self, timestep=None, holes=True):
-        polygons = traci.polygon.getIDList()
-
-        def check_polygon(pid):
+        def check_polygon(polygon):
             if not holes:
-                if pid.startswith("hole"):
+                if polygon["id"].startswith("hole"):
                     return False
 
-            p_timestep = traci.polygon.getParameter(pid, "zone_timestep")
+            p_timestep = polygon["zone_timestep"]
             return p_timestep == (timestep or self.current_timestep)
 
-        return list(filter(check_polygon, polygons))
+        return list(filter(check_polygon, self.__polygons.values()))
 
     def add_polygon_subscriptions(self, pid):
         # Polygon context used for dynamic routing
@@ -85,6 +90,12 @@ class ZoneController():
         return part_shapes
 
     def add_polygon(self, pid, shape, color, layer):
+        polygon = {
+            "id": pid,
+            "zone_timestep": self.current_timestep,
+            "shape": Polygon(shape),
+        }
+
         traci.polygon.add(pid, shape, color, fill=True, layer=layer)
 
         # Calculate and store all edges that are covered by each new polygon
@@ -102,16 +113,19 @@ class ZoneController():
             traci.polygon.remove(pid)
             return
 
-        traci.polygon.setParameter(pid, "zone_timestep", self.current_timestep)
-
-        # Add all necessary context subscriptions
-        self.add_polygon_subscriptions(pid)
-
         # Filter out edge data
         edge_ids = traci.edge.getIDList()
         edges_in_polygon = [k for (k, v) in polygon_context.items() if k in edge_ids]
         log(f"Found {len(edges_in_polygon)} edges in polygon {pid}")
-        self.__polygon_edges[pid] = edges_in_polygon
+
+        polygon["edges"] = edges_in_polygon
+
+        self.__polygons[pid] = polygon
+
+        traci.polygon.setParameter(pid, "zone_timestep", self.current_timestep)
+
+        # Add all necessary context subscriptions
+        self.add_polygon_subscriptions(pid)
 
     def load_polygons(self, t):
         # Load the XML file for the current timestep
@@ -168,9 +182,11 @@ class ZoneController():
 
         timestep = self.get_timestep_from_step(t)
         log(f"Removing polygons from timestep {timestep}")
-        for pid in self.get_polygons_by_timestep(timestep=timestep):
+        for p in self.get_polygons_by_timestep(timestep=timestep):
+            pid = p["id"]
             self.remove_polygon_subscriptions(pid)
             traci.polygon.remove(pid)
+            del self.__polygons[pid]
 
     def hide_polygons(self, t):
         if t < 0:
@@ -178,8 +194,8 @@ class ZoneController():
 
         timestep = self.get_timestep_from_step(t)
         log(f"Hiding polygons from timestep {timestep}")
-        for pid in self.get_polygons_by_timestep(timestep=timestep):
-            traci.polygon.setFilled(pid, False)
+        for p in self.get_polygons_by_timestep(timestep=timestep):
+            traci.polygon.setFilled(p["id"], False)
 
     def get_timestep_from_step(self, t):
         pad = lambda n: f"0{n}" if n < 10 else n

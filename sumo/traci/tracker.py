@@ -2,7 +2,6 @@ import traci, pprint, textwrap
 import traci.constants as tc
 import zope.event
 from shapely.geometry import Point
-from shapely.geometry.polygon import Polygon
 from xml.dom import minidom
 from lxml import etree
 from lxml.etree import Element, SubElement
@@ -43,17 +42,15 @@ class Tracker:
         for vid in traci.vehicle.getIDList():
             vehicle_xml = None
             x, y = vehicle_subs[vid][tc.VAR_POSITION]
+            location = Point(x, y)
             speed = vehicle_subs[vid][tc.VAR_SPEED]
             emission_class = vehicle_subs[vid][tc.VAR_EMISSIONCLASS]
             route = vehicle_subs[vid][tc.VAR_EDGES]
             route_index = vehicle_subs[vid][tc.VAR_ROUTE_INDEX]
             current_edge = route[route_index]
-            for pid in traci.polygon.getIDList():
-                polygon_shape = polygon_subs[pid][tc.VAR_SHAPE]
-                location = Point(x, y)
-                polygon = Polygon(polygon_shape)
-
-                if polygon.contains(location):
+            for p in self.zone_controller.get_polygons():
+                shape = p["shape"]
+                if shape.contains(location):
                     some_vehicle_in_polygon = True
 
                     if vehicle_xml is None:
@@ -70,9 +67,10 @@ class Tracker:
                             },
                         )
 
-                    p_timestep = traci.polygon.getParameter(pid, "zone_timestep")
                     polygon_xml = SubElement(
-                        vehicle_xml, "polygon", {"id": pid, "zone-timestep": p_timestep}
+                        vehicle_xml,
+                        "polygon",
+                        {"id": p["id"], "zone-timestep": p["zone_timestep"],},
                     )
 
                     # print(f"Vehicle {vid} in polygon {pid}")

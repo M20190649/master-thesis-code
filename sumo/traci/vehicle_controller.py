@@ -102,9 +102,10 @@ class VehicleController:
         traveltime = 99999999
 
         # Decide per polygon if to avoid it or not
-        for pid in self.zone_controller.get_polygons_by_timestep(
+        for p in self.zone_controller.get_polygons_by_timestep(
             timestep=timestep, holes=False
         ):
+            pid = p["id"]
             if self.should_vehicle_avoid_polygon(vid, pid):
                 polygon_edges = self.zone_controller.get_polygon_edges(pid=pid)
                 for eid in polygon_edges:
@@ -132,7 +133,8 @@ class VehicleController:
             route = self.vehicle_vars[vid][tc.VAR_EDGES]
 
             # Check if route includes edges that are within air quality zone polygons of current timestep
-            for pid in self.zone_controller.get_polygons_by_timestep(holes=False):
+            for p in self.zone_controller.get_polygons_by_timestep(holes=False):
+                pid = p["id"]
                 polygon_edges = self.zone_controller.get_polygon_edges(pid=pid)
 
                 if any(eid in polygon_edges for eid in route):
@@ -165,7 +167,8 @@ class VehicleController:
             current_edge = route[route_index]
 
             # Check if starting edge is within any of the polygons
-            for pid in self.zone_controller.get_polygons_by_timestep(holes=False):
+            for p in self.zone_controller.get_polygons_by_timestep(holes=False):
+                pid = p["id"]
                 polygon_edges = self.zone_controller.get_polygon_edges(pid=pid)
                 if current_edge in polygon_edges:
                     log(f"New vehicle {vid} was inserted inside polygon {pid}.")
@@ -187,7 +190,7 @@ class VehicleController:
 
         # Go through all polygons and get all vehicles within dynamic rerouting range
         vehicle_ids = traci.vehicle.getIDList()
-        polygon_ids = traci.polygon.getIDList()
+        polygon_ids = self.zone_controller.get_polygon_ids()
         for pid in self.polygon_subs:
             if pid.startswith("hole"):
                 continue
