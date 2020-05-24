@@ -169,8 +169,8 @@ class VehicleController:
             current_edge = route[route_index]
 
             # Check if starting edge is within any of the polygons
-            for p in self.zone_controller.get_polygons_by_timestep(holes=False):
-                pid = p["id"]
+            for polygon in self.zone_controller.get_polygons_by_timestep(holes=False):
+                pid = polygon["id"]
                 polygon_edges = self.zone_controller.get_polygon_edges(pid=pid)
                 if current_edge in polygon_edges:
                     log(f"New vehicle {vid} was inserted inside polygon {pid}.")
@@ -190,6 +190,8 @@ class VehicleController:
         # 2. Check if any vehicle is within dynamic rerouting range of any polygon
         # If yes and any of their upcoming edges are within that polygon -> reroute
 
+        current_polygons = self.zone_controller.get_polygon_ids()
+
         # Go through all vehicles where a polygon is within dynamic rerouting range
         for vid in self.vehicle_subs:
             if not zone_update:
@@ -206,6 +208,10 @@ class VehicleController:
             for pid in polygon_context:
 
                 if pid.startswith("hole"):
+                    continue
+
+                if pid not in current_polygons:
+                    # Filter possibly outdated polygons
                     continue
 
                 polygon = self.zone_controller.get_polygon(pid)
