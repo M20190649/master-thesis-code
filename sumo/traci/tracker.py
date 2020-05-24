@@ -33,19 +33,19 @@ class Tracker:
 
     def track_vehicles_in_polygons(self, t):
         timestep = self.zone_controller.current_timestep
-        vehicle_subs = traci.vehicle.getAllSubscriptionResults()
+        vehicle_vars = traci.vehicle.getAllSubscriptionResults()
         some_vehicle_in_polygon = False
 
         timestep_xml = Element("timestep", {"time": str(t), "zone-timestep": timestep})
 
         for vid in traci.vehicle.getIDList():
             vehicle_xml = None
-            x, y = vehicle_subs[vid][tc.VAR_POSITION]
+            x, y = vehicle_vars[vid][tc.VAR_POSITION]
             location = Point(x, y)
-            speed = vehicle_subs[vid][tc.VAR_SPEED]
-            emission_class = vehicle_subs[vid][tc.VAR_EMISSIONCLASS]
-            route = vehicle_subs[vid][tc.VAR_EDGES]
-            route_index = vehicle_subs[vid][tc.VAR_ROUTE_INDEX]
+            speed = vehicle_vars[vid][tc.VAR_SPEED]
+            emission_class = vehicle_vars[vid][tc.VAR_EMISSIONCLASS]
+            route = vehicle_vars[vid][tc.VAR_EDGES]
+            route_index = vehicle_vars[vid][tc.VAR_ROUTE_INDEX]
             current_edge = route[route_index]
             for p in self.zone_controller.get_polygons():
                 shape = p["shape"]
