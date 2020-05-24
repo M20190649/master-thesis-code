@@ -1,4 +1,5 @@
-import traci, pprint, datetime, os
+import pprint, datetime, os
+import traci
 from itertools import chain
 import zope.event
 import xml.etree.ElementTree as et
