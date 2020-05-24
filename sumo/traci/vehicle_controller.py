@@ -28,9 +28,11 @@ class VehicleController:
                 if not self.sim_config["snapshotZones"]:
                     self.zoneUpdateReroute = True
 
-    def should_vehicle_avoid_polygon(self, vid, pid):
+    def should_vehicle_avoid_polygon(self, vid, polygon):
         # This function can be used to avoid only specific zones/polygons
         # For example an agent is fine with paying for zone 1 but not zone 2 and 3
+
+        pid = polygon["id"]
 
         # Don't avoid any holes
         if pid.startswith("hole"):
@@ -42,7 +44,7 @@ class VehicleController:
             return True
 
         v_timestep = traci.vehicle.getParameter(vid, "zone_timestep")
-        p_timestep = traci.polygon.getParameter(pid, "zone_timestep")
+        p_timestep = polygon["zone_timestep"]
         if self.sim_config["snapshotZones"]:
             # When zones are frozen only consider the polygons that existed at the time when the vehicle was inserted
             if p_timestep != v_timestep:
@@ -99,13 +101,12 @@ class VehicleController:
         traveltime = 99999999
 
         # Decide per polygon if to avoid it or not
-        for p in self.zone_controller.get_polygons_by_timestep(
+        for polygon in self.zone_controller.get_polygons_by_timestep(
             timestep=timestep, holes=False
         ):
-            pid = p["id"]
-            if self.should_vehicle_avoid_polygon(vid, pid):
-                polygon_edges = self.zone_controller.get_polygon_edges(pid=pid)
-                for eid in polygon_edges:
+            pid = polygon["id"]
+            if self.should_vehicle_avoid_polygon(vid, polygon):
+                for eid in polygon["edges"]:
                     # Set travel times for all edges to very high value
                     traci.vehicle.setAdaptedTraveltime(vid, eid, time=traveltime)
 
@@ -130,9 +131,9 @@ class VehicleController:
             route = self.vehicle_vars[vid][tc.VAR_EDGES]
 
             # Check if route includes edges that are within air quality zone polygons of current timestep
-            for p in self.zone_controller.get_polygons_by_timestep(holes=False):
-                pid = p["id"]
-                polygon_edges = self.zone_controller.get_polygon_edges(pid=pid)
+            for polygon in self.zone_controller.get_polygons_by_timestep(holes=False):
+                pid = polygon["id"]
+                polygon_edges = polygon["edges"]
 
                 if any(eid in polygon_edges for eid in route):
                     if not self.should_vehicle_reroute(vid):
@@ -166,7 +167,7 @@ class VehicleController:
             # Check if starting edge is within any of the polygons
             for polygon in self.zone_controller.get_polygons_by_timestep(holes=False):
                 pid = polygon["id"]
-                polygon_edges = self.zone_controller.get_polygon_edges(pid=pid)
+                polygon_edges = polygon["edges"]
                 if current_edge in polygon_edges:
                     log(f"New vehicle {vid} was inserted inside polygon {pid}.")
                     # Make decision if to reroute at all
@@ -196,12 +197,13 @@ class VehicleController:
                 # Skip possibly removed polygons
                 continue
 
-            p_timestep = traci.polygon.getParameter(pid, "zone_timestep")
-            polygon_context = self.polygon_subs[pid]
+            polygon = self.zone_controller.get_polygon(pid)
+            p_timestep = polygon["zone_timestep"]
+            polygon_sub = self.polygon_subs[pid]
             vehicle_context = {
-                k: v for (k, v) in polygon_context.items() if k in vehicle_ids
+                k: v for (k, v) in polygon_sub.items() if k in vehicle_ids
             }
-            polygon_edges = self.zone_controller.get_polygon_edges(pid=pid)
+            polygon_edges = polygon["edges"]
 
             for vid in vehicle_context:
                 if not zone_update:

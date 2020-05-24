@@ -17,17 +17,13 @@ class ZoneController:
         self.__polygons = {}
 
     def get_polygons(self):
-        return self.__polygons.values()
+        return list(self.__polygons.values())
+
+    def get_polygon(self, pid):
+        return self.__polygons[pid]
 
     def get_polygon_ids(self):
         return list(self.__polygons.keys())
-
-    def get_polygon_edges(self, pid=None):
-        if pid is None:
-            return list(map(lambda p: p["edges"], self.__polygons.values()))
-        else:
-            print(pid)
-            return self.__polygons[pid]["edges"]
 
     def get_polygons_by_timestep(self, timestep=None, holes=True):
         def check_polygon(polygon):
