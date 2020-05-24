@@ -1,4 +1,5 @@
-import traci, pprint, datetime, os
+import pprint, datetime, os
+import traci
 from itertools import chain
 import zope.event
 import xml.etree.ElementTree as et
@@ -10,7 +11,7 @@ import geopandas as gpd
 from logger import log
 
 
-class ZoneController():
+class ZoneController:
     def __init__(self, sim_config):
         self.sim_config = sim_config
         self.current_timestep = ""

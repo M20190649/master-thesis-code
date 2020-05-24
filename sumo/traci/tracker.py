@@ -1,4 +1,5 @@
-import traci, pprint, textwrap
+import pprint, textwrap
+import traci
 import traci.constants as tc
 import zope.event
 from shapely.geometry import Point
