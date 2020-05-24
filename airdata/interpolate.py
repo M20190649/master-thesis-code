@@ -1,7 +1,3 @@
-# os.environ[
-#     "PROJ_LIB"
-# ] = r"C:\\ProgamData\\Miniconda3\\envs\\master-thesis\\Library\\share"
-
 import os, math, time, ntpath, pprint, json, itertools
 from functools import partial
 from argparse import ArgumentParser
@@ -56,13 +52,14 @@ def get_polygons_per_zone_plt(xnew, ynew, interpolated_values, zones):
         polygons_per_zone.append(zone_polygons)
     return polygons_per_zone
 
+
 def get_polygons_per_zone(xnew, ynew, interpolated_values, zones):
     xmin = np.min(xnew)
     xmax = np.max(xnew)
     ymin = np.min(ynew)
     ymax = np.max(ynew)
-    scale_x = lambda x: xmin + (xmax-xmin)/len(xnew)*(x+0.5)
-    scale_y = lambda y: ymin + (ymax-ymin)/len(ynew)*(y+0.5)
+    scale_x = lambda x: xmin + (xmax - xmin) / len(xnew) * (x + 0.5)
+    scale_y = lambda y: ymin + (ymax - ymin) / len(ynew) * (y + 0.5)
 
     polygons_per_zone = []
 
@@ -70,8 +67,13 @@ def get_polygons_per_zone(xnew, ynew, interpolated_values, zones):
     # Makes it easier for hole detections
     for zone, zone_limit in enumerate(zones[::-1]):
         contours = measure.find_contours(interpolated_values, zone_limit)
-        contour_polygons = list(map(lambda c: geometry.Polygon(zip(scale_x(c[:, 1]), scale_y(c[:, 0]))), contours))
-        
+        contour_polygons = list(
+            map(
+                lambda c: geometry.Polygon(zip(scale_x(c[:, 1]), scale_y(c[:, 0]))),
+                contours,
+            )
+        )
+
         previous_polygons = list(itertools.chain(*polygons_per_zone))
         zone_polygons = []
         holes = []
@@ -88,13 +90,13 @@ def get_polygons_per_zone(xnew, ynew, interpolated_values, zones):
                 if p1.contains(p2):
                     p1 = p1.difference(p2)
                     holes.append(p2)
-            
+
             # Check if inner contours are holes in current polygon
             for p2 in previous_polygons:
                 if p1.contains(p2):
                     p1 = p1.difference(p2)
                     holes.append(p2)
-            
+
             zone_polygons.append(p1)
         polygons_per_zone.append(zone_polygons)
     # Reverse again to return polygons in same order as input zones
@@ -200,8 +202,12 @@ interpolator_functions = {
     "idw": interpolators.inverse_distance_weighting,
     "linear-rbf": partial(interpolators.radial_basis_function, function="linear"),
     "mq-rbf": partial(interpolators.radial_basis_function, function="multiquadric"),
-    "imq-rbf": partial(interpolators.radial_basis_function, function="inverse-multiquadric"),
-    "thin-plate-rbf": partial(interpolators.radial_basis_function, function="thin-plate"),
+    "imq-rbf": partial(
+        interpolators.radial_basis_function, function="inverse-multiquadric"
+    ),
+    "thin-plate-rbf": partial(
+        interpolators.radial_basis_function, function="thin-plate"
+    ),
     "kriging": interpolators.kriging,
 }
 

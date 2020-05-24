@@ -25,6 +25,7 @@ from pykrige.uk import UniversalKriging
 from sklearn.model_selection import KFold
 from sklearn.metrics import mean_squared_error
 
+
 def regularize_points(points, eps=1e-2):
     # Looks for duplicate x and y values and regularize them
     x_duplicates = [
@@ -37,18 +38,13 @@ def regularize_points(points, eps=1e-2):
     regularize = lambda n: n + random.uniform(-eps, eps)
 
     fixed_x = list(
-        map(
-            lambda x: regularize(x) if x in x_duplicates else x,
-            points[:, 0],
-        )
+        map(lambda x: regularize(x) if x in x_duplicates else x, points[:, 0],)
     )
     fixed_y = list(
-        map(
-            lambda y: regularize(y) if y in y_duplicates else y,
-            points[:, 1],
-        )
+        map(lambda y: regularize(y) if y in y_duplicates else y, points[:, 1],)
     )
     return np.column_stack((fixed_x, fixed_y))
+
 
 def nearest_neighbor(x, y, points, values, grid=True):
     points = regularize_points(points)
@@ -71,7 +67,11 @@ def discrete_natural_neighbor(x, y, points, values, grid=True):
     if grid:
         x_step_width = (x[-1] - x[0]) / x.shape[0]
         y_step_width = (y[-1] - y[0]) / y.shape[0]
-        grid_ranges = [[x[0], x[-1], x_step_width], [y[0], y[-1], y_step_width], [0, 1, 1]]
+        grid_ranges = [
+            [x[0], x[-1], x_step_width],
+            [y[0], y[-1], y_step_width],
+            [0, 1, 1],
+        ]
         grid_values = naturalneighbor.griddata(
             np.insert(points, 2, 0, axis=1), values, grid_ranges
         )
@@ -81,21 +81,23 @@ def discrete_natural_neighbor(x, y, points, values, grid=True):
         new_points = np.column_stack((x, y))
         for px, py in new_points:
             interpolated_value = naturalneighbor.griddata(
-                np.insert(points, 2, 0, axis=1), values, [[px, px+1, 1], [py, py+1, 1], [0, 1, 1]]
+                np.insert(points, 2, 0, axis=1),
+                values,
+                [[px, px + 1, 1], [py, py + 1, 1], [0, 1, 1]],
             )
             interpolated_values.append(interpolated_value[0][0][0])
         return interpolated_values
 
-
-
-def inverse_distance_weighting(x, y, points, values, power=2, cv=False, k=None, grid=True):
+def inverse_distance_weighting(
+    x, y, points, values, power=2, cv=False, k=None, grid=True
+):
 
     points = regularize_points(points)
 
     if cv:
         print("Doing CV to determine best power parameter...")
         folds = 10
-        seed = random.randint(0,9999)
+        seed = random.randint(0, 9999)
         kfold = KFold(folds, True, seed)
         avg_rmse_per_power = {}
         for p in np.arange(1, 3, 0.01):
@@ -110,14 +112,16 @@ def inverse_distance_weighting(x, y, points, values, power=2, cv=False, k=None, 
                 k = k or len(train_points)
                 distances, idx = tree.query(test_points, k=k)
 
-                inverse_distances = 1 / distances ** p 
-                weights = inverse_distances / np.sum(inverse_distances, axis=1)[:, np.newaxis]
+                inverse_distances = 1 / distances ** p
+                weights = (
+                    inverse_distances / np.sum(inverse_distances, axis=1)[:, np.newaxis]
+                )
                 neighbor_values = train_values[idx.ravel()].reshape(idx.shape)
                 idw_values = np.sum(weights * neighbor_values, axis=1)
                 rmse = mean_squared_error(test_values, idw_values)
-                sum_rmse +=rmse
-            
-            avg_rmse = sum_rmse/folds
+                sum_rmse += rmse
+
+            avg_rmse = sum_rmse / folds
             avg_rmse_per_power[p] = avg_rmse
             # print(f"p: {p}")
             # print(f"Avg RMSE: {avg_rmse}")
@@ -157,6 +161,7 @@ def inverse_distance_weighting(x, y, points, values, power=2, cv=False, k=None, 
     else:
         return idw_values
 
+
 def scipy_radial_basis_function(x, y, points, values, function="linear", grid=True):
     points = regularize_points(points)
 
@@ -170,6 +175,7 @@ def scipy_radial_basis_function(x, y, points, values, function="linear", grid=Tr
     else:
         rbfValues = rbfInterpolator(x, y)
     return rbfValues
+
 
 # My own implementation of radial basis functions
 def radial_basis_function(x, y, points, values, function="linear", eps=None, grid=True):
@@ -194,7 +200,7 @@ def radial_basis_function(x, y, points, values, function="linear", eps=None, gri
         "multiquadric": lambda r: np.sqrt(1 + np.power(eps * r, 2)),
         "inverse-quadratic": lambda r: 1 / (1 + np.power(eps * r, 2)),
         "inverse-multiquadric": lambda r: 1 / np.sqrt(1 + np.power(eps * r, 2)),
-        "thin-plate": lambda r: np.power(r, 2) * np.log(r)
+        "thin-plate": lambda r: np.power(r, 2) * np.log(r),
     }
 
     rbf_pair_distances = rbf_functions[function](pair_distances)
@@ -217,13 +223,24 @@ def radial_basis_function(x, y, points, values, function="linear", eps=None, gri
         result = result.reshape(xx.shape)
     return result
 
-def kriging(x, y, points, values, nlags=10, cv=False, krige_type="ordinary", grid=True, verbose=False):
+
+def kriging(
+    x,
+    y,
+    points,
+    values,
+    nlags=10,
+    cv=False,
+    krige_type="ordinary",
+    grid=True,
+    verbose=False,
+):
     points = regularize_points(points)
 
     if cv:
         print("Doing CV to determine best number of lags...")
         folds = 10
-        seed = random.randint(0,9999)
+        seed = random.randint(0, 9999)
         kfold = KFold(folds, True, seed)
         avg_rmse_per_lag = {}
         for lags in range(2, 101):
@@ -236,16 +253,22 @@ def kriging(x, y, points, values, nlags=10, cv=False, krige_type="ordinary", gri
 
                 krige_interpolator = None
                 if krige_type == "ordinary":
-                    krige_interpolator = OrdinaryKriging(train_points[:, 0], train_points[:, 1], train_values, nlags=lags)
-                
-                if krige_type == "universal":
-                    krige_interpolator = OrdinaryKriging(train_points[:, 0], train_points[:, 1], train_values, nlags=lags) 
+                    krige_interpolator = OrdinaryKriging(
+                        train_points[:, 0], train_points[:, 1], train_values, nlags=lags
+                    )
 
-                result = krige_interpolator.execute('points', test_points[:, 0], test_points[:, 1])
+                if krige_type == "universal":
+                    krige_interpolator = OrdinaryKriging(
+                        train_points[:, 0], train_points[:, 1], train_values, nlags=lags
+                    )
+
+                result = krige_interpolator.execute(
+                    "points", test_points[:, 0], test_points[:, 1]
+                )
                 rmse = mean_squared_error(test_values, result[0])
-                sum_rmse +=rmse
-            
-            avg_rmse = sum_rmse/folds
+                sum_rmse += rmse
+
+            avg_rmse = sum_rmse / folds
             avg_rmse_per_lag[lags] = avg_rmse
             # print(f"lags: {lags}")
             # print(f"Avg RMSE: {avg_rmse}")
@@ -257,17 +280,22 @@ def kriging(x, y, points, values, nlags=10, cv=False, krige_type="ordinary", gri
 
     krige_interpolator = None
     if krige_type == "ordinary":
-        krige_interpolator = OrdinaryKriging(points[:, 0], points[:, 1], values, nlags=nlags, verbose=verbose)
+        krige_interpolator = OrdinaryKriging(
+            points[:, 0], points[:, 1], values, nlags=nlags, verbose=verbose
+        )
 
     if krige_type == "universal":
-        krige_interpolator = OrdinaryKriging(points[:, 0], points[:, 1], values, nlags=nlags, verbose=verbose) 
+        krige_interpolator = OrdinaryKriging(
+            points[:, 0], points[:, 1], values, nlags=nlags, verbose=verbose
+        )
 
     if grid:
-        result = krige_interpolator.execute('grid', x, y)
+        result = krige_interpolator.execute("grid", x, y)
     else:
-        result = krige_interpolator.execute('points', x, y)
+        result = krige_interpolator.execute("points", x, y)
 
     return result[0]
+
 
 # Natural neighbor implementation taken from Python package "MetPy"
 # FASTER THAN scipy_natural_neighbor BUT MUCH SLOWER THAN discrete_natural_neighbor
@@ -285,6 +313,7 @@ def metpy_natural_neighbor(x, y, points, values, grid=True):
         return result.reshape(y.shape[0], x.shape[0])
     else:
         return result
+
 
 # Natural neighbor implementation based on spatial voronoi region intersections
 # THIS IS VERY SLOW!!!
@@ -321,7 +350,9 @@ def scipy_natural_neighbor(x, y, points, values, grid=True):
             region = voronoi.regions[r]
             if -1 not in region:
                 # Finite region.
-                polygons.append(Polygon(voronoi.vertices[region]).intersection(boundary))
+                polygons.append(
+                    Polygon(voronoi.vertices[region]).intersection(boundary)
+                )
                 continue
             # Infinite region.
             inf = region.index(-1)  # Index of vertex at infinity.
@@ -346,7 +377,9 @@ def scipy_natural_neighbor(x, y, points, values, grid=True):
                 voronoi.vertices[k] + dir_k * length,
             ]
             polygons.append(
-                Polygon(np.concatenate((finite_part, extra_edge))).intersection(boundary)
+                Polygon(np.concatenate((finite_part, extra_edge))).intersection(
+                    boundary
+                )
             )
 
         return polygons
@@ -392,6 +425,7 @@ def scipy_natural_neighbor(x, y, points, values, grid=True):
 
     return np.array(interpolated_values).reshape(y.shape[0], x.shape[0])
 
+
 # DO NOT USE THIS
 def linear_barycentric(x, y, points, values, grid=True):
     points = regularize_points(points)
@@ -404,6 +438,7 @@ def linear_barycentric(x, y, points, values, grid=True):
 
     grid_values = interpolate.griddata(points, values, point_matrix, method="linear")
     return grid_values
+
 
 # DO NOT USE THIS
 def clough_tocher(x, y, points, values, grid=True):
