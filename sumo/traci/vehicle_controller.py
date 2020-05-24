@@ -130,18 +130,39 @@ class VehicleController:
         # Rerouting for vehicles whose route crosses through air quality zones
         for vid in vehicleToCheck:
             route = self.vehicle_vars[vid][tc.VAR_EDGES]
+            current_route_index = self.vehicle_vars[vid][tc.VAR_ROUTE_INDEX]
+            upcoming_edges = route[current_route_index:]
 
             # Check if route includes edges that are within air quality zone polygons of current timestep
             for polygon in self.zone_controller.get_polygons_by_timestep(holes=False):
                 pid = polygon["id"]
                 polygon_edges = polygon["edges"]
 
-                if any(eid in polygon_edges for eid in route):
+                intersecting_edges = list(set(upcoming_edges) & set(polygon_edges))
+                n_intersect = len(intersecting_edges)
+                if n_intersect != 0:
                     if not self.should_vehicle_reroute(vid):
                         break
 
+                    if upcoming_edges[0] in polygon_edges:
+                        if zone_update:
+                            log(
+                                f"Vehicle {vid} was inside polygon {pid} during zone update"
+                            )
+                        else:
+                            log(f"New vehicle {vid} was inserted inside polygon {pid}")
+
+                    log_msg = f"Vehicle {vid} route intersects with zone polygon {pid} "
+                    if n_intersect > 1:
+                        log_msg += (
+                            f"(edge {intersecting_edges[0]} and {n_intersect - 1} more)"
+                        )
+                    else:
+                        log_msg += f"(edge {intersecting_edges[0]})"
+                    log(log_msg)
+
                     # Check for special case where destination is inside a zone
-                    if route[-1] in polygon_edges:
+                    if upcoming_edges[-1] in polygon_edges:
                         # TODO: What to do?
                         # Don't reroute at all? Or maybe find the "cheapest" way to destination?
                         log(f"Destination of vehicle {vid} is in polygon {pid}")
@@ -170,7 +191,13 @@ class VehicleController:
                 pid = polygon["id"]
                 polygon_edges = polygon["edges"]
                 if current_edge in polygon_edges:
-                    log(f"New vehicle {vid} was inserted inside polygon {pid}.")
+                    if zone_update:
+                        log(
+                            f"Vehicle {vid} was inside polygon {pid} during zone update"
+                        )
+                    else:
+                        log(f"New vehicle {vid} was inserted inside polygon {pid}")
+
                     # Make decision if to reroute at all
                     if not self.should_vehicle_reroute(vid):
                         break
@@ -227,10 +254,21 @@ class VehicleController:
                 upcoming_edges = route[current_route_index:]
 
                 # Check if any edge of vehicle route goes through polygon
-                if any(eid in polygon_edges for eid in upcoming_edges):
+                intersecting_edges = list(set(upcoming_edges) & set(polygon_edges))
+                n_intersect = len(intersecting_edges)
+                if n_intersect != 0:
                     # Make decision if to reroute at all
                     if not self.should_vehicle_reroute(vid):
                         continue
+
+                    log_msg = f"Vehicle {vid} route intersects with zone polygon {pid} "
+                    if n_intersect > 1:
+                        log_msg += (
+                            f"(edge {intersecting_edges[0]} and {n_intersect - 1} more)"
+                        )
+                    else:
+                        log_msg += f"(edge {intersecting_edges[0]})"
+                    log(log_msg)
 
                     # Check if destination is within polygon
                     if upcoming_edges[-1] in polygon_edges:

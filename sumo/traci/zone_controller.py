@@ -136,11 +136,11 @@ class ZoneController:
         # zone_file = f"zones_{date_string}T10-00-00.xml"
         self.current_timestep = timestep
 
-        log(f"Loading {zone_file}")
+        log(f"Loading {zone_file} file")
         xml_tree = et.parse(os.path.join(self.sim_config["sim_airDataDir"], zone_file))
 
         # Traverse the XML tree and add all new polygons
-        log("Adding new polygons")
+        log(f"Adding new polygons for timestep {timestep}")
         for child in xml_tree.getroot():
             if child.tag == "poly":
                 pid = f"{child.attrib['id']}_{self.current_timestep}"
@@ -207,4 +207,4 @@ class ZoneController:
         # Hide the polygons from last timestep
         self.hide_polygons(step - interval)
         self.load_polygons(step)
-        log("Done")
+        log("Done\n")

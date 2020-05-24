@@ -54,7 +54,7 @@ sim_airdata_dir = os.path.join(
 # Log the given configuration
 log_path = os.path.join(sim_output_dir, "simulation-logs.txt")
 open_log(log_path)
-log("Simulation starting with the following options:\n")
+log("Simulation starting with the following configuration:\n")
 log(sim_config)
 log()
 

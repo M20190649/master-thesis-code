@@ -1,4 +1,4 @@
-import os, pprint
+import os, pprint, time, sys
 import traci
 import traci.constants as tc
 from tracker import Tracker
@@ -25,13 +25,14 @@ class SimulationController:
         )
 
         # Load initial zones
-        self.zone_controller.load_polygons(0)
+        self.zone_controller.update_zones(0)
 
         # Prepare initial vehicles
         self.vehicle_controller.prepare_new_vehicles()
 
         interval = self.sim_config["zoneUpdateInterval"] * 60
 
+        t = time.time()
         # Run the simulation
         step = 0
         while traci.simulation.getMinExpectedNumber() > 0:
@@ -45,6 +46,14 @@ class SimulationController:
             # log(f"After tracking")
 
             if step > 0 and step % interval == 0:
+                log(
+                    f"\nPrevious timestep simulation time: {format(time.time() - t, '.3f')}s\n"
+                )
+                t = time.time()
+
+                # if step == interval * 4:
+                #     sys.exit()
+
                 self.zone_controller.update_zones(step)
                 # log(f"After zone update")
 
