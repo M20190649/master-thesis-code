@@ -2,9 +2,6 @@ import traci, pprint, datetime, os
 import zope.event
 import xml.etree.ElementTree as et
 import traci.constants as tc
-from shapely.geometry import Polygon, MultiPolygon, mapping
-from shapely.geometry import box
-import geopandas as gpd
 
 from logger import log
 import rerouting_decisions
