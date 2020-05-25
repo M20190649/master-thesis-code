@@ -220,6 +220,7 @@ dependencies:
   - zope.event=4.4=py38_0
   - zstd=1.4.4=h6597ccf_3
   - pip:
+    - naturalneighbor==0.2.1
     - pyqt5-sip==4.19.18
     - pyqtchart==5.12
     - pyqtwebengine==5.12.1
