@@ -1,6 +1,18 @@
 # Setup Guide for Linux (Ubuntu)
 
-1. Install NodeJS
+1. Make sure the package list is up-to-date
+
+```bash
+sudo apt update
+```
+
+2. Install necessary compilers
+
+```bash
+sudo apt install build-essential
+```
+
+3. Install NodeJS
 
 ```bash
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash
@@ -8,7 +20,7 @@ source ~/.bashrc
 nvm install lts/erbium
 ```
 
-2. Install Miniconda
+4. Install Miniconda
 
 ```bash
 # Download + Install Miniconda
@@ -23,20 +35,20 @@ conda init bash
 exec bash -l
 ```
 
-3. Clone the GitHub Repository
+5. Clone the GitHub Repository
 
-```
+```bash
 git clone https://github.com/marcelreppi/master-thesis-code
 cd master-thesis-code
 ```
 
-4. Install NodeJS dependencies
+6. Install NodeJS dependencies
 
-```
+```bash
 npm install
 ```
 
-5. Create the conda environment with all Python dependencies
+7. Create the conda environment with all Python dependencies
 
 ```bash
 conda env create -f environment-ubuntu.yml
@@ -53,9 +65,9 @@ conda activate apats-sim
 conda config --add channels conda-forge
 
 # Install all packages
-pip install naturalneighbor
+conda install numpy scipy shapely pandas geopandas matplotlib notebook scikit-learn scikit-image metpy pykrige zope.event lxml black
 
-conda install numpy scipy shapely pandas geopandas matplotlib notebook scikit-learn scikit-image metpy pykrige zope.event lxml
+pip install naturalneighbor
 ```
 
 Make sure Python 3.x.x is callable via "python"
@@ -65,7 +77,7 @@ Make sure Python 3.x.x is callable via "python"
 alias python=python3
 ```
 
-6. Install SUMO
+8. Install SUMO
 
 ```bash
 # Download and install SUMO
