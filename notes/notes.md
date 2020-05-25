@@ -14,7 +14,6 @@
 * Running into some issues regarding the automatic interpolation of the air quality data
 * Will fix these later when I get SUMO and the demand model with TraCI running
 
-
 ## 01.01.2020
 
 * Move Thesis Code from GitLab to GitHub
@@ -46,7 +45,7 @@
     * I feel like this is coming from automatic conversion from the MATSim network. Some links might be broken by the tool.
   * Some routes have a really weird format (experimentalPt) I don't know what it means yet...
 
---- 
+---
 
 * Idea to make sure the edges in the plans are correct: Get the MATSim Berlin Scenario running locally
 * Tried to get MATSim Berlin scenario running locally but ran into some problems:
@@ -72,7 +71,7 @@
 
 * Add conversion of MATSim plans to SUMO trips in order to convert them using DUAROUTER
 * Try to import OSM network into SUMO to check if the coordinates of every node in the MATSim network is equal to the same location of that node in the OSM network
-  * Problem: OSM file is extremely large. Import takes like 30 minutes. 
+  * Problem: OSM file is extremely large. Import takes like 30 minutes.
   * Maybe try to find a smaller version (only roads) of the OSM network
 * TODO:
   * ~~Find smaller OSM network version~~
@@ -80,14 +79,14 @@
 
 ## 20.01.2020
 
-* DUAROUTER works on the generated trips but I feel like the routes are unnecessarily long 
+* DUAROUTER works on the generated trips but I feel like the routes are unnecessarily long
   * I could maybe use it for the OSM approach
 * Try and use `osmGet.py` + `osmBuild` to extract smaller OSM network. Did not really work.
 
 ## 21.01.2020
 
 * Realized the converted MATSim network is horrible and looks really weird in some places
-* Tried to circumvent the "missing connection between edges" error by manually removing some edges from some plans but the error keeps popping up again and again 
+* Tried to circumvent the "missing connection between edges" error by manually removing some edges from some plans but the error keeps popping up again and again
   * -> This is not really a feasable options
 * Successfully used the Overpass API to get only the road network from OSM
 * I was able to open it in SUMO
@@ -163,7 +162,7 @@
 
 ### No edge found
 
-* Sometimes a MATSim Link is split into smaller sub-edges in OSM -> Reason for script not finding an edge because there is a "middle piece" that is not found. 
+* Sometimes a MATSim Link is split into smaller sub-edges in OSM -> Reason for script not finding an edge because there is a "middle piece" that is not found.
 * Solutions
   * Iteratively increase the search radius until a unique overlapping edge is found
 
@@ -176,12 +175,11 @@
     * Choose the one with the smallest bbox
   * Just take a random one from the overlapping ones
 
-
 ### Comment on MATSim Berlin Github Issue
 
 * *netconvert can import MATSim networks directly using option --matsim-files*
   * I did that but there are a lot of warnings and some parts of the network are a bit weird
-  * Also the number of lanes are quite often incorrect. 
+  * Also the number of lanes are quite often incorrect.
   * Tried different matsim import settings from the SUMO docs but nothing gave me better results
 
 * *netconvert can also create MATSim networks from any of the supported input formats using option --matsim-out*
@@ -218,7 +216,8 @@
 * Add general prepare script that downloads all necessary input data (takes a few minutes). This simplifies the simulation preparation.
 * Adding support for more config parameters for the simulation
 
-TODO: 
+TODO:
+
 * ~~Finish the simulation preparation~~
 * ~~Continue working on TraCI~~
 
@@ -235,22 +234,26 @@ TODO:
 
 * Research about rerouting possibilities via TraCI
 * Brainstorming about parameters to tune during simulation:
-  ### Air data
-  * How often do you update the areas? (updateInterval)
-  * Which algorithm is used to interpolate air quality data? (interpolationMethod)
-  * Which algorithm is used to polygonize air quality zone? (polygonizationMethod)
 
-  ### Car data
-  * How many cars are of which emission type? (carEmissionTypeDistribution) (e.g. electro/euro4/etc.) (effects the price they pay)
-  * How many cars are of which car type? (carTypeDistribution) (e.g. small car/suv) (effects the price they pay)
-  * Price sensitivity distribution? 
-    * Mercedes SUV drivers have lower sensitivity than Renault Twingo drivers -> Important for deciding if to reroute the vehicle. 
-    * How many people might even avoid the car at all due to increased travel cost?
+### Air data
+
+* How often do you update the areas? (updateInterval)
+* Which algorithm is used to interpolate air quality data? (interpolationMethod)
+* Which algorithm is used to polygonize air quality zone? (polygonizationMethod)
+
+### Car data
+
+* How many cars are of which emission type? (carEmissionTypeDistribution) (e.g. electro/euro4/etc.) (effects the price they pay)
+* How many cars are of which car type? (carTypeDistribution) (e.g. small car/suv) (effects the price they pay)
+* Price sensitivity distribution?
+  * Mercedes SUV drivers have lower sensitivity than Renault Twingo drivers -> Important for deciding if to reroute the vehicle.
+  * How many people might even avoid the car at all due to increased travel cost?
   
-  ### Pricing data
-  * How many zones do you make? (numberOfZones)
-  * Is the number of zones constant or also dynamic depending on levels of pollution? (dynamicZones)
-  * Price per zone? (pricingScheme)
+### Pricing data
+
+* How many zones do you make? (numberOfZones)
+* Is the number of zones constant or also dynamic depending on levels of pollution? (dynamicZones)
+* Price per zone? (pricingScheme)
 
 ## 21.02.2020
 
@@ -295,6 +298,7 @@ TODO:
 * Implemented nearest neighbor method + created visualizations
 
 Planned interpolation methods:
+
 * Nearest neighbor with Voronoi diagram
 * Triangulated irregular network with Delauny Triangulation
 * Natural neighbor with Voronoi diagram
@@ -328,12 +332,12 @@ Future Work: Implement ANN for interpolation as tested in the paper
 * Work on interpolation
 * Use pyplot contour to create discrete zones
 * Extract the contour polygons from pyplot and convert them into GeoJSON using `shapely` and `geopandas`
-* Performance improvement on IDW 
+* Performance improvement on IDW
 
 * List of parameters to adjust regarding interpolation
   * Number of zones
   * How to divide the levels of PM (Start at 0 or start the zones at minimum of X)
-  * Equally divided zones? 
+  * Equally divided zones?
 
 ## 04.03.2020
 
@@ -348,15 +352,16 @@ Future Work: Implement ANN for interpolation as tested in the paper
 * Another problem: SUMO can't handle polygons with holes so in order to track the movements within the single zones we need to calculate it somehow by subtracting the distances from inner zones from the distances in the outer zones
   * These calculations can be done after the simulation has finished as well as applying different pricing schemes to the zones
 
-TODO: 
-  * ~~Add interpolation config parameters to simulation config file~~
-  * Add more interpolation methods (Kriging and Spline)
-  * ~~Rewrite air data fetching script to accept a date range instead of a single datetime~~ -> Went back to single date to simplify things. Its all for internal use anyway.
-  * ~~Filter extreme/wrong sensor values and do more visual validation on the data/zones~~ -> Filter malfunctioning sensors by hand (look at the map and filter the IDs)
-  * ~~Integrate air data fetching + interpolation into automatic simulation flow~~
-    * ~~Add polygons to SUMO~~
-    * ~~Track vehicles according to polygons/zones~~
-    * ~~Update polygons and continue tracking~~
+TODO:
+
+* ~~Add interpolation config parameters to simulation config file~~
+* Add more interpolation methods (Kriging and Spline)
+* ~~Rewrite air data fetching script to accept a date range instead of a single datetime~~ -> Went back to single date to simplify things. Its all for internal use anyway.
+* ~~Filter extreme/wrong sensor values and do more visual validation on the data/zones~~ -> Filter malfunctioning sensors by hand (look at the map and filter the IDs)
+* ~~Integrate air data fetching + interpolation into automatic simulation flow~~
+  * ~~Add polygons to SUMO~~
+  * ~~Track vehicles according to polygons/zones~~
+  * ~~Update polygons and continue tracking~~
 
 * For the air data: should I take the moment values or hourly/x-minutely averages?
 * Should I do the air data fetching + interpolation before the simulation runs or on the fly?
@@ -383,10 +388,11 @@ TODO:
 
 * Make GeoJSON to Polygon conversion script handle multiple polygons
 * First time that I converted the GeoJSON zones files from the interpolated data into SUMO polygons and imported them
-* Researching more libraries for interpolation methods 
+* Researching more libraries for interpolation methods
   * Found MetPy which seems promising for natural neighbor
 
-TODO: 
+TODO:
+
 * ~~Investigate MetPy library for natural neighbor and other IDW implementations~~
 * ~~Investigate scipy for Spline interpolation~~
 * ~~Investigate sklearn for Kriging/Gaussian Process interpolation~~
@@ -396,7 +402,8 @@ TODO:
 * Added metpy natural neighbor
 * Still troubles with Spline and Kriging
 
-TODO: 
+TODO:
+
 * ~~Add more config parameters to config file~~
 * ~~Make simulation run with all the created zone files~~
 
@@ -406,7 +413,8 @@ TODO:
 * Testing on inner berlin scenario
 * Simulation preparation successfully runs from start to finish and opens up SUMO
 
-TODO: 
+TODO:
+
 * ~~Make TraCI import the zone polygons and change them on every timestep~~
 * ~~Do an actual test run~~
 
@@ -435,7 +443,7 @@ TODO:
 
 * Awesome meeting with Sandro!!!
 * He was super impressed by my progress and what I have achieved <333
-* Got an email from TU Berlin with information about the Corona situation and the consequences for students 
+* Got an email from TU Berlin with information about the Corona situation and the consequences for students
 
 **Due to closed libraries every deadline for any thesis will be extended for one month 🎉**
 
@@ -452,7 +460,8 @@ TODO:
   * Filter these to avoid false data
 * Fix missing data for 00:00:00 timestep by fetching data on the previous day of the simulation date
 
-TODO: 
+TODO:
+
 * Figure out how to calculate the distances in the zones because the SUMO polygons don't have holes in them
   * Does it make sense to calculate distance with in the single polygons or already add them up to the zone? I think the first option.
 * Invest more time into Kriging and Spline?
@@ -464,7 +473,8 @@ TODO:
   * Make use of the TraCI StepListener class
   * Use Publish/Subscribe design pattern to inform certain controllers when the zones have updated
 
-TODO: 
+TODO:
+
 * What to do during static rerouting when zones change? Reroute all vehicles in the simulation or let their route stay as it is?
 
 # 22.03.2020
@@ -503,6 +513,14 @@ TODO:
     * Makes it lot easier to track the driven distances inside the holes and subtract them afterwards
     * Easy to know which edges are within holes and which are not
 
+Before
+
+![](pictures/polygon-holes-in-sumo.png =700x)
+
+After
+
+![](pictures/polygon-holes-in-sumo-fixed.png =700x)
+
 * Do more bug fixing and ensuring TraCI is behaving correctly
 * Refactoring of code to make it easily extendable
 * Now allowing each vehicle to decide which zones to avoid (complexity of this decision can be arbitrary)
@@ -540,7 +558,8 @@ TODO:
 
 QUESTION: What to do in the snapshotZones: false case when zones change? Are vehicles rerouted?
 
-TODO: 
+TODO:
+
 * ~~Test snapshotZones~~
 * ~~Explore SUMO outputs for evaluation~~
 
