@@ -13,7 +13,6 @@ class VehicleController:
     def __init__(self, sim_config, zone_controller):
         self.sim_config = sim_config
         self.zone_controller = zone_controller
-        self.rerouted_vehicles = []
         self.new_vehicles = []
         self.vehicle_vars = {}
         self.polygon_subs = {}
@@ -81,9 +80,13 @@ class VehicleController:
         # Insert more complex logic into rerouting_decisions.py to here to change the 'decision' variable
         if "reroutingDecisionMode" in self.sim_config:
             mode = self.sim_config["reroutingDecisionMode"]
-            if mode == "percentage":
-                p = self.sim_config["reroutingPercentage"]
-                decision = rerouting_decisions.percentage(p=p)
+            if mode == "percent":
+                if "reroutingPercent" not in self.sim_config:
+                    raise ValueError(
+                        '"reroutingDecisionMode: percent" requires the configuration key "reroutingPercent"'
+                    )
+                p = self.sim_config["reroutingPercent"]
+                decision = rerouting_decisions.percent(p=p)
             if mode == "random":
                 decision = rerouting_decisions.random()
 
@@ -116,6 +119,7 @@ class VehicleController:
         # Disable rerouting through the rerouting device so that vehicle will stay on this route
         if self.sim_config["periodicRerouting"]:
             traci.vehicle.setParameter(vid, "device.rerouting.period", "0")
+            pass
 
     def static_rerouting(self, zone_update=False):
         vehicleToCheck = []
@@ -287,40 +291,37 @@ class VehicleController:
             decision = True
             if "nonDepartDecisionMode" in self.sim_config:
                 mode = self.sim_config["nonDepartDecisionMode"]
-                if mode == "percentage":
-                    p = 1 - self.sim_config["nonDepartPercentage"]
-                    decision = depart_decisions.percentage(p=p)
+                if mode == "percent":
+                    if "nonDepartPercent" not in self.sim_config:
+                        raise ValueError(
+                            '"nonDepartDecisionMode: percent" requires the configuration key "nonDepartPercent"'
+                        )
+                    p = 1 - self.sim_config["nonDepartPercent"]
+                    decision = depart_decisions.percent(p=p)
                 if mode == "random":
                     decision = depart_decisions.random()
 
             return decision
 
-        simulation_sub = traci.simulation.getSubscriptionResults()
-
-        # Can't remove them from the LOADED list because otherwise
-        # the simulation will end because of while condition in simulation_controller
-        # Would be better though because then the vehicles
-        # will not show in the output files (even not for 1 step)
-
-        # loaded_vehicles = simulation_sub[tc.VAR_LOADED_VEHICLES_IDS]
-        # for vid in loaded_vehicles:
-        #     if not should_vehicle_depart():
-        #         traci.vehicle.remove(vid)
-        #         log(f"Remove vehicle {vid} due to non-depart")
-        #         continue
-
-        departed_vehicles = simulation_sub[tc.VAR_DEPARTED_VEHICLES_IDS]
-
-        self.new_vehicles = []
-
-        for vid in departed_vehicles:
+        loaded_vehicles = traci.simulation.getLoadedIDList()
+        self.new_vehicles = traci.simulation.getDepartedIDList()
+        for vid in loaded_vehicles:
             if not should_vehicle_depart():
                 traci.vehicle.remove(vid)
                 log(f"Remove vehicle {vid} due to non-depart")
-                continue
-            else:
-                self.new_vehicles.append(vid)
 
+        # Alternative implementation for the non-depart
+        # Problem: Removed vehicles have already departed and will still show up in the output files
+        # departed_vehicles = traci.simulation.getDepartedIDList()
+        # self.new_vehicles = []
+        # for vid in departed_vehicles:
+        #     if not should_vehicle_depart():
+        #         traci.vehicle.remove(vid)
+        #         log(f"Remove vehicle {vid} due to non-depart")
+        #     else:
+        #         self.new_vehicles.append(vid)
+
+        for vid in self.new_vehicles:
             # Store the timestep when a vehicle was inserted into the simulation
             traci.vehicle.setParameter(
                 vid, "zone_timestep", self.zone_controller.current_timestep

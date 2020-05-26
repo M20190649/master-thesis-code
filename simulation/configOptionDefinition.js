@@ -95,12 +95,12 @@ const configOptionDefinitions = [
     type: String,
     description: `Determines according to which strategy the agent should make their decision to reroute`,
     required: true,
-    possibleValues: ["percentage", "random"],
+    possibleValues: ["none", "percent", "random"],
   },
   {
-    name: "reroutingPercentage",
+    name: "reroutingPercent",
     type: Number,
-    description: `For reroutingDecisionMode = "percentage": Determines what percentage of agent decide to reroute`,
+    description: `For reroutingDecisionMode = "percent": Determines what percent of agent decide to reroute`,
     required: false,
   },
   {
@@ -126,12 +126,12 @@ const configOptionDefinitions = [
     type: String,
     description: `Determines according to which strategy the agent should make their decision if to use the car or not`,
     required: true,
-    possibleValues: ["percentage", "random"],
+    possibleValues: ["none", "percent", "random"],
   },
   {
-    name: "nonDepartPercentage",
+    name: "nonDepartPercent",
     type: Number,
-    description: `For nonDepartDecisionMode = "percentage": Determines what percentage of agent decide not to use the car`,
+    description: `For nonDepartDecisionMode = "percent": Determines what percent of agent decide not to use the car`,
     required: false,
   },
 ]

@@ -19,11 +19,6 @@ class SimulationController:
         # Connect
         traci.start(self.traci_config["sumo_cmd"])
 
-        # We need the ID list of departed vehicles every step so we add a subscription
-        traci.simulation.subscribe(
-            [tc.VAR_LOADED_VEHICLES_IDS, tc.VAR_DEPARTED_VEHICLES_IDS]
-        )
-
         # Load initial zones
         self.zone_controller.update_zones(0)
 
@@ -35,7 +30,7 @@ class SimulationController:
         t = time.time()
         # Run the simulation
         step = 0
-        while traci.simulation.getMinExpectedNumber() > 0:
+        while step < 24 * 60 * 60 or traci.simulation.getMinExpectedNumber() > 0:
             # log(f"Before step {step}")
             traci.simulationStep(step)
             # log(f"After step {step}")

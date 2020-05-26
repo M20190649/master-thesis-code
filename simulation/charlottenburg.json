@@ -22,12 +22,12 @@
     1000
   ],
   "periodicRerouting": true,
-  "zoneRerouting": "dynamic",
-  "reroutingDecisionMode": "percentage",
-  "reroutingPercentage": 1,
-  "dynamicReroutingDistance": 200,
+  "zoneRerouting": "static",
+  "reroutingDecisionMode": "percent",
+  "reroutingPercent": 1,
+  "dynamicReroutingDistance": 30000,
   "snapshotZones": true,
   "rerouteOnZoneUpdate": false,
-  "nonDepartDecisionMode": "percentage",
-  "nonDepartPercentage": 0
+  "nonDepartDecisionMode": "percent",
+  "nonDepartPercent": 0
 }

@@ -23,11 +23,11 @@
   ],
   "periodicRerouting": true,
   "zoneRerouting": "none",
-  "reroutingDecisionMode": "percentage",
-  "reroutingPercentage": 1,
+  "reroutingDecisionMode": "percent",
+  "reroutingPercent": 1,
   "dynamicReroutingDistance": 500,
   "snapshotZones": true,
   "rerouteOnZoneUpdate": false,
-  "nonDepartDecisionMode": "percentage",
-  "nonDepartPercentage": 0
+  "nonDepartDecisionMode": "percent",
+  "nonDepartPercent": 0
 }

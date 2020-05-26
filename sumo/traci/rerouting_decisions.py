@@ -2,11 +2,12 @@ import random as rand
 import traci
 
 
-def percentage(p=1):
+def percent(p=1):
+    if p < 0 or p > 1:
+        raise ValueError('"reroutingPercent" needs to be between 0 and 1 (inclusive)')
     x = rand.random()
     return x < p
 
 
 def random():
-    x = rand.random()
-    return x < 0.5
+    return percent(0.5)
