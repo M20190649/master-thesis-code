@@ -98,7 +98,7 @@ function onOpenTag(node, options) {
     currentTrip.type = vTypeIdTemplate.replace("{emissionClass}", ec)
 
     // Do some modifications if necessary
-    // currentTrip.depart = (totalTripCounter - filteredTripCounter) * 60
+    // currentTrip.depart = totalTripCounter * 60
 
     tripsXML.element("trip", currentTrip)
     totalTripCounter += 1
