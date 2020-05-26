@@ -14,6 +14,7 @@ class VehicleController:
         self.sim_config = sim_config
         self.zone_controller = zone_controller
         self.non_depart_people = set()
+        self.reroute_people = set()
         self.new_vehicles = []
         self.vehicle_vars = {}
         self.polygon_subs = {}
@@ -78,6 +79,13 @@ class VehicleController:
 
         decision = True
 
+        # Check if this person has decided to reroute
+        person, counter = vid.split("_")
+        if person in self.reroute_people:
+            decision = True
+            traci.vehicle.setParameter(vid, "rerouting_decision", str(decision))
+            return decision
+
         # Insert more complex logic into rerouting_decisions.py to here to change the 'decision' variable
         if "reroutingDecisionMode" in self.sim_config:
             mode = self.sim_config["reroutingDecisionMode"]
@@ -91,8 +99,10 @@ class VehicleController:
             if mode == "random":
                 decision = rerouting_decisions.random()
 
-        traci.vehicle.setParameter(vid, "rerouting_decision", str(decision))
+        if decision:
+            self.reroute_people.add(person)
 
+        traci.vehicle.setParameter(vid, "rerouting_decision", str(decision))
         return decision
 
     def has_vehicle_rerouted(self, vid):
