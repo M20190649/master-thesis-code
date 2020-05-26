@@ -13,6 +13,7 @@ class VehicleController:
     def __init__(self, sim_config, zone_controller):
         self.sim_config = sim_config
         self.zone_controller = zone_controller
+        self.non_depart_people = set()
         self.new_vehicles = []
         self.vehicle_vars = {}
         self.polygon_subs = {}
@@ -303,21 +304,37 @@ class VehicleController:
 
             return decision
 
+        # This implementation for non-depart required me to
+        # add step < 24 * 60 * 60 to the while condition in simulation_controller
         loaded_vehicles = traci.simulation.getLoadedIDList()
         self.new_vehicles = traci.simulation.getDepartedIDList()
         for vid in loaded_vehicles:
+            person, counter = vid.split("_")
+            if person in self.non_depart_people:
+                traci.vehicle.remove(vid)
+                log(f"Remove vehicle {vid} due to non-depart")
+                continue
+
             if not should_vehicle_depart():
                 traci.vehicle.remove(vid)
                 log(f"Remove vehicle {vid} due to non-depart")
+                self.non_depart_people.add(person)
 
         # Alternative implementation for the non-depart
         # Problem: Removed vehicles have already departed and will still show up in the output files
         # departed_vehicles = traci.simulation.getDepartedIDList()
         # self.new_vehicles = []
         # for vid in departed_vehicles:
+        #     person, counter = vid.split("_")
+        #     if person in self.non_depart_people:
+        #         traci.vehicle.remove(vid)
+        #         log(f"Remove vehicle {vid} due to non-depart")
+        #         continue
+
         #     if not should_vehicle_depart():
         #         traci.vehicle.remove(vid)
         #         log(f"Remove vehicle {vid} due to non-depart")
+        #         self.non_depart_people.add(person)
         #     else:
         #         self.new_vehicles.append(vid)
 
