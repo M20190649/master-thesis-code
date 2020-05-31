@@ -47,6 +47,7 @@ exports.runBash = (bash, options = defaultOptions) => {
     child.stderr.pipe(process.stderr)
 
     child.on("close", resolve)
+    child.on("error", error => console.error(error))
   })
 }
 
