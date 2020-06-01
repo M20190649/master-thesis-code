@@ -36,19 +36,11 @@ const CLIOptions = parseCLIOptions(optionDefinitions)
 
 let initialTripCounter = 0
 let totalTripCounter = 0
+
+const vTypeIdTemplate = "type-{emissionClass}"
 const emissionClassPerPerson = {}
 
-const tripsXML = XMLBuilder.create("trips")
-
-// Add vehicle types with all supported emission types to begining of trips file
-// Assign vTypes to individual persons according to official distribution later during parsing process
-const vTypeIdTemplate = "type-{emissionClass}"
-getAllEmissionClasses().forEach(ec => {
-  tripsXML.element("vType", {
-    id: vTypeIdTemplate.replace("{emissionClass}", ec),
-    emissionClass: `HBEFA3/${ec}`,
-  })
-})
+let tripsXML = null
 
 function onError(err) {
   console.error(err)
@@ -100,7 +92,7 @@ function onOpenTag(node, options) {
     // Do some modifications if necessary
     // currentTrip.depart = totalTripCounter * 60
 
-    tripsXML.element("trip", currentTrip)
+    tripsXML.element("trip", currentTrip).up()
     totalTripCounter += 1
   }
 }
@@ -111,18 +103,43 @@ async function filterTrips(callerOptions) {
 
     validateOptions(options, optionDefinitions)
 
+    // Stream-writing XML is faster and saves memory
+    const streamWriter = fs.createWriteStream(options.output)
+    tripsXML = XMLBuilder.begin(
+      {
+        writer: { pretty: true },
+      },
+      // onData callback
+      chunk => streamWriter.write(chunk),
+      // onEnd callback
+      () => {
+        streamWriter.close()
+        console.log("Initial trips: ", initialTripCounter)
+        console.log()
+        console.log("Filtered trips: ", initialTripCounter - totalTripCounter)
+        console.log()
+        console.log("Total trips: ", totalTripCounter)
+        resolve()
+      }
+    )
+    tripsXML.declaration()
+    tripsXML.element("trips")
+
+    // Add vehicle types with all supported emission types to begining of trips file
+    // Assign vTypes to individual persons according to official distribution later during parsing process
+    getAllEmissionClasses().forEach(ec => {
+      tripsXML
+        .element("vType", {
+          id: vTypeIdTemplate.replace("{emissionClass}", ec),
+          emissionClass: `HBEFA3/${ec}`,
+        })
+        .up()
+    })
+
     const saxStream = sax.createStream(true)
     saxStream.on("error", onError)
     saxStream.on("opentag", node => onOpenTag(node, options))
-    saxStream.on("end", () => {
-      console.log("Initial trips: ", initialTripCounter)
-      console.log()
-      console.log("Filtered trips: ", initialTripCounter - totalTripCounter)
-      console.log()
-      console.log("Total trips: ", totalTripCounter)
-      fs.writeFileSync(options.output, tripsXML.end({ pretty: true }))
-      resolve()
-    })
+    saxStream.on("end", () => tripsXML.up().end())
 
     const tripsFile = join(
       __dirname,

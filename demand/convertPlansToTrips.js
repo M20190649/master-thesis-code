@@ -73,7 +73,7 @@ const currentTrip = {
   },
 }
 let timeTracker = 0
-const tripsXML = XMLBuilder.create("trips")
+let tripsXML = null
 
 function onError(err) {
   console.error(err)
@@ -171,7 +171,7 @@ function onOpenTag(node, options) {
         attributes.to = currentTrip.to
       }
 
-      tripsXML.element("trip", attributes)
+      tripsXML.element("trip", attributes).up()
       totalTripCounter += 1
       parseRoute = false
     }
@@ -229,22 +229,35 @@ async function convertPlans(callerOptions) {
 
     validateOptions(options, optionDefinitions)
 
+    // Stream-writing XML is faster and saves memory
+    const streamWriter = fs.createWriteStream(options.output)
+    tripsXML = XMLBuilder.begin(
+      {
+        writer: { pretty: true },
+      },
+      // onData callback
+      chunk => streamWriter.write(chunk),
+      // onEnd callback
+      () => {
+        streamWriter.close()
+        console.log(`Total number of agents: ${personCounter}`)
+        console.log(`Total number of trips: ${totalTripCounter}`)
+        // console.log("Parsing done!")
+        resolve()
+      }
+    )
+
+    tripsXML.declaration()
+    tripsXML.element("trips")
+
     const parser = sax.parser(true)
     parser.onerror = onError
     parser.onopentag = node => onOpenTag(node, options)
     parser.onclosetag = onCloseTag
 
     lineReader = new LineByLineReader(options.plans)
-    lineReader.on("line", line => {
-      parser.write(line)
-    })
-    lineReader.on("end", () => {
-      fs.writeFileSync(options.output, tripsXML.end({ pretty: true }))
-      console.log(`Total number of agents: ${personCounter}`)
-      console.log(`Total number of trips: ${totalTripCounter}`)
-      // console.log("Parsing done!")
-      resolve()
-    })
+    lineReader.on("line", line => parser.write(line))
+    lineReader.on("end", () => tripsXML.up().end())
   })
 }
 
