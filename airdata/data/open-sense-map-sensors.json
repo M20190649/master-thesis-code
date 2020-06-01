@@ -24303,6 +24303,65 @@
       ],
       "model": "custom",
       "lastMeasurementAt": "2020-05-20T19:15:31.167Z"
+    },
+    {
+      "_id": "5eceaaa5d0545b001cd1bf55",
+      "createdAt": "2020-05-27T18:00:05.006Z",
+      "updatedAt": "2020-05-31T14:55:52.417Z",
+      "name": "Fischtal",
+      "currentLocation": {
+        "type": "Point",
+        "coordinates": [
+          13.25605,
+          52.44356
+        ],
+        "timestamp": "2020-05-27T19:36:41.626Z"
+      },
+      "exposure": "indoor",
+      "sensors": [
+        {
+          "title": "Temperatur",
+          "unit": "°C",
+          "sensorType": "HDC1008",
+          "icon": "osem-thermometer",
+          "_id": "5eceaaa5d0545b001cd1bf5a",
+          "lastMeasurement": "5ed3c578d0545b001ce29a2a"
+        },
+        {
+          "title": "rel. Luftfeuchte",
+          "unit": "%",
+          "sensorType": "HDC1008",
+          "icon": "osem-humidity",
+          "_id": "5eceaaa5d0545b001cd1bf59",
+          "lastMeasurement": "5ed3c578d0545b001ce29a2b"
+        },
+        {
+          "title": "Luftdruck",
+          "unit": "hPa",
+          "sensorType": "BMP280",
+          "icon": "osem-barometer",
+          "_id": "5eceaaa5d0545b001cd1bf58",
+          "lastMeasurement": "5ed3c578d0545b001ce29a2c"
+        },
+        {
+          "title": "Beleuchtungsstärke",
+          "unit": "lx",
+          "sensorType": "TSL45315",
+          "icon": "osem-brightness",
+          "_id": "5eceaaa5d0545b001cd1bf57",
+          "lastMeasurement": "5ed3c578d0545b001ce29a2d"
+        },
+        {
+          "title": "UV-Intensität",
+          "unit": "μW/cm²",
+          "sensorType": "VEML6070",
+          "icon": "osem-brightness",
+          "_id": "5eceaaa5d0545b001cd1bf56",
+          "lastMeasurement": "5ed3c578d0545b001ce29a2e"
+        }
+      ],
+      "model": "homeWifi",
+      "lastMeasurementAt": "2020-05-31T14:55:52.406Z"
     }
   ]
 }
