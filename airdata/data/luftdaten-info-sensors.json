@@ -30651,6 +30651,41 @@
           "id": 1326912690
         }
       ]
+    },
+    {
+      "sensordatavalues": [
+        {
+          "id": 1378909310,
+          "value": "44.00",
+          "value_type": "temperature"
+        },
+        {
+          "id": 1378909312,
+          "value": "20.70",
+          "value_type": "humidity"
+        }
+      ],
+      "sensor": {
+        "sensor_type": {
+          "name": "DHT22",
+          "id": 9,
+          "manufacturer": "various"
+        },
+        "id": 6728,
+        "pin": "7"
+      },
+      "location": {
+        "indoor": 0,
+        "exact_location": 0,
+        "country": "DE",
+        "longitude": "13.43",
+        "latitude": "52.504",
+        "id": 3401,
+        "altitude": "36.9"
+      },
+      "id": 640783432,
+      "sampling_rate": null,
+      "timestamp": "2020-06-01 14:05:10"
     }
   ]
 }
