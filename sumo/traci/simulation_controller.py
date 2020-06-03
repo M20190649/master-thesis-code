@@ -19,19 +19,24 @@ class SimulationController:
         # Connect
         traci.start(self.traci_config["sumo_cmd"])
 
-        # Load initial zones
-        self.zone_controller.update_zones(0)
-
-        # Prepare initial vehicles
-        self.vehicle_controller.prepare_new_vehicles()
-
         interval = self.sim_config["zoneUpdateInterval"] * 60
 
         t = time.time()
+        zone_time = 0
         step_time = 0
         prep_time = 0
         tracking_time = 0
         rerouting_time = 0
+
+        # Load initial zones
+        x = time.time()
+        self.zone_controller.update_zones(0)
+        zone_time += time.time() - x
+
+        # Prepare initial vehicles
+        x = time.time()
+        self.vehicle_controller.prepare_new_vehicles()
+        prep_time += time.time() - x
 
         # Run the simulation
         step = 0
@@ -60,6 +65,7 @@ class SimulationController:
                 log(
                     f"\nPrevious timestep ({prev_timestep} - {curr_timestep}) simulation time: {format(time.time() - t, '.3f')}s"
                 )
+                log(f"Zone update time: {format(zone_time, '.3f')}s")
                 log(f"Simulation step time: {format(step_time, '.3f')}s")
                 log(f"Vehicle preparation time: {format(prep_time, '.3f')}s")
                 log(f"Vehicle tracking time: {format(tracking_time, '.3f')}s")
@@ -70,10 +76,13 @@ class SimulationController:
                 prep_time = 0
                 tracking_time = 0
                 rerouting_time = 0
+                zone_time = 0
                 # if step == interval * 4:
                 #     sys.exit()
 
+                x = time.time()
                 self.zone_controller.update_zones(step)
+                zone_time += time.time() - x
                 # log(f"After zone update")
 
             if self.sim_config["zoneRerouting"] != "none":
