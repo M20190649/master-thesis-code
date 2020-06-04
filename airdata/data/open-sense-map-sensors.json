@@ -24362,6 +24362,370 @@
       ],
       "model": "homeWifi",
       "lastMeasurementAt": "2020-05-31T14:55:52.406Z"
+    },
+    {
+      "_id": "5ec950aed0545b001ca9a93e",
+      "createdAt": "2020-05-23T16:34:54.107Z",
+      "updatedAt": "2020-06-04T13:54:25.128Z",
+      "name": "Habichtwiese",
+      "currentLocation": {
+        "timestamp": "2020-05-23T16:34:54.101Z",
+        "coordinates": [
+          13.0289,
+          52.419273
+        ],
+        "type": "Point"
+      },
+      "grouptag": "SRE Boxen",
+      "exposure": "outdoor",
+      "sensors": [
+        {
+          "icon": "osem-thermometer",
+          "title": "Temperature",
+          "unit": "°C",
+          "sensorType": "BME280",
+          "_id": "5ec950aed0545b001ca9a942",
+          "lastMeasurement": "5ed8fd0fd0545b001ce5e8f0"
+        },
+        {
+          "icon": "osem-barometer",
+          "title": "Luftdruck",
+          "unit": "hPa",
+          "sensorType": "BME280",
+          "_id": "5ec950aed0545b001ca9a941",
+          "lastMeasurement": "5ed8fd0fd0545b001ce5e8ef"
+        },
+        {
+          "icon": "osem-humidity",
+          "title": "Luftfeuchte",
+          "unit": "%",
+          "sensorType": "BME280",
+          "_id": "5ec950aed0545b001ca9a940",
+          "lastMeasurement": "5ed8fd0fd0545b001ce5e8f1"
+        },
+        {
+          "icon": "osem-brightness",
+          "title": "Lichtstärke",
+          "unit": "lux",
+          "sensorType": "BH1750",
+          "_id": "5ec950aed0545b001ca9a93f",
+          "lastMeasurement": "5ed8fd0fd0545b001ce5e8f2"
+        }
+      ],
+      "model": "custom",
+      "lastMeasurementAt": "2020-06-04T13:54:23.580Z",
+      "description": "echte Daten von der Habichtwiese. \nvia Lora - TheThingsNetwork  - eigener Server - oSM API",
+      "image": "5ec950aed0545b001ca9a93e_qb9hia.jpg"
+    },
+    {
+      "_id": "5ed769a8d0545b001c4b60ab",
+      "createdAt": "2020-06-03T09:13:12.838Z",
+      "updatedAt": "2020-06-03T09:13:12.838Z",
+      "name": "SMRTR",
+      "currentLocation": {
+        "timestamp": "2020-06-03T09:13:12.832Z",
+        "coordinates": [
+          13.330129,
+          52.494694,
+          10
+        ],
+        "type": "Point"
+      },
+      "grouptag": "MAKERLAB4.0",
+      "exposure": "outdoor",
+      "sensors": [
+        {
+          "icon": "osem-thermometer",
+          "title": "Temperatur",
+          "unit": "°C",
+          "sensorType": "BMP280",
+          "_id": "5ed769a8d0545b001c4b60b1"
+        },
+        {
+          "icon": "osem-thermometer",
+          "title": "Temperatur",
+          "unit": "°C",
+          "sensorType": "HDC1080",
+          "_id": "5ed769a8d0545b001c4b60b0"
+        },
+        {
+          "icon": "osem-brightness",
+          "title": "Beleuchtungsstärke",
+          "unit": "lx",
+          "sensorType": "TSL45315",
+          "_id": "5ed769a8d0545b001c4b60af"
+        },
+        {
+          "icon": "osem-barometer",
+          "title": "Luftdruck",
+          "unit": "hPa",
+          "sensorType": "BMP280",
+          "_id": "5ed769a8d0545b001c4b60ae"
+        },
+        {
+          "icon": "osem-thermometer",
+          "title": "Temperatur",
+          "unit": "°C",
+          "sensorType": "BMP280",
+          "_id": "5ed769a8d0545b001c4b60ad"
+        },
+        {
+          "icon": "osem-brightness",
+          "title": "UV-Intensität",
+          "unit": "μW/cm²",
+          "sensorType": "VEML6070",
+          "_id": "5ed769a8d0545b001c4b60ac"
+        }
+      ],
+      "model": "custom"
+    },
+    {
+      "_id": "5ed76a4bd0545b001c4b9fe2",
+      "createdAt": "2020-06-03T09:15:55.018Z",
+      "updatedAt": "2020-06-03T09:15:55.018Z",
+      "name": "PBERG",
+      "currentLocation": {
+        "timestamp": "2020-06-03T09:15:55.014Z",
+        "coordinates": [
+          13.436109,
+          52.538988,
+          40
+        ],
+        "type": "Point"
+      },
+      "grouptag": "MAKERLAB4.0",
+      "exposure": "outdoor",
+      "sensors": [
+        {
+          "icon": "osem-thermometer",
+          "title": "Temperatur",
+          "unit": "°C",
+          "sensorType": "HDC1080",
+          "_id": "5ed76a4bd0545b001c4b9fe8"
+        },
+        {
+          "icon": "osem-humidity",
+          "title": "rel. Luftfeuchte",
+          "unit": "%",
+          "sensorType": "HDC1080",
+          "_id": "5ed76a4bd0545b001c4b9fe7"
+        },
+        {
+          "icon": "osem-barometer",
+          "title": "Luftdruck",
+          "unit": "hPa",
+          "sensorType": "BMP280",
+          "_id": "5ed76a4bd0545b001c4b9fe6"
+        },
+        {
+          "icon": "osem-thermometer",
+          "title": "Temperatur",
+          "unit": "°C",
+          "sensorType": "BMP280",
+          "_id": "5ed76a4bd0545b001c4b9fe5"
+        },
+        {
+          "icon": "osem-brightness",
+          "title": "Beleuchtungsstärke",
+          "unit": "lx",
+          "sensorType": "TSL45315",
+          "_id": "5ed76a4bd0545b001c4b9fe4"
+        },
+        {
+          "icon": "osem-brightness",
+          "title": "UV-Intensität",
+          "unit": "μW/cm²",
+          "sensorType": "VEML6070",
+          "_id": "5ed76a4bd0545b001c4b9fe3"
+        }
+      ],
+      "model": "custom"
+    },
+    {
+      "_id": "5ed76b35d0545b001c4bf92a",
+      "createdAt": "2020-06-03T09:19:49.720Z",
+      "updatedAt": "2020-06-03T09:19:49.720Z",
+      "name": "MORITZ",
+      "currentLocation": {
+        "timestamp": "2020-06-03T09:19:49.717Z",
+        "coordinates": [
+          13.402929,
+          52.473517,
+          8
+        ],
+        "type": "Point"
+      },
+      "grouptag": "MAKERLAB4.0",
+      "exposure": "outdoor",
+      "sensors": [
+        {
+          "icon": "osem-thermometer",
+          "title": "Temperatur",
+          "unit": "°C",
+          "sensorType": "HDC1080",
+          "_id": "5ed76b35d0545b001c4bf930"
+        },
+        {
+          "icon": "osem-humidity",
+          "title": "rel. Luftfeuchte",
+          "unit": "%",
+          "sensorType": "HDC1080",
+          "_id": "5ed76b35d0545b001c4bf92f"
+        },
+        {
+          "icon": "osem-barometer",
+          "title": "Luftdruck",
+          "unit": "hPa",
+          "sensorType": "BMP280",
+          "_id": "5ed76b35d0545b001c4bf92e"
+        },
+        {
+          "icon": "osem-thermometer",
+          "title": "Temperatur",
+          "unit": "°C",
+          "sensorType": "BMP280",
+          "_id": "5ed76b35d0545b001c4bf92d"
+        },
+        {
+          "icon": "osem-brightness",
+          "title": "Beleuchtungsstärke",
+          "unit": "lx",
+          "sensorType": "TSL45315",
+          "_id": "5ed76b35d0545b001c4bf92c"
+        },
+        {
+          "icon": "osem-brightness",
+          "title": "UV-Intensität",
+          "unit": "μW/cm²",
+          "sensorType": "VEML6070",
+          "_id": "5ed76b35d0545b001c4bf92b"
+        }
+      ],
+      "model": "custom"
+    },
+    {
+      "_id": "5ed76bb1d0545b001c4c295b",
+      "createdAt": "2020-06-03T09:21:53.641Z",
+      "updatedAt": "2020-06-03T09:21:53.641Z",
+      "name": "AMSEE",
+      "currentLocation": {
+        "timestamp": "2020-06-03T09:21:53.638Z",
+        "coordinates": [
+          13.463724,
+          52.554017,
+          3
+        ],
+        "type": "Point"
+      },
+      "grouptag": "MAKERLAB4.0",
+      "exposure": "mobile",
+      "sensors": [
+        {
+          "icon": "osem-thermometer",
+          "title": "Temperatur",
+          "unit": "°C",
+          "sensorType": "HDC1080",
+          "_id": "5ed76bb1d0545b001c4c2961"
+        },
+        {
+          "icon": "osem-humidity",
+          "title": "rel. Luftfeuchte",
+          "unit": "%",
+          "sensorType": "HDC1080",
+          "_id": "5ed76bb1d0545b001c4c2960"
+        },
+        {
+          "icon": "osem-barometer",
+          "title": "Luftdruck",
+          "unit": "hPa",
+          "sensorType": "BMP280",
+          "_id": "5ed76bb1d0545b001c4c295f"
+        },
+        {
+          "icon": "osem-thermometer",
+          "title": "Temperatur",
+          "unit": "°C",
+          "sensorType": "BMP280",
+          "_id": "5ed76bb1d0545b001c4c295e"
+        },
+        {
+          "icon": "osem-brightness",
+          "title": "Beleuchtungsstärke",
+          "unit": "lx",
+          "sensorType": "TSL45315",
+          "_id": "5ed76bb1d0545b001c4c295d"
+        },
+        {
+          "icon": "osem-brightness",
+          "title": "UV-Intensität",
+          "unit": "μW/cm²",
+          "sensorType": "VEML6070",
+          "_id": "5ed76bb1d0545b001c4c295c"
+        }
+      ],
+      "model": "custom"
+    },
+    {
+      "_id": "5ed76fd9d0545b001c4dd40d",
+      "createdAt": "2020-06-03T09:39:37.198Z",
+      "updatedAt": "2020-06-03T09:39:37.198Z",
+      "name": "Anzengruber Playground",
+      "currentLocation": {
+        "timestamp": "2020-06-03T09:39:37.190Z",
+        "coordinates": [
+          13.440051,
+          52.480767,
+          8
+        ],
+        "type": "Point"
+      },
+      "grouptag": "MAKERLAB4.0",
+      "exposure": "indoor",
+      "sensors": [
+        {
+          "icon": "osem-thermometer",
+          "title": "Temperatur",
+          "unit": "°C",
+          "sensorType": "HDC1080",
+          "_id": "5ed76fd9d0545b001c4dd413"
+        },
+        {
+          "icon": "osem-humidity",
+          "title": "rel. Luftfeuchte",
+          "unit": "%",
+          "sensorType": "HDC1080",
+          "_id": "5ed76fd9d0545b001c4dd412"
+        },
+        {
+          "icon": "osem-barometer",
+          "title": "Luftdruck",
+          "unit": "hPa",
+          "sensorType": "BMP280",
+          "_id": "5ed76fd9d0545b001c4dd411"
+        },
+        {
+          "icon": "osem-thermometer",
+          "title": "Temperatur",
+          "unit": "°C",
+          "sensorType": "BMP280",
+          "_id": "5ed76fd9d0545b001c4dd410"
+        },
+        {
+          "icon": "osem-brightness",
+          "title": "Beleuchtungsstärke",
+          "unit": "lx",
+          "sensorType": "TSL45315",
+          "_id": "5ed76fd9d0545b001c4dd40f"
+        },
+        {
+          "icon": "osem-brightness",
+          "title": "UV-Intensität",
+          "unit": "μW/cm²",
+          "sensorType": "VEML6070",
+          "_id": "5ed76fd9d0545b001c4dd40e"
+        }
+      ],
+      "model": "custom"
     }
   ]
 }
