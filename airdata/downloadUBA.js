@@ -2,7 +2,7 @@ const fs = require("fs")
 const { join } = require("path")
 const axios = require("axios")
 
-const Measurement = require("./Measurement")
+const { Sensor, SensorMeasurement } = require("./Models")
 const { getDateString } = require("../shared/helpers")
 
 const ubaSensorFile = fs.readFileSync(
@@ -138,20 +138,23 @@ async function downloadFromUmweltBundesamtAPI(options) {
 
     const values = data.map(([key, value]) => value[2])
 
+    const sensorObj = new Sensor(
+      id,
+      filepath,
+      "uba",
+      parseFloat(long),
+      parseFloat(lat)
+    )
+
     for (let i = 0; i < allTimesteps.length; i += 1) {
       const timestep = allTimesteps[i].toISOString()
 
-      const measurementObj = new Measurement(
-        id,
-        values[i],
-        "uba",
-        parseFloat(lat),
-        parseFloat(long)
-      )
+      const sensorMeasurementObj = new SensorMeasurement(sensorObj, values[i])
+
       if (measurements[timestep]) {
-        measurements[timestep].push(measurementObj)
+        measurements[timestep].push(sensorMeasurementObj)
       } else {
-        measurements[timestep] = [measurementObj]
+        measurements[timestep] = [sensorMeasurementObj]
       }
     }
   }

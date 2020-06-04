@@ -4,7 +4,7 @@ const fs = require("fs")
 const { join } = require("path")
 const axios = require("axios")
 
-const Measurement = require("./Measurement")
+const { Sensor, Measurement } = require("./Models")
 const { getDateString, downloadFile } = require("../shared/helpers")
 
 const openSenseMapSensors = require("./data/open-sense-map-sensors.json")
@@ -14,39 +14,20 @@ const pollutantMapping = {
   "PM2.5": "PM2.5",
 }
 
-function aggregateMeasurements(filepath, options) {
+function getMeasurements(filepath) {
   const csv = fs.readFileSync(filepath, "utf8")
   const rows = csv.split("\n")
-  const header = rows.shift().split(";")
 
-  const values = {}
-  let currentTimeStep = new Date(
-    options.date.getTime() + options.timestep * 60 * 1000
-  )
-  let sum = 0
-  let counter = 0
-  for (const row of rows) {
-    const [ts, value] = row.split(",")
-    const tsDate = new Date(ts)
-    if (tsDate <= currentTimeStep) {
-      // When measurement value is within current timestep add it to sum
-      sum += parseFloat(value)
-      counter += 1
-    } else {
-      // We reached the end of the time step
-      // Calculate the average and add it to the result object
-      if (sum > 0 && counter > 0) {
-        values[currentTimeStep.toISOString()] = sum / counter
-      }
-
-      currentTimeStep = new Date(
-        currentTimeStep.getTime() + options.timestep * 60 * 1000
-      )
-      sum = 0
-      counter = 0
-    }
+  if (rows[rows.length - 1] === "") {
+    rows.pop()
   }
-  return values
+
+  const measurements = rows.map(row => {
+    const [ts, value] = row.split(",")
+    return new Measurement(value, new Date(ts))
+  })
+
+  return measurements
 }
 
 function getArchiveURLFromSenseBox(box, options) {
@@ -121,15 +102,13 @@ async function downloadOpenSenseMapArchive(options) {
   // Now we know which sensors report PM values in the given bbox
 
   // Measurements object will contain a list of sensors with their averages values for every timestep
-  const measurements = {}
+  const sensors = []
   let fileReuseCount = 0
   let newFileCount = 0
   let errorCounter = 0
   let timeoutCounter = 0
   const dateString = getDateString(options.date)
   for (const s of filteredSensors) {
-    let timestepValues = {}
-
     const archiveURL = getArchiveURLFromSenseBox(s, options)
     // Check if sensor data for the given date has already been downloaded
     const dir = join(__dirname, "data", dateString, "openSenseMap")
@@ -155,7 +134,7 @@ async function downloadOpenSenseMapArchive(options) {
         if (timeoutCounter > timeoutLimit) {
           console.log(`More than ${timeoutLimit} archive requests timed out`)
           console.log("Stopping the download from OpenSenseMap")
-          return measurements
+          return sensors
         }
 
         errorCounter += 1
@@ -165,29 +144,24 @@ async function downloadOpenSenseMapArchive(options) {
       fileReuseCount += 1
     }
 
-    timestepValues = aggregateMeasurements(filepath, options)
-
-    for (const [timestep, value] of Object.entries(timestepValues)) {
-      const measurementObj = new Measurement(
-        s._id,
-        value,
-        "openSenseMap",
-        parseFloat(s.currentLocation.coordinates[1]),
-        parseFloat(s.currentLocation.coordinates[0])
-      )
-      if (measurements[timestep]) {
-        measurements[timestep].push(measurementObj)
-      } else {
-        measurements[timestep] = [measurementObj]
-      }
-    }
+    const sensorObj = new Sensor(
+      s._id,
+      filepath,
+      "openSenseMap",
+      parseFloat(s.currentLocation.coordinates[0]),
+      parseFloat(s.currentLocation.coordinates[1])
+    )
+    sensors.push(sensorObj)
   }
 
   console.log(`Reused archive files: ${fileReuseCount}`)
   console.log(`New downloaded archive files: ${newFileCount}`)
   console.log(`Archive sensor data errors: ${errorCounter}`)
 
-  return measurements
+  return sensors
 }
 
-module.exports = downloadOpenSenseMapArchive
+module.exports = {
+  download: downloadOpenSenseMapArchive,
+  getMeasurements,
+}

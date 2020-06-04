@@ -2,7 +2,7 @@ const fs = require("fs")
 const { join } = require("path")
 const axios = require("axios")
 
-const Measurement = require("./Measurement")
+const { Sensor, Measurement } = require("./Models")
 const { getDateString, downloadFile } = require("../shared/helpers")
 
 const luftdatenInfoSensors = require("./data/luftdaten-info-sensors.json")
@@ -15,44 +15,28 @@ const pollutantMapping = {
 // These sensors were handpicked from http://deutschland.maps.sensor.community/
 const malfunctioningSensors = [2115, 12695, 24509]
 
-function aggregateMeasurements(filepath, options) {
+function getMeasurements(filepath, options) {
   const pollutant = pollutantMapping[options.pollutant]
   const csv = fs.readFileSync(filepath, "utf8")
   const rows = csv.split("\n")
   const header = rows.shift().split(";")
 
-  const values = {}
-  let currentTimeStep = new Date(
-    options.date.getTime() + options.timestep * 60 * 1000
-  )
-  let sum = 0
-  let counter = 0
-  for (const row of rows) {
+  if (rows[rows.length - 1] === "") {
+    rows.pop()
+  }
+
+  const measurements = rows.map(row => {
     const rowData = row.split(";").reduce((data, value, i) => {
       data[header[i]] = value
       return data
     }, {})
+    return new Measurement(
+      rowData[pollutant],
+      new Date(`${rowData.timestamp}Z`)
+    )
+  })
 
-    const tsDate = new Date(`${rowData.timestamp}Z`)
-    if (tsDate <= currentTimeStep) {
-      // When measurement value is within current timestep add it to sum
-      sum += parseFloat(rowData[pollutant])
-      counter += 1
-    } else {
-      // We reached the end of the time step
-      // Calculate the average and add it to the result object
-      if (sum > 0 && counter > 0) {
-        values[currentTimeStep.toISOString()] = sum / counter
-      }
-
-      currentTimeStep = new Date(
-        currentTimeStep.getTime() + options.timestep * 60 * 1000
-      )
-      sum = 0
-      counter = 0
-    }
-  }
-  return values
+  return measurements
 }
 
 async function downloadFromLuftdatenInfoArchive(options) {
@@ -135,15 +119,13 @@ async function downloadFromLuftdatenInfoArchive(options) {
   // Now we know which sensors report PM values in the given bbox
 
   // Measurements object will contain a list of sensors with their averages values for every timestep
-  const measurements = {}
+  const sensors = []
   let fileReuseCount = 0
   let newFileCount = 0
   let errorCounter = 0
   let timeoutCounter = 0
   const dateString = getDateString(options.date)
   for (const s of filteredSensors) {
-    let timestepValues = {}
-
     const filename = `${s.sensor.sensor_type.name.toLowerCase()}_sensor_${
       s.sensor.id
     }.csv`
@@ -176,7 +158,7 @@ async function downloadFromLuftdatenInfoArchive(options) {
         if (timeoutCounter > timeoutLimit) {
           console.log(`More than ${timeoutLimit} archive requests timed out`)
           console.log("Stopping the download from Luftdaten.info")
-          return measurements
+          return sensors
         }
 
         errorCounter += 1
@@ -186,29 +168,24 @@ async function downloadFromLuftdatenInfoArchive(options) {
       fileReuseCount += 1
     }
 
-    timestepValues = aggregateMeasurements(filepath, options)
-
-    for (const [timestep, value] of Object.entries(timestepValues)) {
-      const measurementObj = new Measurement(
-        s.sensor.id,
-        value,
-        "luftdaten.info",
-        parseFloat(s.location.latitude),
-        parseFloat(s.location.longitude)
-      )
-      if (measurements[timestep]) {
-        measurements[timestep].push(measurementObj)
-      } else {
-        measurements[timestep] = [measurementObj]
-      }
-    }
+    const sensorObj = new Sensor(
+      s.sensor.id,
+      filepath,
+      "luftdaten.info",
+      parseFloat(s.location.longitude),
+      parseFloat(s.location.latitude)
+    )
+    sensors.push(sensorObj)
   }
 
   console.log(`Reused archive files: ${fileReuseCount}`)
   console.log(`New downloaded archive files: ${newFileCount}`)
   console.log(`Archive sensor data errors: ${errorCounter}`)
 
-  return measurements
+  return sensors
 }
 
-module.exports = downloadFromLuftdatenInfoArchive
+module.exports = {
+  download: downloadFromLuftdatenInfoArchive,
+  getMeasurements,
+}
