@@ -10,6 +10,7 @@
   "pollutant": "PM10",
   "simulationDate": "02.02.2020",
   "zoneUpdateInterval": 60,
+  "averagingInterval": 60,
   "interpolationMethod": "idw",
   "zones": [
     0,
