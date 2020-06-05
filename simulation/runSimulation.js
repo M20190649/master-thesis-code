@@ -107,6 +107,8 @@ async function run() {
     bbox: config.bbox,
     date: config.simulationDate,
     timestep: config.zoneUpdateInterval,
+    "avg-interval": config.averagingInterval,
+    "avg-method": config.averagingMethod,
     output: rawAirData,
   })
   console.log("Done!\n")

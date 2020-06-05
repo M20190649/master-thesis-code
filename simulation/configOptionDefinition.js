@@ -59,6 +59,23 @@ const configOptionDefinitions = [
     type: Number,
     description: `The interval determines how often the air pollution zones should be updated (in minutes)`,
     required: true,
+    maxValue: 24 * 60,
+    minValue: 1,
+  },
+  {
+    name: "averagingInterval",
+    type: Number,
+    description: `The interval determines for how much time prior to the zone timestep measurements are being consired for the averaged value`,
+    required: true,
+    maxValue: 24 * 60,
+    minValue: 1,
+  },
+  {
+    name: "averagingMethod",
+    type: String,
+    description: `The averging method used for averaging all measurements within the averaging interval`,
+    required: true,
+    possibleValues: ["simple", "weighted"],
   },
   {
     name: "interpolationMethod",
@@ -102,12 +119,16 @@ const configOptionDefinitions = [
     type: Number,
     description: `For reroutingDecisionMode = "percent": Determines what percent of agent decide to reroute`,
     required: false,
+    minValue: 0,
+    maxValue: 1,
   },
   {
     name: "dynamicReroutingDistance",
     type: Number,
     description: `Determines the distance for when agents should be dynamically rerouted (Requires zoneRerouting to be "dynamic")`,
     required: false,
+    minValue: 1,
+    maxValue: Infinity,
   },
   {
     name: "snapshotZones",
@@ -133,6 +154,8 @@ const configOptionDefinitions = [
     type: Number,
     description: `For nonDepartDecisionMode = "percent": Determines what percent of agent decide not to use the car`,
     required: false,
+    minValue: 0,
+    maxValue: 1,
   },
 ]
 

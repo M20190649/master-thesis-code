@@ -11,6 +11,7 @@
   "simulationDate": "02.03.2020",
   "zoneUpdateInterval": 60,
   "averagingInterval": 60,
+  "averagingMethod": "weighted",
   "interpolationMethod": "idw",
   "zones": [
     0,

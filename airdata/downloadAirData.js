@@ -41,12 +41,26 @@ const optionDefinitions = [
     type: Number,
     description: "Determines the interval of the averaged values",
     required: true,
+    maxValue: 24 * 60,
+    minValue: 1,
   },
   {
     name: "avg-interval",
     type: Number,
     description:
       "Determines the range of values that are considered for the average",
+    required: false,
+    maxValue: 24 * 60,
+    minValue: 1,
+  },
+  {
+    name: "avg-method",
+    type: String,
+    description:
+      "Determines what type of average should be used for the values within the avg-interval",
+    required: false,
+    defaultValue: "weighted",
+    possibleValues: ["simple", "weighted"],
   },
   {
     name: "output",
@@ -180,7 +194,7 @@ async function downloadAirData(callerOptions) {
       }
 
       // Aggregate measurements for every timestep
-      const avgMethod = "simple"
+      const avgMethod = options["avg-method"]
 
       for (const timestep of allTimesteps) {
         const avgIntervalStart = new Date(
@@ -206,9 +220,16 @@ async function downloadAirData(callerOptions) {
           const n = relevantMeasurements.length
           avgValue = sum / n
         } else if (avgMethod === "weighted") {
-          const sum = relevantMeasurements.reduce((sum, m) => sum + m.value, 0)
-          const n = relevantMeasurements.length
-          avgValue = sum / n
+          // Inverse "time distance" to timestep
+          const timesToIntervalEnd = relevantMeasurements.map(
+            m => 1 / (timestep.getTime() - m.timestamp.getTime() || 1)
+          )
+          const weightSum = timesToIntervalEnd.reduce((sum, t) => sum + t, 0)
+          const weights = timesToIntervalEnd.map(t => t / weightSum)
+          avgValue = relevantMeasurements.reduce(
+            (avg, m, i) => avg + m.value * weights[i],
+            0
+          )
         }
 
         timestepMeasurements[timestep.toISOString()].push(
