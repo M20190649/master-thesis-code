@@ -56,15 +56,16 @@ exports.runBash = (bash, options = defaultOptions) => {
 exports.validateOptions = (options, optionDefinitions) => {
   for (const option of optionDefinitions) {
     const { name } = option
+    const value = options[name]
 
-    if (option.required && options[name] === undefined) {
+    if (option.required && value === undefined) {
       throw new Error(
         `Missing required option: "${name}". Run the --help command for more information.`
       )
     }
 
-    if (option.possibleValues && options[name] !== undefined) {
-      if (!option.possibleValues.includes(options[name])) {
+    if (option.possibleValues && value !== undefined) {
+      if (!option.possibleValues.includes(value)) {
         throw new Error(
           `Option "${name}" must be one of the following: ${option.possibleValues.join(
             ", "
@@ -73,8 +74,28 @@ exports.validateOptions = (options, optionDefinitions) => {
       }
     }
 
-    if (options[name] === undefined && option.defaultValue !== undefined) {
+    if (value === undefined && option.defaultValue !== undefined) {
       options[name] = option.defaultValue
+    }
+
+    if (
+      typeof value === "number" &&
+      option.maxValue !== undefined &&
+      value > option.maxValue
+    ) {
+      throw new Error(
+        `Option "${name}" can not be greater than ${option.maxValue}`
+      )
+    }
+
+    if (
+      typeof value === "number" &&
+      option.minValue !== undefined &&
+      value < option.minValue
+    ) {
+      throw new Error(
+        `Option "${name}" can not be smaller than ${option.minValue}`
+      )
     }
   }
 }
