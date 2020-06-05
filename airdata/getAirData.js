@@ -77,7 +77,7 @@ const parseDate = dateString => {
 
 const CLIOptions = parseCLIOptions(optionDefinitions)
 
-async function downloadAirData(callerOptions) {
+async function getAirData(callerOptions) {
   const options = { ...CLIOptions, ...callerOptions }
 
   validateOptions(options, optionDefinitions)
@@ -129,6 +129,7 @@ async function downloadAirData(callerOptions) {
     timestepMeasurements[ts.toISOString()] = []
   })
 
+  // Every source should have two functions: "download" and "getMeasurements"
   const sources = {
     luftdatenInfo,
     openSenseMap,
@@ -150,12 +151,14 @@ async function downloadAirData(callerOptions) {
     const adaptedOptions = { ...options, date: previousDate }
     const prevDaySensors = await download(adaptedOptions)
 
+    // Get data for the simulation day
     console.log(
       `\nFetching data from specified day (${getDateString(options.date)})...\n`
     )
     const simDaySensors = await download(options)
     console.log()
 
+    // Analyse how many sensors we have for each day
     const prevDaySensorIds = prevDaySensors.map(s => s.id)
     const simDaySensorIds = simDaySensors.map(s => s.id)
     const overlappingSensorIds = simDaySensorIds.filter(id =>
@@ -169,10 +172,12 @@ async function downloadAirData(callerOptions) {
     console.log(`Total sensors: ${allSensorsIds.size}`)
     console.log()
 
+    // Go through all available sensors
     for (const sensorId of allSensorsIds) {
       let sensor = null
       const measurements = []
 
+      // Get measurments for previous day if they exist
       const prevDaySensor = prevDaySensors.find(s => s.id === sensorId)
       if (prevDaySensor) {
         const prevDayMeasurements = getMeasurements(
@@ -183,6 +188,7 @@ async function downloadAirData(callerOptions) {
         sensor = prevDaySensor
       }
 
+      // Get measurments for simulation day if they exist
       const simDaySensor = simDaySensors.find(s => s.id === sensorId)
       if (simDaySensor) {
         const simDayMeasurements = getMeasurements(
@@ -200,6 +206,7 @@ async function downloadAirData(callerOptions) {
         const avgIntervalStart = new Date(
           timestep.getTime() - options["avg-interval"] * 60 * 1000
         )
+        // Find all measurements that should be considered for the current timestep (= within averging interval)
         const relevantMeasurements = measurements.filter(
           m => m.timestamp > avgIntervalStart && m.timestamp <= timestep
         )
@@ -213,6 +220,7 @@ async function downloadAirData(callerOptions) {
           throw new Error("UBA Measurement is not unique")
         }
 
+        // Calculate an average value using all relevant measurements
         let avgValue = -1
 
         if (avgMethod === "simple") {
@@ -232,6 +240,7 @@ async function downloadAirData(callerOptions) {
           )
         }
 
+        // Add averaged measurement to list of all measurements for each timestep
         timestepMeasurements[timestep.toISOString()].push(
           new SensorMeasurement(sensor, avgValue)
         )
@@ -239,6 +248,7 @@ async function downloadAirData(callerOptions) {
     }
   }
 
+  // Write all the measurements to a GeoJSON
   const allOutputFiles = []
   for (const timestep of allTimesteps) {
     const measurements = timestepMeasurements[timestep.toISOString()]
@@ -296,7 +306,7 @@ async function downloadAirData(callerOptions) {
 }
 
 if (CLIOptions.run) {
-  downloadAirData()
+  getAirData()
 }
 
-module.exports = downloadAirData
+module.exports = getAirData
