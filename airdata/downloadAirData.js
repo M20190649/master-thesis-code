@@ -8,10 +8,10 @@ const {
   getTimeString,
   pad,
 } = require("../shared/helpers")
+const { SensorMeasurement } = require("./Models")
 const luftdatenInfo = require("./luftdatenInfo")
 const openSenseMap = require("./openSenseMap")
-const { SensorMeasurement } = require("./Models")
-const downloadUBA = require("./downloadUBA")
+const umweltBundesamt = require("./umweltBundesamt")
 
 const optionDefinitions = [
   {
@@ -91,8 +91,8 @@ async function downloadAirData(callerOptions) {
       )
 
     if (filesForGivenDate.length > 0) {
-      console.log("Air data for given date already exists")
-      return filesForGivenDate.map(file => join(outputDir, file))
+      // console.log("Air data for given date already exists")
+      // return filesForGivenDate.map(file => join(outputDir, file))
     }
   }
 
@@ -118,6 +118,10 @@ async function downloadAirData(callerOptions) {
   const sources = {
     luftdatenInfo,
     openSenseMap,
+  }
+
+  if (options.timestep === 60 && options["avg-interval"] === 60) {
+    sources.uba = umweltBundesamt
   }
 
   for (const source of Object.values(sources)) {
@@ -152,6 +156,7 @@ async function downloadAirData(callerOptions) {
     console.log()
 
     for (const sensorId of allSensorsIds) {
+      let sensor = null
       const measurements = []
 
       const prevDaySensor = prevDaySensors.find(s => s.id === sensorId)
@@ -161,6 +166,7 @@ async function downloadAirData(callerOptions) {
           options
         )
         measurements.push(...prevDayMeasurements)
+        sensor = prevDaySensor
       }
 
       const simDaySensor = simDaySensors.find(s => s.id === sensorId)
@@ -170,6 +176,7 @@ async function downloadAirData(callerOptions) {
           options
         )
         measurements.push(...simDayMeasurements)
+        sensor = simDaySensor
       }
 
       // Aggregate measurements for every timestep
@@ -180,14 +187,20 @@ async function downloadAirData(callerOptions) {
           timestep.getTime() - options["avg-interval"] * 60 * 1000
         )
         const relevantMeasurements = measurements.filter(
-          m => m.timestamp >= avgIntervalStart && m.timestamp <= timestep
+          m => m.timestamp > avgIntervalStart && m.timestamp <= timestep
         )
 
         if (relevantMeasurements.length === 0) {
           continue
         }
 
+        if (source === "uba" && relevantMeasurements.length !== 1) {
+          // UBA only provides hourly averaged values so there should only be one
+          throw new Error("UBA Measurement is not unique")
+        }
+
         let avgValue = -1
+
         if (avgMethod === "simple") {
           const sum = relevantMeasurements.reduce((sum, m) => sum + m.value, 0)
           const n = relevantMeasurements.length
@@ -199,36 +212,10 @@ async function downloadAirData(callerOptions) {
         }
 
         timestepMeasurements[timestep.toISOString()].push(
-          new SensorMeasurement(simDaySensor, avgValue)
+          new SensorMeasurement(sensor, avgValue)
         )
       }
     }
-  }
-
-  if (options.timestep === 60 && options["avg-interval"] === 60) {
-    const previousDate = new Date(options.date - 24 * 60 * 60 * 1000)
-    console.log(
-      `Fetching data from the previous day (${getDateString(
-        previousDate
-      )})...\n`
-    )
-    const adaptedOptions = { ...options, date: previousDate }
-    const prevDayUBAData = await downloadUBA(adaptedOptions)
-    const firstTimestep = allTimesteps[0].toISOString()
-    timestepMeasurements[firstTimestep].push(...prevDayUBAData[firstTimestep])
-
-    console.log(
-      `\nFetching data from specified day (${getDateString(options.date)})...\n`
-    )
-    const simDayUBAData = await downloadUBA(options)
-
-    for (const timestep of Object.keys(simDayUBAData)) {
-      if (timestepMeasurements[timestep]) {
-        timestepMeasurements[timestep].push(...simDayUBAData[timestep])
-      }
-    }
-
-    console.log()
   }
 
   const allOutputFiles = []

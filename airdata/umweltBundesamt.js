@@ -2,7 +2,7 @@ const fs = require("fs")
 const { join } = require("path")
 const axios = require("axios")
 
-const { Sensor, SensorMeasurement } = require("./Models")
+const { Sensor, Measurement } = require("./Models")
 const { getDateString } = require("../shared/helpers")
 
 const ubaSensorFile = fs.readFileSync(
@@ -19,21 +19,31 @@ const pollutantMapping = {
   NO2: 5,
 }
 
-function getAllTimesteps(options) {
-  const timesteps = []
+function getMeasurements(filepath) {
+  const ubaData = JSON.parse(fs.readFileSync(filepath, "utf-8"))
 
-  let currentTimestep = new Date(
-    options.date.getTime() + options.timestep * 60 * 1000
+  const [id, dataObj] = Object.entries(ubaData.data)[0]
+  const data = Object.values(dataObj)
+
+  const valueIndex = 2
+  const dateIndex = 3
+
+  // Transform data into Date object
+  data.forEach(d => {
+    const [dateString, timeString] = d[dateIndex].split(" ")
+    const date = new Date(`${dateString}T${timeString}Z`)
+    d[dateIndex] = date
+  })
+
+  // There seems to be a bug that the measurements are not sorted sometimes
+  // eslint-disable-next-line no-loop-func
+  data.sort((a, b) => a[dateIndex] - b[dateIndex])
+
+  const measurements = data.map(
+    d => new Measurement(d[valueIndex], d[dateIndex])
   )
-  const endTimestep = new Date(options.date.getTime() + 24 * 60 * 60 * 1000)
-  while (currentTimestep <= endTimestep) {
-    timesteps.push(currentTimestep)
-    currentTimestep = new Date(
-      currentTimestep.getTime() + options.timestep * 60 * 1000
-    )
-  }
 
-  return timesteps
+  return measurements
 }
 
 async function downloadFromUmweltBundesamtAPI(options) {
@@ -42,7 +52,7 @@ async function downloadFromUmweltBundesamtAPI(options) {
   const [south, west, north, east] = options.bbox
   const timeout = 20000
 
-  const measurements = {}
+  const sensors = []
   let fileReuseCount = 0
   let newFileCount = 0
   let errorCounter = 0
@@ -72,8 +82,6 @@ async function downloadFromUmweltBundesamtAPI(options) {
       fs.mkdirSync(dir, { recursive: true })
     }
 
-    let ubaData = null
-
     if (!fs.existsSync(filepath)) {
       // Data has not been downloaded yet
       try {
@@ -101,42 +109,14 @@ async function downloadFromUmweltBundesamtAPI(options) {
         if (timeoutCounter > timeoutLimit) {
           console.log(`More than ${timeoutLimit} archive requests timed out`)
           console.log("Stopping the download from Umwelt Bundesamt")
-          return measurements
+          return sensors
         }
 
         errorCounter += 1
       }
+    } else {
+      fileReuseCount += 1
     }
-
-    if (!ubaData) {
-      if (!fs.existsSync(filepath)) {
-        console.log(`No data for sensor ${code}_${name.replace(" ", "_")}`)
-        continue
-      } else {
-        ubaData = JSON.parse(fs.readFileSync(filepath, "utf-8"))
-        fileReuseCount += 1
-      }
-    }
-
-    const allTimesteps = getAllTimesteps(options)
-
-    const data = Object.entries(ubaData.data[id])
-
-    if (Object.keys(data).length === 0) {
-      console.log(`No data for sensor ${code}_${name.replace(" ", "_")}`)
-      continue
-    }
-
-    // There seems to be a bug that the measurements are not sorted sometimes
-    // eslint-disable-next-line no-loop-func
-    data.sort((a, b) => {
-      const aTime = parseFloat(a[0].split(" ")[1].split(":")[0])
-      const bTime = parseFloat(b[0].split(" ")[1].split(":")[0])
-
-      return aTime - bTime
-    })
-
-    const values = data.map(([key, value]) => value[2])
 
     const sensorObj = new Sensor(
       id,
@@ -145,25 +125,17 @@ async function downloadFromUmweltBundesamtAPI(options) {
       parseFloat(long),
       parseFloat(lat)
     )
-
-    for (let i = 0; i < allTimesteps.length; i += 1) {
-      const timestep = allTimesteps[i].toISOString()
-
-      const sensorMeasurementObj = new SensorMeasurement(sensorObj, values[i])
-
-      if (measurements[timestep]) {
-        measurements[timestep].push(sensorMeasurementObj)
-      } else {
-        measurements[timestep] = [sensorMeasurementObj]
-      }
-    }
+    sensors.push(sensorObj)
   }
 
   console.log(`Reused archive files: ${fileReuseCount}`)
   console.log(`New downloaded files: ${newFileCount}`)
   console.log(`Sensor data errors: ${errorCounter}`)
 
-  return measurements
+  return sensors
 }
 
-module.exports = downloadFromUmweltBundesamtAPI
+module.exports = {
+  download: downloadFromUmweltBundesamtAPI,
+  getMeasurements,
+}
