@@ -105,8 +105,8 @@ async function downloadAirData(callerOptions) {
       )
 
     if (filesForGivenDate.length > 0) {
-      // console.log("Air data for given date already exists")
-      // return filesForGivenDate.map(file => join(outputDir, file))
+      console.log("Air data for given date already exists")
+      return filesForGivenDate.map(file => join(outputDir, file))
     }
   }
 
