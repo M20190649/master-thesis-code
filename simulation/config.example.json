@@ -7,11 +7,11 @@
     52.5182,
     13.344
   ],
-  "pollutant": "PM10",
   "simulationDate": "02.02.2020",
+  "pollutant": "PM10",
   "zoneUpdateInterval": 60,
-  "averagingInterval": 60,
   "averagingMethod": "weighted",
+  "averagingInterval": 60,
   "interpolationMethod": "idw",
   "zones": [
     0,
