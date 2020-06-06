@@ -31019,6 +31019,41 @@
         "latitude": "52.48294470000"
       },
       "sampling_rate": null
+    },
+    {
+      "id": 701602292,
+      "sensordatavalues": [
+        {
+          "id": 1509999577,
+          "value": "14.70",
+          "value_type": "temperature"
+        },
+        {
+          "id": 1509999604,
+          "value": "99.90",
+          "value_type": "humidity"
+        }
+      ],
+      "location": {
+        "country": "DE",
+        "latitude": "52.392",
+        "id": 10776,
+        "indoor": 0,
+        "exact_location": 0,
+        "longitude": "13.406",
+        "altitude": "48.3"
+      },
+      "timestamp": "2020-06-06 21:14:17",
+      "sampling_rate": null,
+      "sensor": {
+        "sensor_type": {
+          "id": 9,
+          "manufacturer": "various",
+          "name": "DHT22"
+        },
+        "id": 21057,
+        "pin": "7"
+      }
     }
   ]
 }
