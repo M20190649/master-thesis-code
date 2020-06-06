@@ -75,7 +75,7 @@ const configOptionDefinitions = [
     type: String,
     description: `The averging method used for averaging all measurements within the averaging interval`,
     required: true,
-    possibleValues: ["simple", "weighted"],
+    possibleValues: ["none", "simple", "weighted"],
   },
   {
     name: "interpolationMethod",

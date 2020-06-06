@@ -60,7 +60,7 @@ const optionDefinitions = [
       "Determines what type of average should be used for the values within the avg-interval",
     required: false,
     defaultValue: "weighted",
-    possibleValues: ["simple", "weighted"],
+    possibleValues: ["none", "simple", "weighted"],
   },
   {
     name: "output",
@@ -221,12 +221,15 @@ async function getAirData(callerOptions) {
         }
 
         // Calculate an average value using all relevant measurements
-        let avgValue = -1
+        let value = -1
 
-        if (avgMethod === "simple") {
+        if (avgMethod === "none") {
+          const mostRecentValue = relevantMeasurements.pop().value
+          value = mostRecentValue
+        } else if (avgMethod === "simple") {
           const sum = relevantMeasurements.reduce((sum, m) => sum + m.value, 0)
           const n = relevantMeasurements.length
-          avgValue = sum / n
+          value = sum / n
         } else if (avgMethod === "weighted") {
           // Inverse "time distance" to timestep
           const timesToIntervalEnd = relevantMeasurements.map(
@@ -234,7 +237,7 @@ async function getAirData(callerOptions) {
           )
           const weightSum = timesToIntervalEnd.reduce((sum, t) => sum + t, 0)
           const weights = timesToIntervalEnd.map(t => t / weightSum)
-          avgValue = relevantMeasurements.reduce(
+          value = relevantMeasurements.reduce(
             (avg, m, i) => avg + m.value * weights[i],
             0
           )
@@ -242,7 +245,7 @@ async function getAirData(callerOptions) {
 
         // Add averaged measurement to list of all measurements for each timestep
         timestepMeasurements[timestep.toISOString()].push(
-          new SensorMeasurement(sensor, avgValue)
+          new SensorMeasurement(sensor, value)
         )
       }
     }
