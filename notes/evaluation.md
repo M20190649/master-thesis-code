@@ -100,6 +100,8 @@
 
   * Eine Simulation zum Vergleich welchen Effekt das auf den Traffic hat
 
+  * Wird eh nur besser und ein Wert ist schwer zu begründen
+
 * 1 Simulation extrem dynamisch (z.B. Updateintervall auf 5 Minuten und 30 Zonen)
 
 ## Pricing
