@@ -24726,6 +24726,98 @@
         }
       ],
       "model": "custom"
+    },
+    {
+      "_id": "5ee09fc394874a001d2bb72e",
+      "createdAt": "2020-06-10T08:54:27.198Z",
+      "updatedAt": "2020-06-10T12:18:58.045Z",
+      "name": "Oekosys-8",
+      "currentLocation": {
+        "timestamp": "2020-06-10T08:54:27.193Z",
+        "coordinates": [
+          13.316043,
+          52.456711
+        ],
+        "type": "Point"
+      },
+      "grouptag": "Bestäuberprojekt",
+      "exposure": "outdoor",
+      "sensors": [
+        {
+          "title": "Temperatur",
+          "unit": "°C",
+          "sensorType": "HDC1080",
+          "icon": "osem-thermometer",
+          "_id": "5ee09fc394874a001d2bb737",
+          "lastMeasurement": "5ee0cfb226737600128eb964"
+        },
+        {
+          "title": "rel. Luftfeuchte",
+          "unit": "%",
+          "sensorType": "HDC1080",
+          "icon": "osem-humidity",
+          "_id": "5ee09fc394874a001d2bb736",
+          "lastMeasurement": "5ee0cfb226737600128eb965"
+        },
+        {
+          "title": "Luftdruck",
+          "unit": "hPa",
+          "sensorType": "BMP280",
+          "icon": "osem-barometer",
+          "_id": "5ee09fc394874a001d2bb735",
+          "lastMeasurement": "5ee0cfb226737600128eb966"
+        },
+        {
+          "title": "Beleuchtungsstärke",
+          "unit": "lx",
+          "sensorType": "TSL45315",
+          "icon": "osem-brightness",
+          "_id": "5ee09fc394874a001d2bb734",
+          "lastMeasurement": "5ee0cfb226737600128eb967"
+        },
+        {
+          "title": "UV-Intensität",
+          "unit": "μW/cm²",
+          "sensorType": "VEML6070",
+          "icon": "osem-brightness",
+          "_id": "5ee09fc394874a001d2bb733",
+          "lastMeasurement": "5ee0cfb226737600128eb968"
+        },
+        {
+          "title": "PM10",
+          "unit": "µg/m³",
+          "sensorType": "SDS 011",
+          "icon": "osem-cloud",
+          "_id": "5ee09fc394874a001d2bb732",
+          "lastMeasurement": "5ee0cfb226737600128eb969"
+        },
+        {
+          "title": "PM2.5",
+          "unit": "µg/m³",
+          "sensorType": "SDS 011",
+          "icon": "osem-cloud",
+          "_id": "5ee09fc394874a001d2bb731",
+          "lastMeasurement": "5ee0cfb226737600128eb96a"
+        },
+        {
+          "title": "Bodenfeuchte",
+          "unit": "%",
+          "sensorType": "SMT50",
+          "icon": "osem-thermometer",
+          "_id": "5ee09fc394874a001d2bb730",
+          "lastMeasurement": "5ee0cfb226737600128eb96c"
+        },
+        {
+          "title": "Bodentemperatur",
+          "unit": "°C",
+          "sensorType": "SMT50",
+          "icon": "osem-thermometer",
+          "_id": "5ee09fc394874a001d2bb72f",
+          "lastMeasurement": "5ee0cfb226737600128eb96b"
+        }
+      ],
+      "model": "homeV2Lora",
+      "lastMeasurementAt": "2020-06-10T12:18:57.057Z"
     }
   ]
 }

@@ -31054,6 +31054,190 @@
         "id": 21057,
         "pin": "7"
       }
+    },
+    {
+      "sensor": {
+        "pin": "7",
+        "id": 30282,
+        "sensor_type": {
+          "id": 9,
+          "name": "DHT22",
+          "manufacturer": "various"
+        }
+      },
+      "timestamp": "2020-06-10 12:16:05",
+      "sampling_rate": null,
+      "sensordatavalues": [
+        {
+          "value": "19.40",
+          "id": 1606858048,
+          "value_type": "temperature"
+        },
+        {
+          "value": "75.00",
+          "id": 1606858049,
+          "value_type": "humidity"
+        }
+      ],
+      "id": 746512199,
+      "location": {
+        "id": 18988,
+        "indoor": 0,
+        "altitude": "60.4",
+        "latitude": "52.62520929709",
+        "exact_location": 1,
+        "country": "DE",
+        "longitude": "13.50065767765"
+      }
+    },
+    {
+      "sensor": {
+        "pin": "7",
+        "id": 13850,
+        "sensor_type": {
+          "id": 9,
+          "name": "DHT22",
+          "manufacturer": "various"
+        }
+      },
+      "timestamp": "2020-06-10 12:14:55",
+      "sampling_rate": null,
+      "sensordatavalues": [
+        {
+          "value": "25.30",
+          "id": 1606837437,
+          "value_type": "temperature"
+        },
+        {
+          "value": "1.00",
+          "id": 1606837444,
+          "value_type": "humidity"
+        }
+      ],
+      "id": 746502620,
+      "location": {
+        "id": 6995,
+        "indoor": 0,
+        "altitude": "57.1",
+        "latitude": "52.618",
+        "exact_location": 0,
+        "country": "DE",
+        "longitude": "13.488"
+      }
+    },
+    {
+      "sensor": {
+        "pin": "1",
+        "id": 13849,
+        "sensor_type": {
+          "id": 14,
+          "name": "SDS011",
+          "manufacturer": "Nova Fitness"
+        }
+      },
+      "timestamp": "2020-06-10 12:14:55",
+      "sampling_rate": null,
+      "sensordatavalues": [
+        {
+          "value": "1.80",
+          "id": 1606837309,
+          "value_type": "P1"
+        },
+        {
+          "value": "0.80",
+          "id": 1606837311,
+          "value_type": "P2"
+        }
+      ],
+      "id": 746502560,
+      "location": {
+        "id": 6995,
+        "indoor": 0,
+        "altitude": "57.1",
+        "latitude": "52.618",
+        "exact_location": 0,
+        "country": "DE",
+        "longitude": "13.488"
+      }
+    },
+    {
+      "sensor": {
+        "pin": "11",
+        "id": 39003,
+        "sensor_type": {
+          "id": 17,
+          "name": "BME280",
+          "manufacturer": "Bosch"
+        }
+      },
+      "timestamp": "2020-06-10 12:14:08",
+      "sampling_rate": null,
+      "sensordatavalues": [
+        {
+          "value": "28.12",
+          "id": 1606822748,
+          "value_type": "temperature"
+        },
+        {
+          "value": "100908.59",
+          "id": 1606822749,
+          "value_type": "pressure"
+        },
+        {
+          "value": "25.26",
+          "id": 1606822751,
+          "value_type": "humidity"
+        },
+        {
+          "value": 101380.85,
+          "value_type": "pressure_at_sealevel"
+        }
+      ],
+      "id": 746495807,
+      "location": {
+        "id": 24775,
+        "indoor": 0,
+        "altitude": "41.2",
+        "latitude": "52.294",
+        "exact_location": 0,
+        "country": "DE",
+        "longitude": "13.456"
+      }
+    },
+    {
+      "sensor": {
+        "pin": "1",
+        "id": 39002,
+        "sensor_type": {
+          "id": 14,
+          "name": "SDS011",
+          "manufacturer": "Nova Fitness"
+        }
+      },
+      "timestamp": "2020-06-10 12:14:08",
+      "sampling_rate": null,
+      "sensordatavalues": [
+        {
+          "value": "4.32",
+          "id": 1606822659,
+          "value_type": "P1"
+        },
+        {
+          "value": "0.98",
+          "id": 1606822661,
+          "value_type": "P2"
+        }
+      ],
+      "id": 746495765,
+      "location": {
+        "id": 24775,
+        "indoor": 0,
+        "altitude": "41.2",
+        "latitude": "52.294",
+        "exact_location": 0,
+        "country": "DE",
+        "longitude": "13.456"
+      }
     }
   ]
 }
