@@ -31238,6 +31238,41 @@
         "country": "DE",
         "longitude": "13.456"
       }
+    },
+    {
+      "sampling_rate": null,
+      "location": {
+        "indoor": 0,
+        "longitude": "13.548",
+        "exact_location": 0,
+        "latitude": "52.524",
+        "country": "DE",
+        "altitude": "56.0",
+        "id": 10369
+      },
+      "sensordatavalues": [
+        {
+          "value": "21.80",
+          "value_type": "temperature",
+          "id": 1636242085
+        },
+        {
+          "value": "99.90",
+          "value_type": "humidity",
+          "id": 1636242091
+        }
+      ],
+      "sensor": {
+        "sensor_type": {
+          "name": "DHT22",
+          "manufacturer": "various",
+          "id": 9
+        },
+        "pin": "7",
+        "id": 20420
+      },
+      "timestamp": "2020-06-11 14:56:05",
+      "id": 760145377
     }
   ]
 }
