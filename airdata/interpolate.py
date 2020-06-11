@@ -128,7 +128,7 @@ def interpolate(
 ):
     dirname = os.path.dirname(os.path.abspath(__file__))
     districts_file = os.path.join(dirname, "..", "shared", "berlinDistricts.geojson")
-    berlin_districts = gpd.read_file("../shared/berlinDistricts.geojson")
+    berlin_districts = gpd.read_file(districts_file)
     measurements = gpd.read_file(measurements_fp)
 
     external_crs = "EPSG:4326"
