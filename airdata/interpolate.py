@@ -4,7 +4,9 @@ from argparse import ArgumentParser
 import geopandas as gpd
 import pandas as pd
 from shapely import geometry
+import matplotlib as mpl
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 import numpy as np
 from skimage import measure
 
@@ -14,6 +16,19 @@ plt.rcParams["figure.figsize"] = 30, 20
 plt.rcParams["font.size"] = 20
 plt.rcParams["axes.titlesize"] = 50
 plt.rcParams["axes.titlepad"] = 80
+
+
+def get_cmap_colors(cmap_name, n, rgb=True):
+    cmap = cm.get_cmap(cmap_name, n)  # PiYG
+
+    colors = []
+    for i in range(cmap.N):
+        rgb_values = cmap(i)[:3]  # will return rgba, we take only first 3 so we get rgb
+        if rgb:
+            colors.append(",".join(list(map(str, rgb_values))))
+        else:
+            colors.append(mpl.colors.rgb2hex(rgb_values))
+    return colors
 
 
 def get_polygons_per_zone_plt(xnew, ynew, interpolated_values, zones):
@@ -110,6 +125,8 @@ def interpolate(
     output="interpolation-data",
     zones=[0, 20, 40, 100, 200, 400],  # Took these values for PM10 from Umweltbundesamt
 ):
+    dirname = os.path.dirname(os.path.abspath(__file__))
+    districts_file = os.path.join(dirname, "..", "shared", "berlinDistricts.geojson")
     berlin_districts = gpd.read_file("../shared/berlinDistricts.geojson")
     measurements = gpd.read_file(measurements_fp)
 
@@ -142,8 +159,10 @@ def interpolate(
     print("Extracting zone polygons...")
     start = time.time()
 
-    # polygons_per_zone = get_polygons_per_zone_plt(xnew, ynew, interpolated_values, zones)
-    polygons_per_zone = get_polygons_per_zone(xnew, ynew, interpolated_values, zones)
+    polygons_per_zone = get_polygons_per_zone_plt(
+        xnew, ynew, interpolated_values, zones
+    )
+    # polygons_per_zone = get_polygons_per_zone(xnew, ynew, interpolated_values, zones)
 
     end = time.time()
     print(f"Done! ({format(end - start, '.3f')}s)")
@@ -185,10 +204,12 @@ def interpolate(
     print("Creating visualization...")
     start = time.time()
     fig, ax = plt.subplots()
-    contour = ax.contourf(xnew, ynew, interpolated_values, zones, cmap="winter_r")
+    # Add lines around the zones
+    ax.contour(xnew, ynew, interpolated_values, zones, linewidths=1)
+    # Fill the zones with color
+    colors = ["w", *get_cmap_colors("winter_r", len(zones) - 1, False)]
+    contour = ax.contourf(xnew, ynew, interpolated_values, zones, colors=colors)
     berlin_districts.boundary.plot(ax=ax, edgecolor="black")
-    contour.cmap.set_under("w")
-    contour.set_clim(zones[1])
     fig.colorbar(contour, ax=ax)
     fig.savefig(f"{output}/{filename}.png", bbox_inches="tight")
 
