@@ -71,12 +71,8 @@ sumo_binary = os.environ["SUMO_HOME"] + "/bin/sumo"
 if args.gui:
     sumo_binary = os.environ["SUMO_HOME"] + "/bin/sumo-gui"
 
-sumo_cmd = [
-    sumo_binary,
-    "--configuration-file",
-    args.sumo_config,
-    # "--mesosi"
-]
+sumo_cmd = [sumo_binary, "--configuration-file", args.sumo_config]
+# sumo_cmd = [sumo_binary, "--configuration-file", args.sumo_config, "--mesosim"]
 
 from simulation_controller import SimulationController
 

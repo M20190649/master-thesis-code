@@ -102,8 +102,6 @@ class ZoneController:
 
         self.__polygons[pid] = polygon
 
-        traci.polygon.setParameter(pid, "zone_timestep", self.current_timestep)
-
     def load_polygons(self, t):
         # Load the XML file for the current timestep
         pad = lambda n: f"0{n}" if n < 10 else n
@@ -183,7 +181,7 @@ class ZoneController:
         log("New timestep! Zones will be updated...")
         interval = self.sim_config["zoneUpdateInterval"] * 60
         # Always keep the polygons up until three hours after they have been loaded
-        keep_duration = 3 * 60 * 60
+        keep_duration = 2 * 60 * 60
         self.remove_polygons(step - keep_duration)
         # Hide the polygons from last timestep
         self.hide_polygons(step - interval)
