@@ -50,6 +50,7 @@ class SimulationController:
 
             x = time.time()
             self.vehicle_controller.prepare_new_vehicles()
+            self.vehicle_controller.clean_up_vehicles()
             prep_time += time.time() - x
             # log(f"After new vehicle prep")
 

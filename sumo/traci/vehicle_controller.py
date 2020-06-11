@@ -15,6 +15,8 @@ class VehicleController:
         self.zone_controller = zone_controller
         self.non_depart_people = set()
         self.reroute_people = set()
+        self.rerouting_period = 5 * 60
+        self.periodic_rerouting_steps = {}  # Used for manual periodic rerouting
         self.new_vehicles = []
         self.vehicle_vars = {}
         self.vehicle_subs = {}
@@ -45,6 +47,7 @@ class VehicleController:
         if pid in polygon_list.split(","):
             return True
 
+        # Make sure to only consider polygons from the correct timestep
         v_timestep = traci.vehicle.getParameter(vid, "zone_timestep")
         p_timestep = polygon["zone_timestep"]
         if self.sim_config["snapshotZones"]:
@@ -59,6 +62,7 @@ class VehicleController:
         avoid = True
 
         # FUTURE WORK
+        # Add further logic here
 
         # Cache the list of polygons that should be avoided
         if avoid:
@@ -119,7 +123,6 @@ class VehicleController:
         for polygon in self.zone_controller.get_polygons_by_timestep(
             timestep=timestep, holes=False
         ):
-            pid = polygon["id"]
             if self.should_vehicle_avoid_polygon(vid, polygon):
                 for eid in polygon["edges"]:
                     # Set travel times for all edges to very high value
@@ -129,8 +132,14 @@ class VehicleController:
         traci.vehicle.setColor(vid, (255, 0, 0))
         # Disable rerouting through the rerouting device so that vehicle will stay on this route
         if self.sim_config["periodicRerouting"]:
+            # Turn off periodic rerouting through the device because
+            # it does not consider the vehicle-specific edge travel times
             traci.vehicle.setParameter(vid, "device.rerouting.period", "0")
-            pass
+            # Add vehicle to manual periodic rerouting list
+            # Do manual periodic rerouting every 5 minutes
+            self.periodic_rerouting_steps[vid] = (
+                traci.simulation.getTime() + self.rerouting_period
+            )
 
     def static_rerouting(self, zone_update=False):
         vehicleToCheck = []
@@ -368,6 +377,12 @@ class VehicleController:
                 [tc.ID_COUNT],
             )
 
+    def clean_up_vehicles(self):
+        arrived_vehicles = traci.simulation.getArrivedIDList()
+        for vid in arrived_vehicles:
+            if vid in self.periodic_rerouting_steps:
+                del self.periodic_rerouting_steps[vid]
+
     def reroute(self):
         # Get subscriptions
         self.vehicle_vars = traci.vehicle.getAllSubscriptionResults()
@@ -379,6 +394,19 @@ class VehicleController:
             self.dynamic_rerouting(zone_update=self.zoneUpdateReroute)
         else:
             raise ValueError("Unknown zoneRerouting value")
+
+        if self.sim_config["periodicRerouting"]:
+            # Check if any previously rerouted vehicle needs their route to be periodically re-checked
+            current_time = traci.simulation.getTime()
+            for vid in self.periodic_rerouting_steps:
+                step = self.periodic_rerouting_steps[vid]
+                if current_time == step:
+                    # If rerouting period has passed reroute again to make sure
+                    # the vehicle is on the optimal route
+                    traci.vehicle.rerouteTraveltime(vid, False)
+                    self.periodic_rerouting_steps[vid] = (
+                        current_time + self.rerouting_period
+                    )
 
         if self.zoneUpdateReroute:
             self.zoneUpdateReroute = False
