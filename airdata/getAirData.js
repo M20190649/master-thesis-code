@@ -70,9 +70,15 @@ const optionDefinitions = [
     required: true,
   },
 ]
+
 const parseDate = dateString => {
   const [day, month, year] = dateString.split(".").map(Number)
   return new Date(`${year}-${pad(month)}-${pad(day)}T00:00:00.000Z`)
+}
+
+const pollutantMax = {
+  PM10: 500,
+  "PM2.5": 250,
 }
 
 const CLIOptions = parseCLIOptions(optionDefinitions)
@@ -207,9 +213,13 @@ async function getAirData(callerOptions) {
           timestep.getTime() - options["avg-interval"] * 60 * 1000
         )
         // Find all measurements that should be considered for the current timestep (= within averging interval)
-        const relevantMeasurements = measurements.filter(
-          m => m.timestamp > avgIntervalStart && m.timestamp <= timestep
-        )
+        const relevantMeasurements = measurements.filter(m => {
+          const withinInterval =
+            m.timestamp > avgIntervalStart && m.timestamp <= timestep
+          const noExtreme = m.value < pollutantMax[options.pollutant]
+
+          return withinInterval && noExtreme
+        })
 
         if (relevantMeasurements.length === 0) {
           continue
