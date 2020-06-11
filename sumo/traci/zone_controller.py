@@ -37,21 +37,6 @@ class ZoneController:
 
         return list(filter(check_polygon, self.__polygons.values()))
 
-    def add_polygon_subscriptions(self, pid):
-        # Polygon context used for dynamic routing
-        traci.polygon.subscribeContext(
-            pid,
-            tc.CMD_GET_VEHICLE_VARIABLE,
-            self.sim_config["dynamicReroutingDistance"],
-        )
-
-    def remove_polygon_subscriptions(self, pid):
-        traci.polygon.unsubscribeContext(
-            pid,
-            tc.CMD_GET_VEHICLE_VARIABLE,
-            self.sim_config["dynamicReroutingDistance"],
-        )
-
     def split_polygon(self, shape, parts=2):
         polygon = Polygon(shape)
         (minx, miny, maxx, maxy) = polygon.bounds
@@ -119,9 +104,6 @@ class ZoneController:
 
         traci.polygon.setParameter(pid, "zone_timestep", self.current_timestep)
 
-        # Add all necessary context subscriptions
-        self.add_polygon_subscriptions(pid)
-
     def load_polygons(self, t):
         # Load the XML file for the current timestep
         pad = lambda n: f"0{n}" if n < 10 else n
@@ -179,7 +161,6 @@ class ZoneController:
         log(f"Removing polygons from timestep {timestep}")
         for p in self.get_polygons_by_timestep(timestep=timestep):
             pid = p["id"]
-            self.remove_polygon_subscriptions(pid)
             traci.polygon.remove(pid)
             del self.__polygons[pid]
 

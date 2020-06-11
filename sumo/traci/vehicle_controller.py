@@ -17,7 +17,7 @@ class VehicleController:
         self.reroute_people = set()
         self.new_vehicles = []
         self.vehicle_vars = {}
-        self.polygon_subs = {}
+        self.vehicle_subs = {}
         self.zoneUpdateReroute = False
 
         # Register event handler
@@ -226,35 +226,37 @@ class VehicleController:
                     self.reroute_vehicle(vid)
                     break
 
-        # 2. Check for all vehicles that are within the dynamic rerouting range
-        # if any of their upcoming edges are within any of the polygons
-
-        # Go through all polygons and get all vehicles within dynamic rerouting range
-        vehicle_ids = traci.vehicle.getIDList()
         polygon_ids = self.zone_controller.get_polygon_ids()
-        for pid in self.polygon_subs:
-            if pid.startswith("hole"):
-                continue
 
-            if pid not in polygon_ids:
-                # Skip possibly removed polygons
-                continue
+        # 2. Check if any vehicles are within dynamicReroutingDistance to any polygon
+        # Vehicle subs contain all vehicles that have a polygon within dynamicReroutingDistance
+        for vid in self.vehicle_subs:
+            if not zone_update:
+                if self.has_vehicle_rerouted(vid):
+                    # When vehicle has already rerouted we don't want it to reroute again
+                    continue
 
-            polygon = self.zone_controller.get_polygon(pid)
-            p_timestep = polygon["zone_timestep"]
-            polygon_sub = self.polygon_subs[pid]
-            vehicle_context = {
-                k: v for (k, v) in polygon_sub.items() if k in vehicle_ids
-            }
-            polygon_edges = polygon["edges"]
+            vehicle = self.vehicle_vars[vid]
+            route = vehicle[tc.VAR_EDGES]
+            current_route_index = vehicle[tc.VAR_ROUTE_INDEX]
+            upcoming_edges = route[current_route_index:]
+            v_timestep = traci.vehicle.getParameter(vid, "zone_timestep")
 
-            for vid in vehicle_context:
-                if not zone_update:
-                    if self.has_vehicle_rerouted(vid):
-                        # When vehicle has already rerouted we don't want it to reroute again
-                        continue
+            # Loop through all polygons within dynamicReroutingDistance
+            # Check if any of the upcoming edges intersect with any of the polygons
+            polygons = self.vehicle_subs[vid]
+            for pid in polygons:
+                if pid.startswith("hole"):
+                    continue
 
-                v_timestep = traci.vehicle.getParameter(vid, "zone_timestep")
+                if pid not in polygon_ids:
+                    # Skip possibly removed polygons
+                    continue
+
+                polygon = self.zone_controller.get_polygon(pid)
+                p_timestep = polygon["zone_timestep"]
+                polygon_edges = polygon["edges"]
+
                 if self.sim_config["snapshotZones"]:
                     # When zones are frozen only consider the polygons that existed at the time when the vehicle was inserted
                     if p_timestep != v_timestep:
@@ -263,10 +265,6 @@ class VehicleController:
                     # When zones are NOT frozen only consider the most recent polygons
                     if p_timestep != self.zone_controller.current_timestep:
                         continue
-
-                route = self.vehicle_vars[vid][tc.VAR_EDGES]
-                current_route_index = self.vehicle_vars[vid][tc.VAR_ROUTE_INDEX]
-                upcoming_edges = route[current_route_index:]
 
                 # Check if any edge of vehicle route goes through polygon
                 intersecting_edges = list(set(upcoming_edges) & set(polygon_edges))
@@ -363,11 +361,17 @@ class VehicleController:
                     tc.VAR_EMISSIONCLASS,  # Used to distinguish between gas, electric and other car types
                 ],
             )
+            traci.vehicle.subscribeContext(
+                vid,
+                tc.CMD_GET_POLYGON_VARIABLE,
+                self.sim_config["dynamicReroutingDistance"],
+                [tc.ID_COUNT],
+            )
 
     def reroute(self):
         # Get subscriptions
         self.vehicle_vars = traci.vehicle.getAllSubscriptionResults()
-        self.polygon_subs = traci.polygon.getAllContextSubscriptionResults()
+        self.vehicle_subs = traci.vehicle.getAllContextSubscriptionResults()
 
         if self.sim_config["zoneRerouting"] == "static":
             self.static_rerouting(zone_update=self.zoneUpdateReroute)
