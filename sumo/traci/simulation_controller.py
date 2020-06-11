@@ -21,7 +21,8 @@ class SimulationController:
 
         interval = self.sim_config["zoneUpdateInterval"] * 60
 
-        t = time.time()
+        total_time = time.time()
+        timestep_time = time.time()
         zone_time = 0
         step_time = 0
         prep_time = 0
@@ -57,13 +58,13 @@ class SimulationController:
             tracking_time += time.time() - x
             # log(f"After tracking")
 
-            if step > 0 and step % interval == 0:
+            if step > 0 and step % interval == 0 and step < 24 * 60 * 60:
                 prev_timestep = self.zone_controller.get_timestep_from_step(
                     step - interval
                 )
                 curr_timestep = self.zone_controller.get_timestep_from_step(step)
                 log(
-                    f"\nPrevious timestep ({prev_timestep} - {curr_timestep}) simulation time: {format(time.time() - t, '.3f')}s"
+                    f"\nPrevious timestep ({prev_timestep} - {curr_timestep}) simulation time: {format(time.time() - timestep_time, '.3f')}s"
                 )
                 log(f"Zone update time: {format(zone_time, '.3f')}s")
                 log(f"Simulation step time: {format(step_time, '.3f')}s")
@@ -71,7 +72,7 @@ class SimulationController:
                 log(f"Vehicle tracking time: {format(tracking_time, '.3f')}s")
                 log(f"Vehicle rerouting time: {format(rerouting_time, '.3f')}s")
                 log()
-                t = time.time()
+                timestep_time = time.time()
                 step_time = 0
                 prep_time = 0
                 tracking_time = 0
@@ -95,6 +96,7 @@ class SimulationController:
 
         # Finish and clean up
         log(f"Finished at step {step}")
+        log(f"Total simulation time: {format(time.time() - total_time, '.3f')}s")
         self.__finish()
 
     def __finish(self):
