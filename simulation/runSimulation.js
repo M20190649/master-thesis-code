@@ -1,4 +1,4 @@
-const { join, basename, resolve } = require("path")
+const { join, basename, resolve, dirname } = require("path")
 const fs = require("fs")
 const commandLineUsage = require("command-line-usage")
 
@@ -52,7 +52,7 @@ validateOptions(config, configOptionDefinition)
 
 // File and directory names
 const simName = basename(CLIOptions.config).match(/.*(?=\.)/)[0]
-const inputDir = join(__dirname, simName)
+const inputDir = join(resolve(dirname(CLIOptions.config)), simName)
 const airDataDir = join(inputDir, "airdata")
 const rawAirData = join(airDataDir, `${config.pollutant}-raw`)
 const interpolatedAirData = join(
