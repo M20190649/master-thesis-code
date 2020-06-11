@@ -8,6 +8,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import numpy as np
+from scipy.spatial import cKDTree
 from skimage import measure
 
 import interpolators
@@ -136,16 +137,40 @@ def interpolate(
     berlin_districts = berlin_districts.to_crs(internal_crs)
     measurements = measurements.to_crs(internal_crs)
 
+    # Prepare input points
     x = np.array(measurements.geometry.x)
     y = np.array(measurements.geometry.y)
     values = np.array(measurements.value)
     points = np.column_stack((x, y))
 
+    distance = 500
+    max_diff = 100
+    remove_idx = []
+    tree = cKDTree(points)
+    for point_idx, point in enumerate(points):
+        distances, neighbor_idx = tree.query(
+            point, k=len(points), distance_upper_bound=distance
+        )
+        for i in neighbor_idx:
+            if i == len(points):
+                continue
+
+            point_value = values[point_idx]
+            neighbor_value = values[i]
+            diff = np.abs(point_value - neighbor_value)
+            if diff > max_diff and point_value > neighbor_value:
+                remove_idx.append(point_idx)
+
+    points = np.delete(points, remove_idx, axis=0)
+    values = np.delete(values, remove_idx, axis=0)
+
+    # Prepare interpolation grid
     xmin, ymin, xmax, ymax = measurements.total_bounds
     size = int(cellsize)  # grid cell size in meters
     xnew = np.linspace(xmin, xmax, int((xmax - xmin) / size))
     ynew = np.linspace(ymin, ymax, int((ymax - ymin) / size))
 
+    # Get interpolator function
     interpolator = interpolator_functions[method]
 
     print("Interpolating grid...")
