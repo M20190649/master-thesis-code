@@ -13,7 +13,7 @@ const pollutantMapping = {
 }
 
 // These sensors were handpicked from http://deutschland.maps.sensor.community/
-const malfunctioningSensors = [2115, 12695, 24509]
+const malfunctioningSensors = [2115, 12695, 24509, 17463, 20419, 2057]
 
 function getMeasurements(filepath, options) {
   const pollutant = pollutantMapping[options.pollutant]
