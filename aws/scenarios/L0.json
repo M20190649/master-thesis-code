@@ -1,0 +1,33 @@
+{
+  "mode": "osm",
+  "scenario": "10pct",
+  "bbox": [
+    52.3353,
+    13.0827,
+    52.6768,
+    13.7611
+  ],
+  "simulationDate": "01.02.2020",
+  "pollutant": "PM10",
+  "zoneUpdateInterval": 10,
+  "averagingMethod": "weighted",
+  "averagingInterval": 30,
+  "interpolationMethod": "idw",
+  "zones": [
+    0,
+    20,
+    35,
+    50,
+    100,
+    500
+  ],
+  "periodicRerouting": true,
+  "zoneRerouting": "none",
+  "reroutingDecisionMode": "percent",
+  "reroutingPercent": 0,
+  "dynamicReroutingDistance": 300,
+  "snapshotZones": false,
+  "rerouteOnZoneUpdate": false,
+  "nonDepartDecisionMode": "none",
+  "nonDepartPercent": 0
+}

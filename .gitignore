@@ -17,6 +17,7 @@ evaluation/*/**
 evaluation/*.png
 
 aws/*/**
+!aws/scenarios/*.json
 
 # Ignore all folders in the airdata directory with some exceptions
 airdata/*/**
