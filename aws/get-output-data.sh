@@ -1,0 +1,1 @@
+scp -r -i apats-sim.pem $1:master-thesis-code/aws/$2 ./$2
