@@ -165,7 +165,7 @@ def interpolate(
     values = np.delete(values, remove_idx, axis=0)
 
     # Prepare interpolation grid
-    xmin, ymin, xmax, ymax = measurements.total_bounds
+    xmin, ymin, xmax, ymax = berlin_districts.total_bounds
     size = int(cellsize)  # grid cell size in meters
     xnew = np.linspace(xmin, xmax, int((xmax - xmin) / size))
     ynew = np.linspace(ymin, ymax, int((ymax - ymin) / size))
