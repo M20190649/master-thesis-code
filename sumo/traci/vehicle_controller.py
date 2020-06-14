@@ -117,7 +117,7 @@ class VehicleController:
     def reroute_vehicle(self, vid, timestep=None):
         log(f"Rerouting vehicle {vid}")
 
-        traveltime = 99999999
+        traveltime = 999999
 
         # Decide per polygon if to avoid it or not
         for polygon in self.zone_controller.get_polygons_by_timestep(
@@ -126,7 +126,9 @@ class VehicleController:
             if self.should_vehicle_avoid_polygon(vid, polygon):
                 for eid in polygon["edges"]:
                     # Set travel times for all edges to very high value
-                    traci.vehicle.setAdaptedTraveltime(vid, eid, time=traveltime)
+                    # More polluted zones get a higher traveltime
+                    t = traveltime * polygon["zone"]
+                    traci.vehicle.setAdaptedTraveltime(vid, eid, time=t)
 
         traci.vehicle.rerouteTraveltime(vid, False)
         traci.vehicle.setColor(vid, (255, 0, 0))

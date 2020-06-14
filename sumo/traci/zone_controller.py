@@ -72,6 +72,7 @@ class ZoneController:
     def add_polygon(self, pid, shape, color, layer):
         polygon = {
             "id": pid,
+            "zone": float(pid.split("_")[0].split("-")[-2]),
             "zone_timestep": self.current_timestep,
             "shape": Polygon(shape),
         }
