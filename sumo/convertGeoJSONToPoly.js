@@ -35,11 +35,7 @@ async function convertGeoJSONToPoly(callerOptions) {
 
   validateOptions(options, optionDefinitions)
 
-  if (fs.existsSync("tmp")) {
-    fs.rmdirSync("tmp")
-  }
-
-  fs.mkdirSync("tmp")
+  const tempDir = fs.mkdtempSync("tmp-")
 
   const file = fs.readFileSync(options.geojson, "utf8")
   const geojson = JSON.parse(file)
@@ -103,16 +99,16 @@ async function convertGeoJSONToPoly(callerOptions) {
     }
   })
 
-  fs.writeFileSync("tmp/polygon.xml", xml.end({ pretty: true }))
+  fs.writeFileSync(`${tempDir}/polygon.xml`, xml.end({ pretty: true }))
 
   await runBash(
-    `polyconvert --xml-files tmp/polygon.xml --net-file ${
+    `polyconvert --xml-files ${tempDir}/polygon.xml --net-file ${
       options.network
     } --output-file ${options.output}`
   )
 
-  fs.unlinkSync("tmp/polygon.xml")
-  fs.rmdirSync("tmp")
+  fs.unlinkSync(`${tempDir}/polygon.xml`)
+  fs.rmdirSync(tempDir)
 }
 
 if (CLIOptions.run) {
