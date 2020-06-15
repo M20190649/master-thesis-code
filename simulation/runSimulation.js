@@ -1,6 +1,7 @@
 const { join, basename, resolve, dirname } = require("path")
 const fs = require("fs")
 const commandLineUsage = require("command-line-usage")
+const pLimit = require("p-limit")
 
 const parseCLIOptions = require("../shared/parseCLIOptions")
 const configOptionDefinition = require("./configOptionDefinition")
@@ -117,31 +118,47 @@ async function run() {
   console.log("Creating air pollution zones...")
   const zonesFiles = fs.readdirSync(interpolatedAirData)
   if (zonesFiles.length === 0) {
-    for (const airDataFile of airDataFiles) {
+    const interpolationlimit = pLimit(3)
+    let promises = []
+    for (const airDataFile of airDataFiles.slice(0, 3)) {
       // Interpolate measurements
-      await runBash([
-        `python ${join(__dirname, "..", "airdata", "interpolate.py")}`,
-        `--measurements=${airDataFile}`,
-        `--method=${config.interpolationMethod}`,
-        `--zones=${config.zones.join(",")}`,
-        `--output=${interpolatedAirData}`,
-      ])
-
-      // Convert the resulting zones into SUMO poly format
-      await convertGeoJSONToPoly({
-        geojson: join(
-          interpolatedAirData,
-          `${basename(airDataFile).replace("data", "zones")}`
-        ),
-        network: inputFiles.network,
-        output: join(
-          interpolatedAirData,
-          basename(airDataFile)
-            .replace("data", "zones")
-            .replace(".geojson", ".xml")
-        ),
-      })
+      const promise = interpolationlimit(() =>
+        runBash([
+          `python ${join(__dirname, "..", "airdata", "interpolate.py")}`,
+          `--measurements=${airDataFile}`,
+          `--method=${config.interpolationMethod}`,
+          `--zones=${config.zones.join(",")}`,
+          `--output=${interpolatedAirData}`,
+        ])
+      )
+      promises.push(promise)
     }
+
+    await Promise.all(promises)
+
+    const conversionlimit = pLimit(Infinity)
+    promises = []
+    for (const airDataFile of airDataFiles.slice(0, 3)) {
+      // Convert the resulting zones into SUMO poly format
+      const promise = conversionlimit(() =>
+        convertGeoJSONToPoly({
+          geojson: join(
+            interpolatedAirData,
+            `${basename(airDataFile).replace("data", "zones")}`
+          ),
+          network: inputFiles.network,
+          output: join(
+            interpolatedAirData,
+            basename(airDataFile)
+              .replace("data", "zones")
+              .replace(".geojson", ".xml")
+          ),
+        })
+      )
+      promises.push(promise)
+    }
+
+    await Promise.all(promises)
   } else {
     console.log("Air pollution zones already exist")
   }
