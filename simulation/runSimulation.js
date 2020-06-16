@@ -120,7 +120,7 @@ async function run() {
   if (zonesFiles.length === 0) {
     const interpolationlimit = pLimit(3)
     let promises = []
-    for (const airDataFile of airDataFiles.slice(0, 3)) {
+    for (const airDataFile of airDataFiles) {
       // Interpolate measurements
       const promise = interpolationlimit(() =>
         runBash([
@@ -138,7 +138,7 @@ async function run() {
 
     const conversionlimit = pLimit(Infinity)
     promises = []
-    for (const airDataFile of airDataFiles.slice(0, 3)) {
+    for (const airDataFile of airDataFiles) {
       // Convert the resulting zones into SUMO poly format
       const promise = conversionlimit(() =>
         convertGeoJSONToPoly({
