@@ -1,13 +1,10 @@
-import os, multiprocessing, time
+import os, multiprocessing, time, functools
 import sqlite3
 import sumolib, traci
 import traci.constants as tc
 from lxml import etree
 
-# base_dir = "../../aws/scenarios/B0"
-base_dir = "../../simulation/charlottenburg"
-
-conn = sqlite3.connect("zone.sqlite", 30)
+conn = sqlite3.connect("zones.sqlite", 30)
 c = conn.cursor()
 
 c.execute(
@@ -18,7 +15,7 @@ attribs = ["id", "zone", "timestep", "shape", "edges"]
 get_values = lambda p: [f"'{p[attrib]}'" for attrib in attribs]
 
 
-def find_edges(file_path):
+def find_edges(start, file_path):
     t = time.time()
     polygons = []
     for event, element in etree.iterparse(file_path, tag="poly"):
@@ -65,10 +62,13 @@ def find_edges(file_path):
         conn.commit()
 
     traci.close()
-    print("Done", file_path)
-    print(time.time() - t)
+    print("Done", os.path.basename(file_path), f"({format(time.time() - t, '.3f')}s)")
+    print("Total time:", format(time.time() - start, ".3f"), "s")
     return
 
+
+# base_dir = "../../aws/scenarios/B0"
+base_dir = "../../simulation/charlottenburg"
 
 if __name__ == "__main__":
     c.execute("DROP TABLE IF EXISTS polygons")
@@ -79,7 +79,8 @@ if __name__ == "__main__":
     a = time.time()
 
     pool = multiprocessing.Pool()
-    pool.map(find_edges, files)
+    func = functools.partial(find_edges, time.time())
+    pool.map(func, files)
     pool.close()
     pool.join()
 
