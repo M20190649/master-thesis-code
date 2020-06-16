@@ -4,7 +4,7 @@ import sumolib, traci
 import traci.constants as tc
 from lxml import etree
 
-conn = sqlite3.connect("zones.sqlite", 30)
+conn = sqlite3.connect("polygons.sqlite", 30)
 c = conn.cursor()
 
 attribs = [
@@ -88,12 +88,8 @@ if __name__ == "__main__":
     path = base_dir + "/airdata/PM10-idw"
     files = [os.path.join(path, f) for f in os.listdir(path) if f.endswith(".xml")]
 
-    a = time.time()
-
     pool = multiprocessing.Pool()
     func = functools.partial(find_edges, time.time())
     pool.map(func, files)
     pool.close()
     pool.join()
-
-    print(time.time() - a)
