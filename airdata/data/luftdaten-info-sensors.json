@@ -31273,6 +31273,76 @@
       },
       "timestamp": "2020-06-11 14:56:05",
       "id": 760145377
+    },
+    {
+      "sensor": {
+        "sensor_type": {
+          "manufacturer": "various",
+          "name": "DHT22",
+          "id": 9
+        },
+        "pin": "7",
+        "id": 47090
+      },
+      "location": {
+        "indoor": 0,
+        "exact_location": 0,
+        "country": "DE",
+        "latitude": "52.516",
+        "altitude": "35.8",
+        "id": 32840,
+        "longitude": "13.294"
+      },
+      "sampling_rate": null,
+      "timestamp": "2020-06-16 23:37:53",
+      "id": 829250635,
+      "sensordatavalues": [
+        {
+          "value_type": "temperature",
+          "value": "22.40",
+          "id": 1785222334
+        },
+        {
+          "value_type": "humidity",
+          "value": "54.30",
+          "id": 1785222371
+        }
+      ]
+    },
+    {
+      "sensor": {
+        "sensor_type": {
+          "manufacturer": "Nova Fitness",
+          "name": "SDS011",
+          "id": 14
+        },
+        "pin": "1",
+        "id": 47089
+      },
+      "location": {
+        "indoor": 0,
+        "exact_location": 0,
+        "country": "DE",
+        "latitude": "52.516",
+        "altitude": "35.8",
+        "id": 32840,
+        "longitude": "13.294"
+      },
+      "sampling_rate": null,
+      "timestamp": "2020-06-16 23:37:52",
+      "id": 829250567,
+      "sensordatavalues": [
+        {
+          "value_type": "P1",
+          "value": "5.80",
+          "id": 1785222199
+        },
+        {
+          "value_type": "P2",
+          "value": "4.43",
+          "id": 1785222201
+        }
+      ]
     }
   ]
 }
