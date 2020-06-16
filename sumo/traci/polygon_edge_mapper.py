@@ -7,12 +7,22 @@ from lxml import etree
 conn = sqlite3.connect("zones.sqlite", 30)
 c = conn.cursor()
 
-c.execute(
-    "CREATE TABLE IF NOT EXISTS polygons (id text, zone text, timestep text, shape text, edges text)"
-)
+attribs = [
+    {"name": "id", "type": "text",},
+    {"name": "zone", "type": "text"},
+    {"name": "timestep", "type": "text"},
+    {"name": "color", "type": "text"},
+    {"name": "layer", "type": "integer"},
+    {"name": "shape", "type": "text"},
+    {"name": "edges", "type": "text"},
+]
 
-attribs = ["id", "zone", "timestep", "shape", "edges"]
-get_values = lambda p: [f"'{p[attrib]}'" for attrib in attribs]
+table_string = ", ".join(
+    list(map(lambda attrib: f"{attrib['name']} {attrib['type']}", attribs))
+)
+c.execute(f"CREATE TABLE IF NOT EXISTS polygons ({table_string})")
+
+get_values = lambda p: [f"'{p[attrib['name']]}'" for attrib in attribs]
 
 
 def find_edges(start, file_path):
@@ -21,10 +31,11 @@ def find_edges(start, file_path):
     for event, element in etree.iterparse(file_path, tag="poly"):
         p = {
             "id": element.attrib["id"],
-            "zone": element.attrib["id"].split("-")[-2],
+            "zone": int(element.attrib["id"].split("-")[-2]),
             "timestep": os.path.basename(file_path).split(".")[0].split("T")[1],
+            "color": element.attrib["color"],
+            "layer": int(float(element.attrib["layer"])),
             "shape": element.attrib["shape"],
-            "layer": element.attrib["layer"],
         }
         polygons.append(p)
 
@@ -43,7 +54,8 @@ def find_edges(start, file_path):
         shape = list(
             map(lambda pair: tuple(map(float, pair.split(","))), p["shape"].split(" "),)
         )
-        traci.polygon.add(pid, shape, [0, 0, 0])
+        color = list(map(int, p["color"].split(",")))
+        traci.polygon.add(pid, shape, color)
         traci.polygon.subscribeContext(pid, tc.CMD_GET_EDGE_VARIABLE, 0, [tc.ID_COUNT])
         polygon_context = traci.polygon.getContextSubscriptionResults(pid)
         traci.polygon.unsubscribeContext(pid, tc.CMD_GET_EDGE_VARIABLE, 0)
