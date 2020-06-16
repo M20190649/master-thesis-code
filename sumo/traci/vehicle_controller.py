@@ -127,7 +127,7 @@ class VehicleController:
                 for eid in polygon["edges"]:
                     # Set travel times for all edges to very high value
                     # More polluted zones get a higher traveltime
-                    t = traveltime * polygon["zone"]
+                    t = float(traveltime * polygon["zone"])
                     traci.vehicle.setAdaptedTraveltime(vid, eid, time=t)
 
         traci.vehicle.rerouteTraveltime(vid, False)
