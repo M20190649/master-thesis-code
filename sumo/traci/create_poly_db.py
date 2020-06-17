@@ -1,10 +1,24 @@
 import os, multiprocessing, time, functools
+from argparse import ArgumentParser
 import sqlite3
 import sumolib, traci
 import traci.constants as tc
 from lxml import etree
 
-conn = sqlite3.connect("polygons.sqlite", 30)
+parser = ArgumentParser()
+parser.add_argument(
+    "--dir",
+    "-d",
+    dest="dir",
+    help="Path to scenario directory",
+    metavar="FILE",
+    type=str,
+)
+
+args = parser.parse_args()
+base_dir = os.path.abspath(args.dir)
+
+conn = sqlite3.connect(os.path.join(base_dir, "airdata", "polygons.sqlite"), 30)
 c = conn.cursor()
 
 attribs = [
@@ -79,17 +93,16 @@ def find_edges(start, file_path):
     return
 
 
-# base_dir = "../../aws/scenarios/B0"
-base_dir = "../../simulation/charlottenburg"
-
 if __name__ == "__main__":
     c.execute("DROP TABLE IF EXISTS polygons")
 
     path = base_dir + "/airdata/PM10-idw"
     files = [os.path.join(path, f) for f in os.listdir(path) if f.endswith(".xml")]
 
+    start = time.time()
+
     pool = multiprocessing.Pool()
-    func = functools.partial(find_edges, time.time())
+    func = functools.partial(find_edges, start)
     pool.map(func, files)
     pool.close()
     pool.join()
