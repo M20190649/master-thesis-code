@@ -1,4 +1,4 @@
-const { join, basename } = require("path")
+const { join } = require("path")
 const fs = require("fs")
 
 const { logSection } = require("../shared/helpers")
@@ -8,22 +8,11 @@ const convertMATSimNetwork = require("../network/matsim/convertMATSimNetwork")
 const filterTrips = require("../demand/filterTrips")
 const convertTripsToRoutes = require("../demand/convertTripsToRoutes")
 
-module.exports = async (inputDir, config) => {
+module.exports = async (inputFiles, { networkDir, demandDir }, config) => {
+  const networkName = "network"
+  const routesName = "demand"
+
   const rootDir = join(__dirname, "..")
-  const networkDir = join(inputDir, "network")
-  const demandDir = join(inputDir, "demand")
-
-  if (!fs.existsSync(networkDir)) {
-    fs.mkdirSync(networkDir)
-  }
-
-  if (!fs.existsSync(demandDir)) {
-    fs.mkdirSync(demandDir)
-  }
-
-  const networkName = `network`
-  const routesName = `${basename(inputDir)}-routes`
-
   const matsimNetworkFile = join(
     rootDir,
     "network",
@@ -96,12 +85,9 @@ module.exports = async (inputDir, config) => {
 
   console.log("Done!\n")
 
-  const outputFiles = {
-    network: networkFile,
-    trips: tripsFile,
-    routes: routesFile,
-  }
+  inputFiles.network = networkFile
+  inputFiles.routes = routesFile
 
-  // Return object of filepaths for all newly generated input data
-  return outputFiles
+  // Return object with filepaths for all newly generated input data
+  return inputFiles
 }

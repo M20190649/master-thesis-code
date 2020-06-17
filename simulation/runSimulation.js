@@ -1,7 +1,6 @@
 const { join, basename, resolve, dirname } = require("path")
 const fs = require("fs")
 const commandLineUsage = require("command-line-usage")
-const pLimit = require("p-limit")
 
 const parseCLIOptions = require("../shared/parseCLIOptions")
 const configOptionDefinition = require("./configOptionDefinition")
@@ -26,6 +25,12 @@ const CLIOptionDefinitions = [
     alias: "g",
     type: Boolean,
     description: "Run simulation in SUMO GUI",
+  },
+  {
+    name: "prepare",
+    alias: "p",
+    type: Boolean,
+    description: "Only prepare all input data without running the simulation",
   },
   {
     name: "config-info",
@@ -53,25 +58,29 @@ validateOptions(config, configOptionDefinition)
 
 // File and directory names
 const simName = basename(CLIOptions.config).match(/.*(?=\.)/)[0]
-const inputDir = join(resolve(dirname(CLIOptions.config)), simName)
-const airDataDir = join(inputDir, "airdata")
-const rawAirData = join(airDataDir, `${config.pollutant}-raw`)
-const interpolatedAirData = join(
+const simDir = join(resolve(dirname(CLIOptions.config)), simName)
+const networkDir = join(simDir, "network")
+const demandDir = join(simDir, "demand")
+const airDataDir = join(simDir, "airdata")
+const rawAirDataDir = join(airDataDir, `${config.pollutant}-raw`)
+const interpolatedAirDataDir = join(
   airDataDir,
   `${config.pollutant}-${config.interpolationMethod}`
 )
-const outputDir = join(inputDir, "output")
-const sumoConfigFile = `${join(inputDir, simName)}.sumocfg`
+const outputDir = join(simDir, "output")
+const sumoConfigFile = `${join(simDir, simName)}.sumocfg`
 
-const requiredDirs = [
-  inputDir,
-  outputDir,
+const directories = {
+  simDir,
+  networkDir,
+  demandDir,
   airDataDir,
-  rawAirData,
-  interpolatedAirData,
-]
+  rawAirDataDir,
+  interpolatedAirDataDir,
+  outputDir,
+}
 
-for (const dir of requiredDirs) {
+for (const dir of Object.values(directories)) {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir)
   }
@@ -79,21 +88,24 @@ for (const dir of requiredDirs) {
 
 // Importing necessary helper scripts
 // I import them here because I need to call "parseCLIOptions" first to make my generalized CLI printing work correctly
-const getAirData = require("../airdata/getAirData")
-const convertGeoJSONToPoly = require("../sumo/convertGeoJSONToPoly")
 const writeSUMOConfig = require("../sumo/writeSUMOConfig")
 const prepareMATSim = require("./prepareMATSim")
 const prepareOSM = require("./prepareOSM")
+const prepareAirData = require("./prepareAirData")
 
 async function run() {
   // 1. Prepare network and demand input data according to mode
-  let inputFiles = null
+  const inputFiles = {
+    network: null,
+    routes: null,
+    sumoConfig: sumoConfigFile,
+  }
   switch (config.mode) {
     case modes.osm:
-      inputFiles = await prepareOSM(inputDir, config)
+      await prepareOSM(inputFiles, directories, config)
       break
     case modes.matsim:
-      inputFiles = await prepareMATSim(inputDir, config)
+      await prepareMATSim(inputFiles, directories, config)
       break
     default:
       break
@@ -101,83 +113,21 @@ async function run() {
 
   // 2. Download air data and prepare air quality zone polygons
   logSection("Prepare Air Data")
-  // Download air data
-  console.log("Download and aggregate air pollution data...")
-  const airDataFiles = await getAirData({
-    pollutant: config.pollutant,
-    bbox: config.bbox,
-    date: config.simulationDate,
-    timestep: config.zoneUpdateInterval,
-    "avg-interval": config.averagingInterval,
-    "avg-method": config.averagingMethod,
-    output: rawAirData,
-  })
-  console.log("Done!\n")
 
-  // There will be a measurements file for every timestep
-  console.log("Creating air pollution zones...")
-  const zonesFiles = fs.readdirSync(interpolatedAirData)
-  if (zonesFiles.length === 0) {
-    const interpolationlimit = pLimit(3)
-    let promises = []
-    for (const airDataFile of airDataFiles) {
-      // Interpolate measurements
-      const promise = interpolationlimit(() =>
-        runBash([
-          `python ${join(__dirname, "..", "airdata", "interpolate.py")}`,
-          `--measurements=${airDataFile}`,
-          `--method=${config.interpolationMethod}`,
-          `--zones=${config.zones.join(",")}`,
-          `--output=${interpolatedAirData}`,
-        ])
-      )
-      promises.push(promise)
-    }
-
-    await Promise.all(promises)
-
-    const conversionlimit = pLimit(Infinity)
-    promises = []
-    for (const airDataFile of airDataFiles) {
-      // Convert the resulting zones into SUMO poly format
-      const promise = conversionlimit(() =>
-        convertGeoJSONToPoly({
-          geojson: join(
-            interpolatedAirData,
-            `${basename(airDataFile).replace("data", "zones")}`
-          ),
-          network: inputFiles.network,
-          output: join(
-            interpolatedAirData,
-            basename(airDataFile)
-              .replace("data", "zones")
-              .replace(".geojson", ".xml")
-          ),
-        })
-      )
-      promises.push(promise)
-    }
-
-    await Promise.all(promises)
-  } else {
-    console.log("Air pollution zones already exist")
-  }
+  await prepareAirData(inputFiles, directories, config)
 
   console.log("\nDone!\n")
 
   // 3. Write SUMO config file
   logSection("Prepare SUMO Simulation")
   console.log("Writing SUMO config file...")
-  writeSUMOConfig(
-    sumoConfigFile,
-    {
-      ...inputFiles,
-    },
-    outputDir,
-    config
-  )
+  writeSUMOConfig(inputFiles, directories, config)
 
   console.log("Done!\n")
+
+  if (CLIOptions.prepare) {
+    return
+  }
 
   // 4. Start the SUMO simulation
   console.log("Starting simulation...")

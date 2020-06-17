@@ -9,23 +9,11 @@ const convertOSMNetwork = require("../network/osm/convertOSMNetwork")
 const convertTripsToRoutes = require("../demand/convertTripsToRoutes")
 const filterTrips = require("../demand/filterTrips")
 
-module.exports = async (inputDir, config) => {
-  const networkDir = join(inputDir, "network")
-  const demandDir = join(inputDir, "demand")
-
-  if (!fs.existsSync(networkDir)) {
-    fs.mkdirSync(networkDir)
-  }
-
-  if (!fs.existsSync(demandDir)) {
-    fs.mkdirSync(demandDir)
-  }
-
+module.exports = async (inputFiles, { networkDir, demandDir }, config) => {
   const networkName = "network"
   const routesName = "demand"
 
   const osmNetworkFile = `${join(networkDir, networkName)}.osm.xml`
-  // const matsimPlansFile = join(matsimDir, "plans", "test-pop.xml")
   const networkFile = `${join(networkDir, networkName)}.net.xml`
   const tripsFile = `${join(demandDir, routesName)}.trips.xml`
   const routesFile = `${join(demandDir, routesName)}.rou.xml`
@@ -88,12 +76,9 @@ module.exports = async (inputDir, config) => {
   }
   console.log("Done!\n")
 
-  const outputFiles = {
-    network: networkFile,
-    trips: tripsFile,
-    routes: routesFile,
-  }
+  inputFiles.network = networkFile
+  inputFiles.routes = routesFile
 
-  // Return object of filepaths for all newly generated input data
-  return outputFiles
+  // Return object with filepaths for all newly generated input data
+  return inputFiles
 }
