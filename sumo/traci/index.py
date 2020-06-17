@@ -83,6 +83,5 @@ sumo_cmd = [sumo_binary, "--configuration-file", args.sumo_config]
 
 from simulation_controller import SimulationController
 
-traci_config = {"sumo_cmd": sumo_cmd}
-controller = SimulationController(traci_config, sim_config)
+controller = SimulationController(sumo_cmd, sim_config)
 controller.start()
