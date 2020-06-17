@@ -1,8 +1,9 @@
 import pprint, datetime, os
+import sqlite3
 import traci
 from itertools import chain
 import zope.event
-import xml.etree.ElementTree as et
+from lxml import etree
 import traci.constants as tc
 from shapely.geometry import Polygon, MultiPolygon, mapping
 from shapely.geometry import box
@@ -37,73 +38,7 @@ class ZoneController:
 
         return list(filter(check_polygon, self.__polygons.values()))
 
-    def split_polygon(self, shape, parts=2):
-        polygon = Polygon(shape)
-        (minx, miny, maxx, maxy) = polygon.bounds
-        part_width = (maxx - minx) / parts
-        part_shapes = []
-        for i in range(parts):
-            part_bbox = box(
-                minx + i * part_width, miny, minx + (i + 1) * part_width, maxy
-            )
-            part_poly = gpd.GeoSeries(polygon.intersection(part_bbox))
-
-            shapely_obj = part_poly[0]
-            if type(shapely_obj) == MultiPolygon:
-                geojson = mapping(shapely_obj)
-                for p in geojson["coordinates"]:
-                    part_shapes.append(list(p[0]))
-
-            if type(shapely_obj) == Polygon:
-                geojson = mapping(shapely_obj)
-                part_shapes.append(list(geojson["coordinates"][0]))
-
-        for i in range(len(part_shapes)):
-            s = part_shapes.pop(0)
-            if len(s) > 255:
-                log("Part is still too big (more than 255 points)! Splitting again...")
-                splitted_parts = self.split_polygon(s)
-                part_shapes.extend(splitted_parts)
-            else:
-                part_shapes.append(s)
-
-        return part_shapes
-
-    def add_polygon(self, pid, shape, color, layer):
-        polygon = {
-            "id": pid,
-            "zone": float(pid.split("_")[0].split("-")[-2]),
-            "zone_timestep": self.current_timestep,
-            "shape": Polygon(shape),
-        }
-
-        traci.polygon.add(pid, shape, color, fill=True, layer=layer)
-
-        # Calculate and store all edges that are covered by each new polygon
-        # Add temporary subscription to be able to query for all edges
-        # Get all edges for polygon pid that are within distance of 0
-        traci.polygon.subscribeContext(pid, tc.CMD_GET_EDGE_VARIABLE, 0, [tc.ID_COUNT])
-        polygon_context = traci.polygon.getContextSubscriptionResults(pid)
-        # Remove context subscription because we don't need it anymore
-        traci.polygon.unsubscribeContext(pid, tc.CMD_GET_EDGE_VARIABLE, 0)
-
-        if polygon_context is None:
-            log(f"Polygon {pid} will be removed because it is not covering any edges.")
-            # Edges subscription can be None when the polygon doesn't cover any edges
-            # Since it doesn't cover any edges it can be removed
-            traci.polygon.remove(pid)
-            return
-
-        # Filter out edge data
-        edge_ids = traci.edge.getIDList()
-        edges_in_polygon = [k for (k, v) in polygon_context.items() if k in edge_ids]
-        log(f"Found {len(edges_in_polygon)} edges in polygon {pid}")
-
-        polygon["edges"] = edges_in_polygon
-
-        self.__polygons[pid] = polygon
-
-    def load_polygons(self, t):
+    def load_polygons_from_file(self):
         # Load the XML file for the current timestep
         pad = lambda n: f"0{n}" if n < 10 else n
         date_parts = list(
@@ -112,45 +47,107 @@ class ZoneController:
             )
         )
         date_string = "-".join(date_parts[::-1])
-        timestep = self.get_timestep_from_step(t)
-        zone_file = f"zones_{date_string}T{timestep}.xml"
-        # zone_file = f"zones_{date_string}T10-00-00.xml"
-        self.current_timestep = timestep
 
+        zone_file = f"zones_{date_string}T{self.current_timestep}.xml"
+        # zone_file = f"zones_{date_string}T10-00-00.xml"
         log(f"Loading {zone_file} file")
-        xml_tree = et.parse(os.path.join(self.sim_config["sim_airDataDir"], zone_file))
+
+        file_path = os.path.join(self.sim_config["sim_airDataDir"], zone_file)
 
         # Traverse the XML tree and add all new polygons
-        log(f"Adding new polygons for timestep {timestep}")
-        for child in xml_tree.getroot():
-            if child.tag == "poly":
-                pid = f"{child.attrib['id']}_{self.current_timestep}"
-                shape = list(
-                    map(
-                        lambda pair: tuple(map(float, pair.split(","))),
-                        child.attrib["shape"].split(" "),
-                    )
+        log(f"Adding new polygons for timestep {self.current_timestep}")
+        for event, poly in etree.iterparse(file_path, tag="poly"):
+            pid = f"{poly.attrib['id']}_{self.current_timestep}"
+            shape = list(
+                map(
+                    lambda pair: tuple(map(float, pair.split(","))),
+                    poly.attrib["shape"].split(" "),
                 )
-                color = list(map(int, child.attrib["color"].split(",")))
-                layer = int(float(child.attrib["layer"]))
+            )
+            color = list(map(int, poly.attrib["color"].split(",")))
+            layer = int(float(poly.attrib["layer"]))
 
-                # SUMO can't handle polygons with more than 255 coordinates so I need to split them into multiple polygons
-                if len(shape) > 255:
-                    log(
-                        f"Warning: Zone polygon is too large ({len(shape)} points) (SUMO can't handle polygons with more than 255 points)"
-                    )
-                    log("Splitting zone polygon into multiple parts...")
-                    shape_parts = self.split_polygon(shape)
-                    log(f"Split zone polygon into {len(shape_parts)} parts")
+            traci.polygon.add(pid, shape, color, fill=True, layer=layer)
 
-                    for idx, shape_part in enumerate(shape_parts):
-                        part_pid = f"{pid}_part-{pad(idx)}"
-                        self.add_polygon(part_pid, shape_part, color, layer)
-                else:
-                    self.add_polygon(pid, shape, color, layer)
+            polygon = {
+                "id": pid,
+                "zone": int(pid.split("_")[0].split("-")[-2]),
+                "zone_timestep": self.current_timestep,
+                "shape": Polygon(shape),
+            }
 
-        # Notify subscribers about the zone update
-        zope.event.notify("zone-update")
+            # Calculate and store all edges that are covered by each new polygon
+            # Add temporary subscription to be able to query for all edges
+            # Get all edges for polygon pid that are within distance of 0
+            traci.polygon.subscribeContext(
+                pid, tc.CMD_GET_EDGE_VARIABLE, 0, [tc.ID_COUNT]
+            )
+            polygon_context = traci.polygon.getContextSubscriptionResults(pid)
+            # Remove context subscription because we don't need it anymore
+            traci.polygon.unsubscribeContext(pid, tc.CMD_GET_EDGE_VARIABLE, 0)
+
+            if polygon_context is None:
+                log(
+                    f"Polygon {pid} will be removed because it is not covering any edges."
+                )
+                # Edges subscription can be None when the polygon doesn't cover any edges
+                # Since it doesn't cover any edges it can be removed
+                traci.polygon.remove(pid)
+                continue
+
+            edges_in_polygon = list(polygon_context.keys())
+            log(f"Found {len(edges_in_polygon)} edges in polygon {pid}")
+            polygon["edges"] = edges_in_polygon
+
+            self.__polygons[pid] = polygon
+
+    def load_polygons_from_db(self):
+        db_path = self.sim_config["sim_polygonDatabase"]
+
+        db_exists = os.path.isfile(db_path)
+        if not db_exists:
+            error = "Database file zones.sqlite does not exist!"
+            log(error)
+            raise ValueError(error)
+
+        conn = sqlite3.connect(db_path, 30)
+        c = conn.cursor()
+
+        log(f"Querying polygons for timestep {self.current_timestep} from database")
+        rows = c.execute(
+            f"SELECT * FROM polygons WHERE timestep='{self.current_timestep}'"
+        )
+
+        log(f"Adding new polygons for timestep {self.current_timestep}")
+        for row in rows:
+            pid, zone, timestep, color_string, layer, shape_string, edges_string = row
+            pid = f"{pid}_{self.current_timestep}"
+            shape = list(
+                map(
+                    lambda pair: tuple(map(float, pair.split(","))),
+                    shape_string.split(" "),
+                )
+            )
+            color = list(map(int, color_string.split(",")))
+            edges_in_polygon = edges_string.split(" ")
+
+            if len(edges_in_polygon) == 0:
+                log(
+                    f"Polygon {pid} will not be added because it is not covering any edges."
+                )
+                continue
+
+            traci.polygon.add(pid, shape, color, fill=True, layer=layer)
+
+            polygon = {
+                "id": pid,
+                "zone": zone,
+                "zone_timestep": self.current_timestep,
+                "shape": Polygon(shape),
+                "edges": edges_in_polygon,
+            }
+
+            self.__polygons[pid] = polygon
 
     def remove_polygons(self, t):
         if t < 0:
@@ -181,10 +178,20 @@ class ZoneController:
     def update_zones(self, step):
         log("New timestep! Zones will be updated...")
         interval = self.sim_config["zoneUpdateInterval"] * 60
+        timestep = self.get_timestep_from_step(step)
+        self.current_timestep = timestep
         # Always keep the polygons up until three hours after they have been loaded
         keep_duration = 2 * 60 * 60
         self.remove_polygons(step - keep_duration)
         # Hide the polygons from last timestep
         self.hide_polygons(step - interval)
-        self.load_polygons(step)
+
+        if self.sim_config["sim_polygonDatabase"] is not None:
+            self.load_polygons_from_db()
+        else:
+            self.load_polygons_from_file()
+
         log("Done\n")
+
+        # Notify subscribers about the zone update
+        zope.event.notify("zone-update")

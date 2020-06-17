@@ -33,6 +33,12 @@ const CLIOptionDefinitions = [
     description: "Only prepare all input data without running the simulation",
   },
   {
+    name: "db",
+    type: String,
+    description:
+      "Filepath to SQLite database containing all polygons for air pollution zones. This skips fetching and interpolating air pollution data.",
+  },
+  {
     name: "config-info",
     alias: "i",
     type: String,
@@ -114,7 +120,22 @@ async function run() {
   // 2. Download air data and prepare air quality zone polygons
   logSection("Prepare Air Data")
 
-  await prepareAirData(inputFiles, directories, config)
+  if (CLIOptions.db) {
+    if (fs.existsSync(CLIOptions.db)) {
+      const databaseFilepath = resolve(CLIOptions.db)
+      if (!basename(databaseFilepath).endsWith(".sqlite")) {
+        throw new Error(
+          "Polygons database is not an SQLite database (file extension .sqlite)"
+        )
+      }
+      console.log("Using polygons SQLite database for air pollution zones")
+      inputFiles.zonesDatabase = resolve(CLIOptions.db)
+    } else {
+      throw new Error("Polygons SQLite Database does not exist!")
+    }
+  } else {
+    await prepareAirData(inputFiles, directories, config)
+  }
 
   console.log("\nDone!\n")
 
@@ -136,6 +157,7 @@ async function run() {
     `--config ${resolve(CLIOptions.config)}`,
     `--sumo-config ${sumoConfigFile}`,
     `${CLIOptions.gui ? "--gui=true" : ""}`,
+    `${CLIOptions.db ? `--db=${inputFiles.zonesDatabase}` : ""}`,
   ])
   console.log("Done!\n")
 }

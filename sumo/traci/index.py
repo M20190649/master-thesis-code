@@ -27,6 +27,13 @@ parser.add_argument(
     type=bool,
     default=False,
 )
+parser.add_argument(
+    "--db",
+    dest="db",
+    help="Filepath to SQLite database containing all polygons for air pollution zones",
+    metavar="FILE",
+    type=str,
+)
 
 args = parser.parse_args()
 
@@ -59,9 +66,9 @@ log(sim_config)
 log()
 
 # Add some additional data to simulation config dictionary
-sim_config["sim_gui"] = args.gui
-sim_config["sim_outputDir"] = sim_output_dir
 sim_config["sim_airDataDir"] = sim_airdata_dir
+sim_config["sim_polygonDatabase"] = args.db
+sim_config["sim_outputDir"] = sim_output_dir
 
 # Make sure dynamicReroutingDistance is a float
 sim_config["dynamicReroutingDistance"] = float(sim_config["dynamicReroutingDistance"])
