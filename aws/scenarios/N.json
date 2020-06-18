@@ -7,9 +7,9 @@
     52.6768,
     13.7611
   ],
-  "simulationDate": "01.02.2020",
+  "simulationDate": "25.03.2020",
   "pollutant": "PM10",
-  "zoneUpdateInterval": 60,
+  "zoneUpdateInterval": 1440,
   "averagingMethod": "weighted",
   "averagingInterval": 30,
   "interpolationMethod": "idw",
@@ -19,7 +19,7 @@
     35,
     50,
     100,
-    10000
+    500
   ],
   "periodicRerouting": true,
   "zoneRerouting": "none",
