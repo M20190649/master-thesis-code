@@ -8,12 +8,18 @@ const guiConfig = join(__dirname, "gui-settings.cfg")
 
 module.exports = ({ sumoConfig, network, routes }, { outputDir }, config) => {
   const additionalFiles = join(outputDir, "additional-files.xml")
-  const edgeData = join(outputDir, "edge-data.xml")
+  const edgeDataFullDay = join(outputDir, "edge-data-full-day.xml")
+  const edgeDataHourly = join(outputDir, "edge-data-hourly.xml")
 
   const additionalXML = XMLBuilder.create("additional")
   additionalXML.element("edgeData", {
-    id: "edgeData",
-    file: edgeData,
+    id: "edge-data-full-day",
+    file: edgeDataFullDay,
+  })
+  additionalXML.element("edgeData", {
+    id: "edge-data-hourly",
+    file: edgeDataHourly,
+    freq: 60 * 60,
   })
   fs.writeFileSync(additionalFiles, additionalXML.end({ pretty: true }))
 
