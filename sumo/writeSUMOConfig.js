@@ -7,6 +7,16 @@ const guiConfig = join(__dirname, "gui-settings.cfg")
 // https://sumo.dlr.de/xsd/sumoConfiguration.xsd
 
 module.exports = ({ sumoConfig, network, routes }, { outputDir }, config) => {
+  const additionalFiles = join(outputDir, "additional-files.xml")
+  const edgeData = join(outputDir, "edge-data.xml")
+
+  const additionalXML = XMLBuilder.create("additional")
+  additionalXML.element("edgeData", {
+    id: "edgeData",
+    file: edgeData,
+  })
+  fs.writeFileSync(additionalFiles, additionalXML.end({ pretty: true }))
+
   // const emissionsFile = join(outputDir, "emissions.xml")
   const floatingCarData = join(outputDir, "floating-car-data.xml")
   const vehicleSummary = join(outputDir, "vehicle-summary.xml")
@@ -20,6 +30,7 @@ module.exports = ({ sumoConfig, network, routes }, { outputDir }, config) => {
   const inputTag = configXML.element("input")
   inputTag.element("net-file", { value: network })
   inputTag.element("route-files", { value: routes })
+  inputTag.element("additional-files", { value: additionalFiles })
   inputTag
     .element("gui_only")
     .element("gui-settings-file", { value: guiConfig })
