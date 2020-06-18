@@ -28,10 +28,12 @@ module.exports = async (
 
   // There will be a measurements file for every timestep
   console.log("Creating air pollution zones...")
-  const zonesFiles = fs.readdirSync(interpolatedAirDataDir)
+  const zonesFiles = fs
+    .readdirSync(interpolatedAirDataDir)
+    .filter(f => f.endsWith(".geojson"))
   if (zonesFiles.length === 0) {
     const interpolationlimit = pLimit(3)
-    let promises = []
+    const promises = []
     for (const airDataFile of airDataFiles) {
       // Interpolate measurements
       const promise = interpolationlimit(() =>
@@ -47,11 +49,18 @@ module.exports = async (
     }
 
     await Promise.all(promises)
+  } else {
+    console.log("Interpolated air pollution zones already exist")
+  }
 
+  const polygonFiles = fs
+    .readdirSync(interpolatedAirDataDir)
+    .filter(f => f.endsWith(".xml"))
+  if (polygonFiles.length === 0) {
     // Air pollutions zones are given as GeoJSON
     // Convert all GeoJSON files to SUMO poly format
     const conversionlimit = pLimit(Infinity)
-    promises = []
+    const promises = []
     for (const airDataFile of airDataFiles) {
       // Convert the resulting zones into SUMO poly format
       const promise = conversionlimit(() =>
@@ -74,6 +83,6 @@ module.exports = async (
 
     await Promise.all(promises)
   } else {
-    console.log("Air pollution zones already exist")
+    console.log("Air pollution zone polygon files already exist")
   }
 }
