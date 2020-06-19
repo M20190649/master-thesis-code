@@ -1,0 +1,1 @@
+ssh -i apats-sim.pem ubuntu@$1
