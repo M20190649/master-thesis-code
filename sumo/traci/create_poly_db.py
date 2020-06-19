@@ -1,9 +1,17 @@
 import sys, os, multiprocessing, time, functools, uuid
 from argparse import ArgumentParser
 import sqlite3
+from lxml import etree
+
+if "SUMO_HOME" in os.environ:
+    tools = os.path.join(os.environ["SUMO_HOME"], "tools")
+    sys.path.append(tools)
+else:
+    sys.exit("Please declare the environment variable 'SUMO_HOME'")
+
 import sumolib, traci
 import traci.constants as tc
-from lxml import etree
+
 
 parser = ArgumentParser()
 parser.add_argument(
@@ -105,12 +113,6 @@ def process_files(start, files):
 
 
 if __name__ == "__main__":
-    if "SUMO_HOME" in os.environ:
-        tools = os.path.join(os.environ["SUMO_HOME"], "tools")
-        sys.path.append(tools)
-    else:
-        sys.exit("Please declare the environment variable 'SUMO_HOME'")
-
     c.execute("DROP TABLE IF EXISTS polygons")
 
     path = base_dir + "/airdata/PM10-idw"
