@@ -107,6 +107,7 @@ def process_files(start, files):
     traci.start(sumo_cmd, label=uuid.uuid4())
 
     for file in files:
+        print(f"Starting {os.path.basename(file)}")
         get_polygons(file)
 
     traci.close()
