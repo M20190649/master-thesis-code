@@ -1,0 +1,1 @@
+scp -i apats-sim -r scenarios/$1 $2:master-thesis-code/aws/scenarios/$1

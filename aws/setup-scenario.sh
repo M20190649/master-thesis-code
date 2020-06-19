@@ -19,3 +19,5 @@ if [[ ${1:0:1} == "H" ]]; then
   cp -r heavy_24-01-2020/PM10-raw scenarios/$1/airdata/PM10-raw
   cp -r heavy_24-01-2020/PM10-idw scenarios/$1/airdata/PM10-idw
 fi
+
+node ../simulation/runSimulation.js -c scenarios/$1.json -p
