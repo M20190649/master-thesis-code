@@ -9,7 +9,8 @@ if "SUMO_HOME" in os.environ:
 else:
     sys.exit("Please declare the environment variable 'SUMO_HOME'")
 
-import sumolib, traci
+import sumolib
+import traci
 import traci.constants as tc
 
 
@@ -26,9 +27,6 @@ parser.add_argument(
 args = parser.parse_args()
 base_dir = os.path.abspath(args.dir)
 
-conn = sqlite3.connect(os.path.join(base_dir, "airdata", "polygons.sqlite"), 30)
-c = conn.cursor()
-
 attribs = [
     {"name": "id", "type": "text",},
     {"name": "zone", "type": "text"},
@@ -42,12 +40,15 @@ attribs = [
 table_string = ", ".join(
     list(map(lambda attrib: f"{attrib['name']} {attrib['type']}", attribs))
 )
-c.execute(f"CREATE TABLE IF NOT EXISTS polygons ({table_string})")
 
 get_values = lambda p: [f"'{p[attrib['name']]}'" for attrib in attribs]
 
 
 def process_files(start, files):
+    conn = sqlite3.connect(os.path.join(base_dir, "airdata", "polygons.sqlite"), 30)
+    c = conn.cursor()
+    c.execute(f"CREATE TABLE IF NOT EXISTS polygons ({table_string})")
+
     def get_polygons(file_path):
         t = time.time()
         polygons = []
@@ -104,7 +105,7 @@ def process_files(start, files):
         "--no-warnings",
         "--no-step-log",
     ]
-    traci.start(sumo_cmd, label=uuid.uuid4())
+    traci.start(sumo_cmd)
 
     for file in files:
         print(f"Starting {os.path.basename(file)}")
@@ -114,6 +115,8 @@ def process_files(start, files):
 
 
 if __name__ == "__main__":
+    conn = sqlite3.connect(os.path.join(base_dir, "airdata", "polygons.sqlite"), 30)
+    c = conn.cursor()
     c.execute("DROP TABLE IF EXISTS polygons")
 
     path = base_dir + "/airdata/PM10-idw"
