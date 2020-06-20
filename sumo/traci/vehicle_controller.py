@@ -117,21 +117,32 @@ class VehicleController:
     def reroute_vehicle(self, vid, timestep=None):
         log(f"Rerouting vehicle {vid}")
 
-        traveltime = 999999
+        traveltime = 999
+
+        do_not_avoid = []
 
         # Decide per polygon if to avoid it or not
-        for polygon in self.zone_controller.get_polygons_by_timestep(
-            timestep=timestep, holes=False
-        ):
+        for polygon in self.zone_controller.get_polygons_by_timestep(timestep=timestep):
             if self.should_vehicle_avoid_polygon(vid, polygon):
                 for eid in polygon["edges"]:
                     # Set travel times for all edges to very high value
                     # More polluted zones get a higher traveltime
-                    t = float(traveltime * polygon["zone"])
+                    t = float(traveltime * (polygon["zone"] ** 2))
                     traci.vehicle.setAdaptedTraveltime(vid, eid, time=t)
+            else:
+                do_not_avoid.append(polygon)
+
+        for polygon in do_not_avoid:
+            # Make sure holes and other polygons that should not be avoided
+            # have very low/negative traveltime
+            # Do this step separately after the loop above because
+            # SUMO can't deal with polygons that have holes
+            for eid in polygon["edges"]:
+                traci.vehicle.setAdaptedTraveltime(vid, eid, time=-999999)
 
         traci.vehicle.rerouteTraveltime(vid, False)
         traci.vehicle.setColor(vid, (255, 0, 0))
+
         # Disable rerouting through the rerouting device so that vehicle will stay on this route
         if self.sim_config["periodicRerouting"]:
             # Turn off periodic rerouting through the device because
