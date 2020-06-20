@@ -24,7 +24,7 @@
   "periodicRerouting": true,
   "zoneRerouting": "static",
   "reroutingDecisionMode": "percent",
-  "reroutingPercent": 0.50,
+  "reroutingPercent": 1,
   "dynamicReroutingDistance": 300,
   "snapshotZones": false,
   "rerouteOnZoneUpdate": false,
