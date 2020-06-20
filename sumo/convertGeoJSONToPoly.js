@@ -71,25 +71,29 @@ async function convertGeoJSONToPoly(callerOptions) {
       layer: `${layer}.0`,
     })
 
+    let holeCounter = 0
     if (zone === 1) {
       // Real holes can only occur in zone 1
       // Check if hole is a real hole or just a zone 2 polygon
-      for (const [i, hole] of holes.entries()) {
+      for (const hole of holes) {
         const holePolygon = turf.polygon([hole])
-        geojson.features
+        const isRealHole = geojson.features
           .filter(f => f.properties.zone === 2)
-          .forEach(f => {
+          .every(f => {
+            // There must be no other polygon overlapping the hole
             const zonePolygon = turf.polygon(f.geometry.coordinates)
-            // If they do not overlap then it must be an actual hole
-            if (!booleanOverlap(zonePolygon, holePolygon)) {
-              xml.element("poly", {
-                id: `hole-${pad(i)}-${polyId}`,
-                shape: getShape(hole),
-                color: `254,255,255,255`,
-                layer: `${layer + 1}.0`,
-              })
-            }
+            return !booleanOverlap(zonePolygon, holePolygon)
           })
+
+        if (isRealHole) {
+          xml.element("poly", {
+            id: `hole-${pad(holeCounter)}-${polyId}`,
+            shape: getShape(hole),
+            color: `254,255,255,255`,
+            layer: `${layer + 1}.0`,
+          })
+          holeCounter += 1
+        }
       }
     }
   }
