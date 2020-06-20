@@ -59,7 +59,7 @@ module.exports = async (
   if (polygonFiles.length === 0) {
     // Air pollutions zones are given as GeoJSON
     // Convert all GeoJSON files to SUMO poly format
-    const conversionlimit = pLimit(Infinity)
+    const conversionlimit = pLimit(5)
     const promises = []
     for (const airDataFile of airDataFiles) {
       // Convert the resulting zones into SUMO poly format
