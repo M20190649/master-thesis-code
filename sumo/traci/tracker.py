@@ -35,12 +35,20 @@ class Tracker:
     def track_vehicles_in_polygons(self, t):
         timestep = self.zone_controller.current_timestep
         vehicle_vars = traci.vehicle.getAllSubscriptionResults()
-        some_vehicle_in_polygon = False
 
         timestep_xml = Element("timestep", {"time": str(t), "zone-timestep": timestep})
 
+        # Sort all polygons by timestep first
+        all_polygons = self.zone_controller.get_polygons()
+        polygons_by_timestep = {}
+        for p in all_polygons:
+            p_timestep = p["zone_timestep"]
+            if p_timestep in polygons_by_timestep:
+                polygons_by_timestep[p_timestep].append(p)
+            else:
+                polygons_by_timestep[p_timestep] = [p]
+
         for vid in traci.vehicle.getIDList():
-            vehicle_xml = None
             x, y = vehicle_vars[vid][tc.VAR_POSITION]
             location = Point(x, y)
             speed = vehicle_vars[vid][tc.VAR_SPEED]
@@ -48,13 +56,39 @@ class Tracker:
             route = vehicle_vars[vid][tc.VAR_EDGES]
             route_index = vehicle_vars[vid][tc.VAR_ROUTE_INDEX]
             current_edge = route[route_index]
-            for p in self.zone_controller.get_polygons():
-                shape = p["shape"]
-                if shape.contains(location):
-                    some_vehicle_in_polygon = True
+            v_timestep = traci.vehicle.getParameter(vid, "zone_timestep")
 
+            vehicle_xml = None
+
+            # SUMO does not support Polygons with holes
+            # Find the actual polygons that the vehicle is in
+            for timestep in polygons_by_timestep:
+                polygons = polygons_by_timestep[timestep]
+
+                polygon = None
+                for p in polygons:
+                    shape = p["shape"]
+                    if shape.contains(location):
+                        if polygon is None:
+                            print("none")
+                        else:
+                            print(polygon["id"])
+                        print(x, y)
+                        print(p["id"])
+                        if p["id"].startswith("hole"):
+                            # If polygon is inside hole there is no need to search further
+                            polygon = p
+                            break
+
+                        if polygon == None:
+                            polygon = p
+                            continue
+
+                        if p["zone"] > polygon["zone"]:
+                            polygon = p
+
+                if polygon is not None:
                     if vehicle_xml is None:
-                        v_timestep = traci.vehicle.getParameter(vid, "zone_timestep")
                         vehicle_xml = SubElement(
                             timestep_xml,
                             "vehicle",
@@ -70,10 +104,11 @@ class Tracker:
                     polygon_xml = SubElement(
                         vehicle_xml,
                         "polygon",
-                        {"id": p["id"], "zone-timestep": p["zone_timestep"],},
+                        {
+                            "id": polygon["id"],
+                            "zone-timestep": polygon["zone_timestep"],
+                        },
                     )
-
-                    # print(f"Vehicle {vid} in polygon {pid}")
 
         indent = 4
         xml = prettify(timestep_xml, indent=indent)

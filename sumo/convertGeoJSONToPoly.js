@@ -1,5 +1,7 @@
 const fs = require("fs")
 const XMLBuilder = require("xmlbuilder")
+const { default: booleanOverlap } = require("@turf/boolean-overlap")
+const turf = require("@turf/helpers")
 
 const parseCLIOptions = require("../shared/parseCLIOptions")
 const { runBash, validateOptions, pad } = require("../shared/helpers")
@@ -35,8 +37,6 @@ async function convertGeoJSONToPoly(callerOptions) {
 
   validateOptions(options, optionDefinitions)
 
-  const tempDir = fs.mkdtempSync("tmp-")
-
   const file = fs.readFileSync(options.geojson, "utf8")
   const geojson = JSON.parse(file)
 
@@ -58,7 +58,7 @@ async function convertGeoJSONToPoly(callerOptions) {
     const polyId = `${pad(zone)}-${pad(zonePolygonCounter[zone])}`
     const getShape = polygon =>
       polygon.map(([long, lat]) => `${long},${lat}`).join(" ")
-    const layer = `${-nZones + zone}.0`
+    const layer = -nZones + zone
 
     // Since SUMO can't handle polygons with holes we split into the main polygon and the holes
     // We clearly mark the holes with a 'hole-{hole-counter}' prefix
@@ -68,17 +68,29 @@ async function convertGeoJSONToPoly(callerOptions) {
       id: polyId,
       shape: getShape(mainPolygon),
       color: `${zoneColour},${alphaMin + (zone - 1) * alphaStep}`,
-      layer,
+      layer: `${layer}.0`,
     })
 
-    // Add all the holes
-    for (const [i, hole] of holes.entries()) {
-      xml.element("poly", {
-        id: `hole-${pad(i)}-${polyId}`,
-        shape: getShape(hole),
-        color: `${zoneColour},0`,
-        layer,
-      })
+    if (zone === 1) {
+      // Real holes can only occur in zone 1
+      // Check if hole is a real hole or just a zone 2 polygon
+      for (const [i, hole] of holes.entries()) {
+        const holePolygon = turf.polygon([hole])
+        geojson.features
+          .filter(f => f.properties.zone === 2)
+          .forEach(f => {
+            const zonePolygon = turf.polygon(f.geometry.coordinates)
+            // If they do not overlap then it must be an actual hole
+            if (!booleanOverlap(zonePolygon, holePolygon)) {
+              xml.element("poly", {
+                id: `hole-${pad(i)}-${polyId}`,
+                shape: getShape(hole),
+                color: `254,255,255,255`,
+                layer: `${layer + 1}.0`,
+              })
+            }
+          })
+      }
     }
   }
 
@@ -99,6 +111,7 @@ async function convertGeoJSONToPoly(callerOptions) {
     }
   })
 
+  const tempDir = fs.mkdtempSync("tmp-")
   fs.writeFileSync(`${tempDir}/polygon.xml`, xml.end({ pretty: true }))
 
   await runBash(

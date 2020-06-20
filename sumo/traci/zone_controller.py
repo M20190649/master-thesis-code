@@ -141,7 +141,7 @@ class ZoneController:
 
             polygon = {
                 "id": pid,
-                "zone": zone,
+                "zone": int(zone),
                 "zone_timestep": self.current_timestep,
                 "shape": Polygon(shape),
                 "edges": edges_in_polygon,
