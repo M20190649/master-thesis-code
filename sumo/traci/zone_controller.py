@@ -1,4 +1,4 @@
-import pprint, datetime, os
+import pprint, datetime, os, math
 import sqlite3
 import traci
 from itertools import chain
@@ -28,7 +28,7 @@ class ZoneController:
         return list(self.__polygons.keys())
 
     def get_polygons_by_timestep(self, timestep=None, holes=True):
-        def check_polygon(polygon):
+        def filter_polygon(polygon):
             if not holes:
                 if polygon["id"].startswith("hole"):
                     return False
@@ -36,7 +36,16 @@ class ZoneController:
             p_timestep = polygon["zone_timestep"]
             return p_timestep == (timestep or self.current_timestep)
 
-        return list(filter(check_polygon, self.__polygons.values()))
+        def sort_polygon(polygon):
+            if polygon["id"].startswith("hole"):
+                return math.inf
+            else:
+                return polygon["zone"]
+
+        polygons = list(filter(filter_polygon, self.__polygons.values()))
+        polygons.sort(key=sort_polygon)
+
+        return polygons
 
     def load_polygons_from_file(self):
         # Load the XML file for the current timestep
