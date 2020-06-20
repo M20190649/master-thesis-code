@@ -69,12 +69,6 @@ class Tracker:
                 for p in polygons:
                     shape = p["shape"]
                     if shape.contains(location):
-                        if polygon is None:
-                            print("none")
-                        else:
-                            print(polygon["id"])
-                        print(x, y)
-                        print(p["id"])
                         if p["id"].startswith("hole"):
                             # If polygon is inside hole there is no need to search further
                             polygon = p
