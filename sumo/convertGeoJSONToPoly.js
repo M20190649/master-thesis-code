@@ -1,6 +1,6 @@
 const fs = require("fs")
 const XMLBuilder = require("xmlbuilder")
-const { default: intersect } = require("@turf/intersect")
+const { default: booleanDisjoint } = require("@turf/boolean-disjoint")
 const turf = require("@turf/helpers")
 
 const parseCLIOptions = require("../shared/parseCLIOptions")
@@ -66,20 +66,20 @@ async function convertGeoJSONToPoly(callerOptions) {
     // Add the main polygon
     xml.element("poly", {
       id: polyId,
-      shape: getShape(mainPolygon),
       color: `${zoneColour},${alphaMin + (zone - 1) * alphaStep}`,
       layer: `${layer}.0`,
       type: "zone",
+      shape: getShape(mainPolygon),
     })
 
     for (const [i, hole] of holes.entries()) {
       // Most holes are just other nested zones (type: filled-hole)
       const holeElement = {
         id: `hole-${pad(i)}-${polyId}`,
-        shape: getShape(hole),
         color: `${zoneColour},0`,
         layer: `${layer}.0`,
         type: "filled-hole",
+        shape: getShape(hole),
       }
 
       // In zone 1 there can be real holes which belong to zone 0 (type: empty-hole)
@@ -88,11 +88,7 @@ async function convertGeoJSONToPoly(callerOptions) {
         const holePolygon = turf.polygon([hole])
         const isRealHole = geojson.features
           .filter(f => f.properties.zone === 2)
-          .every(f => {
-            // There must be no other polygon intersecting the hole
-            const zonePolygon = turf.polygon(f.geometry.coordinates)
-            return intersect(zonePolygon, holePolygon) === null
-          })
+          .every(f => booleanDisjoint(f, holePolygon))
 
         if (isRealHole) {
           holeElement.color = `255,255,255,254`
@@ -105,22 +101,23 @@ async function convertGeoJSONToPoly(callerOptions) {
     }
   }
 
-  geojson.features.forEach(f => {
-    const { type, coordinates } = f.geometry
+  for (const feature of geojson.features) {
+    const { properties, geometry } = feature
+    const { type, coordinates } = geometry
 
     switch (type) {
       case "Polygon":
-        convertPolygon(f.properties, coordinates)
+        convertPolygon(properties, coordinates)
         break
       case "MultiPolygon":
         for (const polygonCoordinates of coordinates) {
-          convertPolygon(f.properties, polygonCoordinates)
+          convertPolygon(properties, polygonCoordinates)
         }
         break
       default:
         break
     }
-  })
+  }
 
   const tempDir = fs.mkdtempSync("tmp-")
   fs.writeFileSync(`${tempDir}/polygon.xml`, xml.end({ pretty: true }))
