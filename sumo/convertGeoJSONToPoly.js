@@ -1,6 +1,6 @@
 const fs = require("fs")
 const XMLBuilder = require("xmlbuilder")
-const { default: booleanOverlap } = require("@turf/boolean-overlap")
+const { default: intersect } = require("@turf/intersect")
 const turf = require("@turf/helpers")
 
 const parseCLIOptions = require("../shared/parseCLIOptions")
@@ -69,28 +69,39 @@ async function convertGeoJSONToPoly(callerOptions) {
       shape: getShape(mainPolygon),
       color: `${zoneColour},${alphaMin + (zone - 1) * alphaStep}`,
       layer: `${layer}.0`,
+      type: "zone",
     })
 
-    if (zone === 1) {
-      // Real holes can only occur in zone 1
-      // Check if hole is a real hole or just a zone 2 polygon
-      for (const [i, hole] of holes.entries()) {
-        const holePolygon = turf.polygon([hole])
-        geojson.features
-          .filter(f => f.properties.zone === 2)
-          .forEach(f => {
-            const zonePolygon = turf.polygon(f.geometry.coordinates)
-            // If they do not overlap then it must be an actual hole
-            if (!booleanOverlap(zonePolygon, holePolygon)) {
-              xml.element("poly", {
-                id: `hole-${pad(i)}-${polyId}`,
-                shape: getShape(hole),
-                color: `254,255,255,255`,
-                layer: `${layer + 1}.0`,
-              })
-            }
-          })
+    for (const [i, hole] of holes.entries()) {
+      // Most holes are just other nested zones (type: filled-hole)
+      const holeElement = {
+        id: `hole-${pad(i)}-${polyId}`,
+        shape: getShape(hole),
+        color: `${zoneColour},0`,
+        layer: `${layer}.0`,
+        type: "filled-hole",
       }
+
+      // In zone 1 there can be real holes which belong to zone 0 (type: empty-hole)
+      // Find real holes and make them differentiable
+      if (zone === 1) {
+        const holePolygon = turf.polygon([hole])
+        const isRealHole = geojson.features
+          .filter(f => f.properties.zone === 2)
+          .every(f => {
+            // There must be no other polygon intersecting the hole
+            const zonePolygon = turf.polygon(f.geometry.coordinates)
+            return intersect(zonePolygon, holePolygon) === null
+          })
+
+        if (isRealHole) {
+          holeElement.color = `255,255,255,254`
+          holeElement.layer = `1.0`
+          holeElement.type = "empty-hole"
+        }
+      }
+
+      xml.element("poly", holeElement)
     }
   }
 
@@ -114,11 +125,12 @@ async function convertGeoJSONToPoly(callerOptions) {
   const tempDir = fs.mkdtempSync("tmp-")
   fs.writeFileSync(`${tempDir}/polygon.xml`, xml.end({ pretty: true }))
 
-  await runBash(
-    `polyconvert --xml-files ${tempDir}/polygon.xml --net-file ${
-      options.network
-    } --output-file ${options.output}`
-  )
+  await runBash([
+    "polyconvert",
+    `--xml-files ${tempDir}/polygon.xml`,
+    `--net-file ${options.network}`,
+    `--output-file ${options.output}`,
+  ])
 
   fs.unlinkSync(`${tempDir}/polygon.xml`)
   fs.rmdirSync(tempDir)
