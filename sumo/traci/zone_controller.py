@@ -80,7 +80,9 @@ class ZoneController:
             color = list(map(int, poly.attrib["color"].split(",")))
             layer = int(float(poly.attrib["layer"]))
 
-            traci.polygon.add(pid, shape, color, fill=True, layer=layer)
+            traci.polygon.add(
+                pid, shape, color, fill=True, layer=layer, polygonType=ptype
+            )
 
             polygon = {
                 "id": pid,
@@ -140,7 +142,9 @@ class ZoneController:
                 )
                 continue
 
-            traci.polygon.add(pid, shape, color, fill=True, layer=layer)
+            traci.polygon.add(
+                pid, shape, color, fill=True, layer=layer, polygonType=ptype
+            )
 
             polygon = {
                 "id": pid,
