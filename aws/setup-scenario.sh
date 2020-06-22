@@ -1,44 +1,56 @@
-rm -r scenarios/$1
+SCENARIO=$1
+MODE=$2
 
-mkdir scenarios/$1
+# Determine which day should be used
+DAY=""
+if [[ ${SCENARIO:0:1} == "L" ]]; then
+  DAY="light"
+fi
 
-cp -r scenarios/N/network scenarios/$1/network
-cp -r scenarios/N/demand scenarios/$1/demand
+if [[ ${SCENARIO:0:1} == "M" ]]; then 
+  DAY="medium"
+fi
 
-mkdir scenarios/$1/airdata
+if [[ ${SCENARIO:0:1} == "H" ]]; then 
+  DAY="heavy"
+fi
 
-if [[ $2 == "db" ]]; then
-  # Setup scenario with DB
-  if [[ ${1:0:1} == "L" ]]; then
-    cp -r light_25-03-2020/light.sqlite scenarios/$1/airdata/light.sqlite
-    node ../simulation/runSimulation.js -c scenarios/$1.json -p --db scenarios/$1/airdata/light.sqlite
-  fi
+# # Delete old scenario
+# rm -r scenarios/$SCENARIO
 
-  if [[ ${1:0:1} == "M" ]]; then 
-    cp -r medium_11-06-2020/medium.sqlite scenarios/$1/airdata/medium.sqlite
-    node ../simulation/runSimulation.js -c scenarios/$1.json -p --db scenarios/$1/airdata/medium.sqlite
-  fi
+# Create scenario folder
+mkdir scenarios/$SCENARIO
 
-  if [[ ${1:0:1} == "H" ]]; then 
-    cp -r heavy_24-01-2020/heavy.sqlite scenarios/$1/airdata/heavy.sqlite
-    node ../simulation/runSimulation.js -c scenarios/$1.json -p --db scenarios/$1/airdata/heavy.sqlite
-  fi
+# Copy network and demand data
+rm -r scenarios/$SCENARIO/network
+cp -r scenarios/N/network scenarios/$SCENARIO/network
+
+rm -r scenarios/$SCENARIO/demand
+cp -r scenarios/N/demand scenarios/$SCENARIO/demand
+
+echo $MODE
+
+if [[ $MODE == "db" ]]; then
+  # Setup with DB
+  echo $DAY/$DAY.sqlite
+  rm -r scenarios/$SCENARIO/airdata/$DAY.sqlite
+  cp $DAY/$DAY.sqlite scenarios/$SCENARIO/airdata/$DAY.sqlite
+
+  # Do a prep run to make sure everything works
+  node ../simulation/runSimulation.js -c scenarios/$SCENARIO.json -p --db
 else
-  # Setup scenario with airdata files
-  if [[ ${1:0:1} == "L" ]]; then
-    cp -r light_25-03-2020/PM10-raw scenarios/$1/airdata/PM10-raw
-    cp -r light_25-03-2020/PM10-idw scenarios/$1/airdata/PM10-idw
-  fi
+  # Copy air data from chosen day
+  mkdir scenarios/$SCENARIO/airdata
 
-  if [[ ${1:0:1} == "M" ]]; then 
-    cp -r medium_11-06-2020/PM10-raw scenarios/$1/airdata/PM10-raw
-    cp -r medium_11-06-2020/PM10-idw scenarios/$1/airdata/PM10-idw
-  fi
+  rm -r scenarios/$SCENARIO/airdata/PM10-raw
+  cp -r $DAY/PM10-raw scenarios/$SCENARIO/airdata/PM10-raw
 
-  if [[ ${1:0:1} == "H" ]]; then 
-    cp -r heavy_24-01-2020/PM10-raw scenarios/$1/airdata/PM10-raw
-    cp -r heavy_24-01-2020/PM10-idw scenarios/$1/airdata/PM10-idw
-  fi
+  rm -r scenarios/$SCENARIO/airdata/PM10-idw
+  cp -r $DAY/PM10-idw scenarios/$SCENARIO/airdata/PM10-idw
 
-  node ../simulation/runSimulation.js -c scenarios/$1.json -p
+  # Remove pictures of zones -> Not necessary for AWS
+  rm scenarios/$SCENARIO/airdata/PM10-idw/*.png
+
+  # Do a prep run to make sure everything works
+  node ../simulation/runSimulation.js -c scenarios/$SCENARIO.json -p
 fi
