@@ -38,10 +38,6 @@ class VehicleController:
 
         pid = polygon["id"]
 
-        # Don't avoid any holes
-        if pid.startswith("hole"):
-            return False
-
         # Check the cached list
         polygon_list = traci.vehicle.getParameter(vid, "avoid_polygons")
         if pid in polygon_list.split(","):
@@ -122,7 +118,16 @@ class VehicleController:
         do_not_avoid = []
 
         # Decide per polygon if to avoid it or not
-        for polygon in self.zone_controller.get_polygons_by_timestep(timestep=timestep):
+        polygons = self.zone_controller.get_polygons_by_timestep(timestep=timestep)
+        for polygon in polygons:
+            # Handle holes
+            if polygon["id"].startswith("hole"):
+                if polygon["type"] == "empty-hole":
+                    do_not_avoid.append(polygon)
+
+                continue
+
+            # Handle regular zone polygons
             if self.should_vehicle_avoid_polygon(vid, polygon):
                 for eid in polygon["edges"]:
                     # Set travel times for all edges to very high value
@@ -133,15 +138,22 @@ class VehicleController:
                 do_not_avoid.append(polygon)
 
         for polygon in do_not_avoid:
-            # Make sure holes and other polygons that should not be avoided
-            # have very low/negative traveltime
-            # Do this step separately after the loop above because
-            # SUMO can't deal with polygons that have holes
+            # Make sure holes and other polygons that should not be avoided have very low/negative traveltime
+            # Do this step separately after the loop above because SUMO can't deal with polygons that have holes
+            # This basically partially overwrites some weights set above because polygons are layered
             for eid in polygon["edges"]:
                 traci.vehicle.setAdaptedTraveltime(vid, eid, time=-999999)
 
         traci.vehicle.rerouteTraveltime(vid, False)
-        traci.vehicle.setColor(vid, (255, 0, 0))
+
+        old_route = self.vehicle_vars[vid][tc.VAR_EDGES]
+        new_route = traci.vehicle.getRoute(vid)
+
+        if old_route == new_route:
+            log("Route has not changed")
+            traci.vehicle.setColor(vid, (0, 0, 255))
+        else:
+            traci.vehicle.setColor(vid, (255, 0, 0))
 
         # Disable rerouting through the rerouting device so that vehicle will stay on this route
         if self.sim_config["periodicRerouting"]:
