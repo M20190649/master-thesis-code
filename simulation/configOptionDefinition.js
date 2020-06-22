@@ -157,6 +157,18 @@ const configOptionDefinitions = [
     minValue: 0,
     maxValue: 1,
   },
+  {
+    name: "mesosim",
+    type: Boolean,
+    description: `Determines if mesoscopic simulation should be used. Improves performance but distances in zones might be less accurate due to abstraction of roads into queues with fixed length. (https://sumo.dlr.de/docs/Simulation/Meso.html)`,
+    required: false,
+  },
+  {
+    name: "libsumo",
+    type: Boolean,
+    description: `Determines if libsumo should be used. Improves performance but requires SUMO to be manually built from source beforehand. (https://sumo.dlr.de/docs/Libsumo.html)`,
+    required: false,
+  },
 ]
 
 module.exports = configOptionDefinitions

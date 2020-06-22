@@ -90,7 +90,20 @@ if args.gui:
     sumo_binary = os.environ["SUMO_HOME"] + "/bin/sumo-gui"
 
 sumo_cmd = [sumo_binary, "--configuration-file", args.sumo_config]
-# sumo_cmd = [sumo_binary, "--configuration-file", args.sumo_config, "--mesosim"]
+
+if "mesosim" in sim_config and sim_config["mesosim"]:
+    log("Using mesoscopic simulation model")
+    sumo_cmd.append("--mesosim")
+else:
+    log("Using microscopic simulation model")
+
+if "libsumo" in sim_config and sim_config["libsumo"]:
+    log("Using libsumo")
+    os.environ["LIBSUMO_AS_TRACI"] = "pleaseuselibsumokthxbye"
+else:
+    log("Using TraCI")
+
+log()
 
 from simulation_controller import SimulationController
 

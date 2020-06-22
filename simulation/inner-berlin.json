@@ -29,5 +29,7 @@
   "snapshotZones": false,
   "rerouteOnZoneUpdate": false,
   "nonDepartDecisionMode": "percent",
-  "nonDepartPercent": 0
+  "nonDepartPercent": 0,
+  "mesosim": false,
+  "libsumo": false
 }
