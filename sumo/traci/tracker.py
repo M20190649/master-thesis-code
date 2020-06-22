@@ -7,6 +7,8 @@ from xml.dom import minidom
 from lxml import etree
 from lxml.etree import Element, SubElement
 
+from logger import log
+
 
 def prettify(elem, indent=4):
     ugly_string = etree.tostring(elem, encoding="utf-8")
@@ -65,44 +67,62 @@ class Tracker:
             for timestep in polygons_by_timestep:
                 polygons = polygons_by_timestep[timestep]
 
-                polygon = None
+                holes = []
+                possible_polygons = []
                 for p in polygons:
                     shape = p["shape"]
                     if shape.contains(location):
                         if p["id"].startswith("hole"):
-                            # If polygon is inside hole there is no need to search further
-                            polygon = p
+                            holes.append(p)
+                        else:
+                            possible_polygons.append(p)
+
+                polygon = None
+                for p in possible_polygons:
+                    matching_hole = next(
+                        (h for h in holes if h["zone"] == p["zone"]), None,
+                    )
+                    if matching_hole is not None:
+                        if matching_hole["type"] == "empty-hole":
+                            # Vehicle is inside Zone 0
+                            polygon = matching_hole
                             break
-
-                        if polygon == None:
-                            polygon = p
+                        else:
+                            # Hole is just another nested zone (type: "filled-hole")
+                            holes.remove(matching_hole)
                             continue
+                    else:
+                        # Vehicle is inside a zone
+                        polygon = p
+                        break
 
-                        if p["zone"] > polygon["zone"]:
-                            polygon = p
+                if polygon is None:
+                    # Vehicle is in no polygon
+                    continue
 
-                if polygon is not None:
-                    if vehicle_xml is None:
-                        vehicle_xml = SubElement(
-                            timestep_xml,
-                            "vehicle",
-                            {
-                                "id": vid,
-                                "zone-timestep": v_timestep,
-                                "speed": str(speed),
-                                "edge": current_edge,
-                                "emission-class": emission_class,
-                            },
-                        )
+                if polygon["id"].startswith("hole"):
+                    # Vehicle is in Zone 0
+                    # No need to track the driven distance
+                    continue
 
-                    polygon_xml = SubElement(
-                        vehicle_xml,
-                        "polygon",
+                if vehicle_xml is None:
+                    vehicle_xml = SubElement(
+                        timestep_xml,
+                        "vehicle",
                         {
-                            "id": polygon["id"],
-                            "zone-timestep": polygon["zone_timestep"],
+                            "id": vid,
+                            "zone-timestep": v_timestep,
+                            "speed": str(speed),
+                            "edge": current_edge,
+                            "emission-class": emission_class,
                         },
                     )
+
+                polygon_xml = SubElement(
+                    vehicle_xml,
+                    "polygon",
+                    {"id": polygon["id"], "zone-timestep": polygon["zone_timestep"],},
+                )
 
         indent = 4
         xml = prettify(timestep_xml, indent=indent)
