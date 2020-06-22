@@ -19,6 +19,7 @@
     "command-line-args": "^5.1.1",
     "command-line-usage": "^6.1.0",
     "gauss-krueger": "^1.0.1",
+    "glob": "^7.1.6",
     "gunzip-file": "^0.1.1",
     "line-by-line": "^0.1.6",
     "p-limit": "^3.0.1",

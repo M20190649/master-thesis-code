@@ -1,6 +1,7 @@
 const { join, basename, resolve, dirname } = require("path")
 const fs = require("fs")
 const commandLineUsage = require("command-line-usage")
+const glob = require("glob")
 
 const parseCLIOptions = require("../shared/parseCLIOptions")
 const configOptionDefinition = require("./configOptionDefinition")
@@ -34,9 +35,10 @@ const CLIOptionDefinitions = [
   },
   {
     name: "db",
+    alias: "d",
     type: Boolean,
     description:
-      "Use SQLite database containing all polygons for air pollution zones. This skips fetching and interpolating air pollution data. Database file must be somewhere within the airdata directory.",
+      "Use SQLite database containing all polygons for air pollution zones. This skips fetching and interpolating air pollution data. Database file must be somewhere within the airdata directory. Use sumo/traci/create_poly_db.py to generate a database from a simulation directory.",
   },
   {
     name: "config-info",
@@ -121,11 +123,17 @@ async function run() {
   logSection("Prepare Air Data")
 
   if (CLIOptions.db) {
+    const files = glob.sync(join(airDataDir, "/**/*.@(sqlite|sqlite3|db|db3)"))
+    if (files.length === 0) {
+      throw new Error("No SQLite database found in airdata directory")
+    }
+
+    if (files.length > 1) {
+      throw new Error("Multiple SQLite database found in airdata directory")
+    }
+
     console.log("Using SQLite database for air pollution zones")
     console.log("Skipping air data preparation")
-    console.log(
-      "Use sumo/traci/create_poly_db.py to generate a database from a simulation directory"
-    )
   } else {
     await prepareAirData(inputFiles, directories, config)
   }
