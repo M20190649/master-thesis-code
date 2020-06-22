@@ -32,9 +32,12 @@ def find_db(directory):
 
 def connect(path):
     global db
-    if db is None:
-        db = sqlite3.connect(path, 30)
-        db.row_factory = dict_factory
+    db = sqlite3.connect(path, 30)
+    db.row_factory = dict_factory
+
+
+def close():
+    db.close()
 
 
 def execute(sql):
@@ -57,6 +60,12 @@ def drop_table():
 def insert(polygon):
     values = [f"'{polygon[attrib['name']]}'" for attrib in attributes]
     execute(f"INSERT INTO polygons VALUES ({', '.join(values)})")
+
+
+def get_all():
+    cursor = execute(f"SELECT * FROM polygons")
+    polygons = cursor.fetchall()
+    return polygons
 
 
 def get_all_from_timestep(timestep):
