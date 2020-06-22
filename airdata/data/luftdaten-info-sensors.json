@@ -31588,6 +31588,41 @@
         "id": 23070
       },
       "timestamp": "2020-06-18 21:21:14"
+    },
+    {
+      "sensor": {
+        "pin": "7",
+        "id": 284,
+        "sensor_type": {
+          "name": "DHT22",
+          "id": 9,
+          "manufacturer": "various"
+        }
+      },
+      "id": 896159945,
+      "timestamp": "2020-06-22 10:25:46",
+      "sampling_rate": null,
+      "sensordatavalues": [
+        {
+          "value_type": "temperature",
+          "value": "25.50",
+          "id": 1929563007
+        },
+        {
+          "value_type": "humidity",
+          "value": "1.00",
+          "id": 1929563011
+        }
+      ],
+      "location": {
+        "altitude": "37.0",
+        "longitude": "13.426",
+        "id": 125,
+        "indoor": 0,
+        "exact_location": 0,
+        "latitude": "52.516",
+        "country": "DE"
+      }
     }
   ]
 }
