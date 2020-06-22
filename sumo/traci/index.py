@@ -1,8 +1,8 @@
 import os, sys, getopt, json, math, re
+from argparse import ArgumentParser
 
 from logger import open_log, log
-
-from argparse import ArgumentParser
+import poly_db
 
 parser = ArgumentParser()
 parser.add_argument(
@@ -30,8 +30,8 @@ parser.add_argument(
 parser.add_argument(
     "--db",
     dest="db",
-    help="Filepath to SQLite database containing all polygons for air pollution zones",
-    metavar="FILE",
+    help="Use SQLite database containing all polygons for air pollution zones",
+    metavar="BOOLEAN",
     type=str,
 )
 
@@ -64,6 +64,17 @@ open_log(log_path)
 log("Simulation starting with the following configuration:\n")
 log(sim_config)
 log()
+
+# Find and connect to DB if necessary
+if args.db:
+    search_dir = os.path.join(sim_dir, sim_name, "airdata",)
+    db_path = poly_db.find_db(search_dir)
+    if db_path is None:
+        error = "No SQLite database found in airdata directory"
+        log(error)
+        raise ValueError(error)
+
+    poly_db.connect(db_path)
 
 # Add some additional data to simulation config dictionary
 sim_config["sim_airDataDir"] = sim_airdata_dir

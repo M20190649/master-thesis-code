@@ -11,6 +11,8 @@ import geopandas as gpd
 
 from logger import log
 
+import poly_db
+
 
 class ZoneController:
     def __init__(self, sim_config):
@@ -73,6 +75,8 @@ class ZoneController:
                     poly.attrib["shape"].split(" "),
                 )
             )
+            zone = int(pid.split("_")[0].split("-")[-2])
+            ptype = poly.attrib["type"]
             color = list(map(int, poly.attrib["color"].split(",")))
             layer = int(float(poly.attrib["layer"]))
 
@@ -80,9 +84,11 @@ class ZoneController:
 
             polygon = {
                 "id": pid,
-                "zone": int(pid.split("_")[0].split("-")[-2]),
+                "zone": zone,
                 "zone_timestep": self.current_timestep,
+                "type": ptype,
                 "shape": Polygon(shape),
+                "edges": [],
             }
 
             # Calculate and store all edges that are covered by each new polygon
@@ -104,43 +110,31 @@ class ZoneController:
                 traci.polygon.remove(pid)
                 continue
 
-            edges_in_polygon = list(polygon_context.keys())
-            log(f"Found {len(edges_in_polygon)} edges in polygon {pid}")
-            polygon["edges"] = edges_in_polygon
+            edges = list(polygon_context.keys())
+            log(f"Found {len(edges)} edges in polygon {pid}")
+            polygon["edges"] = edges
 
             self.__polygons[pid] = polygon
 
     def load_polygons_from_db(self):
-        db_path = self.sim_config["sim_polygonDatabase"]
-
-        db_exists = os.path.isfile(db_path)
-        if not db_exists:
-            error = "Database file zones.sqlite does not exist!"
-            log(error)
-            raise ValueError(error)
-
-        conn = sqlite3.connect(db_path, 30)
-        c = conn.cursor()
-
         log(f"Querying polygons for timestep {self.current_timestep} from database")
-        rows = c.execute(
-            f"SELECT * FROM polygons WHERE timestep='{self.current_timestep}'"
-        )
-
+        polygons = poly_db.get_all_from_timestep(self.current_timestep)
         log(f"Adding new polygons for timestep {self.current_timestep}")
-        for row in rows:
-            pid, zone, timestep, color_string, layer, shape_string, edges_string = row
-            pid = f"{pid}_{self.current_timestep}"
+        for polygon in polygons:
+            pid = f"{polygon['id']}_{self.current_timestep}"
+            zone = int(polygon["zone"])
+            ptype = polygon["type"]
             shape = list(
                 map(
                     lambda pair: tuple(map(float, pair.split(","))),
-                    shape_string.split(" "),
+                    polygon["shape"].split(" "),
                 )
             )
-            color = list(map(int, color_string.split(",")))
-            edges_in_polygon = edges_string.split(" ")
+            layer = polygon["layer"]
+            color = list(map(int, polygon["color"].split(",")))
+            edges = polygon["edges"].split(" ") if polygon["edges"] != "" else None
 
-            if len(edges_in_polygon) == 0:
+            if edges is None:
                 log(
                     f"Polygon {pid} will not be added because it is not covering any edges."
                 )
@@ -150,10 +144,11 @@ class ZoneController:
 
             polygon = {
                 "id": pid,
-                "zone": int(zone),
+                "zone": zone,
                 "zone_timestep": self.current_timestep,
+                "type": ptype,
                 "shape": Polygon(shape),
-                "edges": edges_in_polygon,
+                "edges": edges,
             }
 
             self.__polygons[pid] = polygon

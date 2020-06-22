@@ -1,6 +1,5 @@
-import sys, os, multiprocessing, time, functools, uuid
+import sys, os, multiprocessing, time, functools, uuid, glob
 from argparse import ArgumentParser
-import sqlite3
 from lxml import etree
 
 if "SUMO_HOME" in os.environ:
@@ -13,6 +12,7 @@ import sumolib
 import traci
 import traci.constants as tc
 
+import poly_db
 
 parser = ArgumentParser()
 parser.add_argument(
@@ -27,28 +27,13 @@ parser.add_argument(
 args = parser.parse_args()
 base_dir = os.path.abspath(args.dir)
 
-attribs = [
-    {"name": "id", "type": "text",},
-    {"name": "zone", "type": "text"},
-    {"name": "timestep", "type": "text"},
-    {"name": "type", "type": "text"},
-    {"name": "color", "type": "text"},
-    {"name": "layer", "type": "integer"},
-    {"name": "shape", "type": "text"},
-    {"name": "edges", "type": "text"},
-]
-
-table_string = ", ".join(
-    list(map(lambda attrib: f"{attrib['name']} {attrib['type']}", attribs))
-)
-
-get_values = lambda p: [f"'{p[attrib['name']]}'" for attrib in attribs]
+db_path = poly_db.find_db(os.path.join(base_dir, "airdata"))
+if db_path is None:
+    db_path = os.path.join(base_dir, "airdata", "polygons.sqlite")
 
 
 def process_files(start, files):
-    conn = sqlite3.connect(os.path.join(base_dir, "airdata", "polygons.sqlite"), 30)
-    c = conn.cursor()
-    c.execute(f"CREATE TABLE IF NOT EXISTS polygons ({table_string})")
+    poly_db.connect(db_path)
 
     def get_polygons(file_path):
         t = time.time()
@@ -90,9 +75,7 @@ def process_files(start, files):
             traci.polygon.remove(pid)
 
             print(p["id"], len(p["edges"].split(" ")), "edges")
-            values = get_values(p)
-            c.execute(f"INSERT INTO polygons VALUES ({','.join(values)})")
-            conn.commit()
+            poly_db.insert(p)
 
         print(
             "Done", os.path.basename(file_path), f"({format(time.time() - t, '.3f')}s)"
@@ -117,9 +100,9 @@ def process_files(start, files):
 
 
 if __name__ == "__main__":
-    conn = sqlite3.connect(os.path.join(base_dir, "airdata", "polygons.sqlite"), 30)
-    c = conn.cursor()
-    c.execute("DROP TABLE IF EXISTS polygons")
+    poly_db.connect(db_path)
+    poly_db.drop_table()
+    poly_db.create_table()
 
     path = base_dir + "/airdata/PM10-idw"
     files = [os.path.join(path, f) for f in os.listdir(path) if f.endswith(".xml")]

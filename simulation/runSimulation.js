@@ -34,9 +34,9 @@ const CLIOptionDefinitions = [
   },
   {
     name: "db",
-    type: String,
+    type: Boolean,
     description:
-      "Filepath to SQLite database containing all polygons for air pollution zones. This skips fetching and interpolating air pollution data.",
+      "Use SQLite database containing all polygons for air pollution zones. This skips fetching and interpolating air pollution data. Database file must be somewhere within the airdata directory.",
   },
   {
     name: "config-info",
@@ -121,18 +121,11 @@ async function run() {
   logSection("Prepare Air Data")
 
   if (CLIOptions.db) {
-    if (fs.existsSync(CLIOptions.db)) {
-      const databaseFilepath = resolve(CLIOptions.db)
-      if (!basename(databaseFilepath).endsWith(".sqlite")) {
-        throw new Error(
-          "Polygons database is not an SQLite database (file extension .sqlite)"
-        )
-      }
-      console.log("Using polygons SQLite database for air pollution zones")
-      inputFiles.zonesDatabase = resolve(CLIOptions.db)
-    } else {
-      throw new Error("Polygons SQLite Database does not exist!")
-    }
+    console.log("Using SQLite database for air pollution zones")
+    console.log("Skipping air data preparation")
+    console.log(
+      "Use sumo/traci/create_poly_db.py to generate a database from a simulation directory"
+    )
   } else {
     await prepareAirData(inputFiles, directories, config)
   }
@@ -157,7 +150,7 @@ async function run() {
     `--config ${resolve(CLIOptions.config)}`,
     `--sumo-config ${sumoConfigFile}`,
     `${CLIOptions.gui ? "--gui=true" : ""}`,
-    `${CLIOptions.db ? `--db=${inputFiles.zonesDatabase}` : ""}`,
+    `${CLIOptions.db ? "--db=true" : ""}`,
   ])
   console.log("Done!\n")
 }
