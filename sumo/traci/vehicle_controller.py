@@ -138,11 +138,11 @@ class VehicleController:
                 do_not_avoid.append(polygon)
 
         for polygon in do_not_avoid:
-            # Make sure holes and other polygons that should not be avoided have very low/negative traveltime
+            # Make sure holes and other polygons that should not be avoided have 0 traveltime
             # Do this step separately after the loop above because SUMO can't deal with polygons that have holes
             # This basically partially overwrites some weights set above because polygons are layered
             for eid in polygon["edges"]:
-                traci.vehicle.setAdaptedTraveltime(vid, eid, time=-999999)
+                traci.vehicle.setAdaptedTraveltime(vid, eid, time=0)
 
         traci.vehicle.rerouteTraveltime(vid, False)
 
