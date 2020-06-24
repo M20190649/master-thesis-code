@@ -35,3 +35,4 @@ airdata/*.png
 *.sumocfg
 *.pem
 *.sqlite
+*.xlsx
