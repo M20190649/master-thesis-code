@@ -28,20 +28,20 @@ cp -r scenarios/N/network scenarios/$SCENARIO/network
 rm -r scenarios/$SCENARIO/demand
 cp -r scenarios/N/demand scenarios/$SCENARIO/demand
 
+
+mkdir scenarios/$SCENARIO/airdata
 echo $MODE
 
 if [[ $MODE == "db" ]]; then
   # Setup with DB
   echo $DAY/$DAY.sqlite
   rm -r scenarios/$SCENARIO/airdata/$DAY.sqlite
-  cp $DAY/$DAY.sqlite scenarios/$SCENARIO/airdata/$DAY.sqlite
+  cp $DAY/$DAY.sqlite scenarios/$SCENARIO/airdata
 
   # Do a prep run to make sure everything works
   node ../simulation/runSimulation.js -c scenarios/$SCENARIO.json -p --db
 else
   # Copy air data from chosen day
-  mkdir scenarios/$SCENARIO/airdata
-
   rm -r scenarios/$SCENARIO/airdata/PM10-raw
   cp -r $DAY/PM10-raw scenarios/$SCENARIO/airdata/PM10-raw
 
