@@ -8,6 +8,8 @@ if "SUMO_HOME" in os.environ:
 else:
     sys.exit("Please declare the environment variable 'SUMO_HOME'")
 
+os.environ["LIBSUMO_AS_TRACI"] = "pleaseuselibsumokthxbye"
+
 import sumolib
 import traci
 import traci.constants as tc

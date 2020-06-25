@@ -1,6 +1,9 @@
 import os, pprint, time, sys, traceback, logging
 import traci
 import traci.constants as tc
+import psutil
+
+
 from tracker import Tracker
 from vehicle_controller import VehicleController
 from zone_controller import ZoneController
@@ -17,6 +20,8 @@ class SimulationController:
         self.tracker = Tracker(sim_config, self.zone_controller)
         self.vehicle_controller = VehicleController(sim_config, self.zone_controller)
 
+        self.process = psutil.Process()
+
     def start(self):
         try:
             interval = self.sim_config["zoneUpdateInterval"] * 60
@@ -28,6 +33,7 @@ class SimulationController:
             prep_time = 0
             tracking_time = 0
             rerouting_time = 0
+            prev_memory = self.process.memory_percent()
 
             # Load initial zones
             x = time.time()
@@ -73,14 +79,22 @@ class SimulationController:
                     log(f"Vehicle tracking time: {format(tracking_time, '.3f')}s")
                     log(f"Vehicle rerouting time: {format(rerouting_time, '.3f')}s")
                     log()
+
                     timestep_time = time.time()
                     step_time = 0
                     prep_time = 0
                     tracking_time = 0
                     rerouting_time = 0
                     zone_time = 0
-                    # if step == interval * 4:
-                    #     sys.exit()
+
+                    curr_memory = self.process.memory_percent()
+                    log(f"Previous memory usage: {format(prev_memory, '.3f')} %")
+                    log(f"Current memory usage: {format(curr_memory, '.3f')} %")
+                    log(
+                        f"Increase: {format((curr_memory - prev_memory) / prev_memory, '.3f')} %"
+                    )
+                    log()
+                    prev_memory = curr_memory
 
                     x = time.time()
                     self.zone_controller.update_zones(step)

@@ -138,11 +138,11 @@ class VehicleController:
                 do_not_avoid.append(polygon)
 
         for polygon in do_not_avoid:
-            # Make sure holes and other polygons that should not be avoided have very low/negative traveltime
+            # Make sure holes and other polygons that should not be avoided have 0 traveltime
             # Do this step separately after the loop above because SUMO can't deal with polygons that have holes
             # This basically partially overwrites some weights set above because polygons are layered
             for eid in polygon["edges"]:
-                traci.vehicle.setAdaptedTraveltime(vid, eid, time=-999999)
+                traci.vehicle.setAdaptedTraveltime(vid, eid, time=0)
 
         traci.vehicle.rerouteTraveltime(vid, False)
 
@@ -325,29 +325,25 @@ class VehicleController:
 
                     self.reroute_vehicle(vid, timestep=p_timestep)
 
+    def should_vehicle_depart(self, vid):
+        decision = True
+        if "nonDepartDecisionMode" in self.sim_config:
+            mode = self.sim_config["nonDepartDecisionMode"]
+            if mode == "percent":
+                if "nonDepartPercent" not in self.sim_config:
+                    raise ValueError(
+                        '"nonDepartDecisionMode: percent" requires the configuration key "nonDepartPercent"'
+                    )
+                p = 1 - self.sim_config["nonDepartPercent"]
+                decision = depart_decisions.percent(p=p)
+            if mode == "random":
+                decision = depart_decisions.random()
+
+        return decision
+
     def prepare_new_vehicles(self):
-        # n_new = len(self.new_vehicles)
-        # if n_new != 0:
-        #     print(f"{n_new} new vehicle{'' if n_new == 1 else 's'} {'was' if n_new == 1 else 'were'} inserted")
-
-        def should_vehicle_depart():
-            decision = True
-            if "nonDepartDecisionMode" in self.sim_config:
-                mode = self.sim_config["nonDepartDecisionMode"]
-                if mode == "percent":
-                    if "nonDepartPercent" not in self.sim_config:
-                        raise ValueError(
-                            '"nonDepartDecisionMode: percent" requires the configuration key "nonDepartPercent"'
-                        )
-                    p = 1 - self.sim_config["nonDepartPercent"]
-                    decision = depart_decisions.percent(p=p)
-                if mode == "random":
-                    decision = depart_decisions.random()
-
-            return decision
-
-        # This implementation for non-depart required me to
-        # add step < 24 * 60 * 60 to the while condition in simulation_controller
+        # This implementation for non-depart requires
+        # adding "step < 24 * 60 * 60" to the while condition in simulation_controller
         loaded_vehicles = traci.simulation.getLoadedIDList()
         self.new_vehicles = traci.simulation.getDepartedIDList()
         for vid in loaded_vehicles:
@@ -357,7 +353,7 @@ class VehicleController:
                 log(f"Remove vehicle {vid} due to non-depart")
                 continue
 
-            if not should_vehicle_depart():
+            if not self.should_vehicle_depart(vid):
                 traci.vehicle.remove(vid)
                 log(f"Remove vehicle {vid} due to non-depart")
                 self.non_depart_people.add(person)
