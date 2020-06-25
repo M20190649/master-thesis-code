@@ -6,20 +6,26 @@
 
 3. Install [Miniconda/Anaconda](https://docs.conda.io/en/latest/index.html)
 
-4. Clone the GitHub Repository
+4. Download and install/unpack [SUMO](https://sumo.dlr.de/docs/Downloads.php)
+
+Set `SUMO_HOME` environment variable to your SUMO install directory (e.g. `C:\Users\Mazel\Desktop\sumo-1.6.0`)
+
+Add the `bin` directory of your SUMO directory to the PATH variable (e.g. `C:\Users\Mazel\Desktop\sumo-1.6.0\bin`)
+
+5. Clone the GitHub Repository
 
 ```bash
 git clone https://github.com/marcelreppi/master-thesis-code
 cd master-thesis-code
 ```
 
-5. Install NodeJS dependencies
+6. Install NodeJS dependencies
 
 ```
 npm install
 ```
 
-6. Create the conda environment with all Python dependencies
+7. Create the conda environment with all Python dependencies
 
 ```bash
 conda env create -f environment-windows.yml
@@ -34,16 +40,10 @@ conda activate apats-sim
 
 # Add additional channel for packages
 conda config --add channels conda-forge
+conda config --set channel_priority strict
 
 # Install all packages
-conda install numpy scipy shapely pandas geopandas matplotlib notebook scikit-learn scikit-image metpy pykrige zope.event black
+conda install numpy scipy shapely pandas geopandas matplotlib notebook scikit-learn scikit-image metpy pykrige zope.event lxml black openpyxl psutil
 
 pip install naturalneighbor
-pip install openpyxl
 ```
-
-7. Download and install/unpack [SUMO](https://sumo.dlr.de/docs/Downloads.php)
-
-Set `SUMO_HOME` environment variable to your SUMO install directory (e.g. `C:\Users\Mazel\Desktop\sumo-1.6.0`)
-
-Add the `bin` directory of your SUMO directory to the PATH variable (e.g. `C:\Users\Mazel\Desktop\sumo-1.6.0\bin`)

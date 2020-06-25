@@ -35,20 +35,46 @@ conda init bash
 exec bash -l
 ```
 
-5. Clone the GitHub Repository
+5. Install SUMO
+
+```bash
+# Download and install SUMO
+sudo add-apt-repository ppa:sumo/stable
+sudo apt-get update
+sudo apt-get install sumo sumo-tools sumo-doc
+
+# Set SUMO_HOME environment variable
+export SUMO_HOME=/usr/share/sumo
+```
+
+Alternatively you can build SUMO from source
+
+```bash
+sudo apt-get install cmake python g++ libxerces-c-dev libfox-1.6-dev libgdal-dev libproj-dev libgl2ps-dev swig
+
+git clone --recursive https://github.com/eclipse/sumo
+export SUMO_HOME="$PWD/sumo"
+mkdir sumo/build/cmake-build && cd sumo/build/cmake-build
+cmake ../..
+make -j$(nproc)
+export PATH=~/sumo/bin:$PATH
+export SUMO_HOME=~/sumo
+```
+
+6. Clone the GitHub Repository
 
 ```bash
 git clone https://github.com/marcelreppi/master-thesis-code
 cd master-thesis-code
 ```
 
-6. Install NodeJS dependencies
+7. Install NodeJS dependencies
 
 ```bash
 npm install
 ```
 
-7. Create the conda environment with all Python dependencies
+8. Create the conda environment with all Python dependencies
 
 ```bash
 conda env create -f environment-ubuntu.yml
@@ -63,12 +89,12 @@ conda activate apats-sim
 
 # Add additional channel for packages
 conda config --add channels conda-forge
+conda config --set channel_priority strict
 
 # Install all packages
-conda install numpy scipy shapely pandas geopandas matplotlib notebook scikit-learn scikit-image metpy pykrige zope.event lxml black
+conda install numpy scipy shapely pandas geopandas matplotlib notebook scikit-learn scikit-image metpy pykrige zope.event lxml black openpyxl psutil
 
 pip install naturalneighbor
-pip install openpyxl
 ```
 
 Make sure Python 3.x.x is callable via "python"
@@ -76,16 +102,4 @@ Make sure Python 3.x.x is callable via "python"
 ```bash
 # If not use this
 alias python=python3
-```
-
-8. Install SUMO
-
-```bash
-# Download and install SUMO
-sudo add-apt-repository ppa:sumo/stable
-sudo apt-get update
-sudo apt-get install sumo sumo-tools sumo-doc
-
-# Set SUMO_HOME environment variable
-export SUMO_HOME=/usr/share/sumo
 ```
