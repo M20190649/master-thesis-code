@@ -39,6 +39,7 @@ conda config --add channels conda-forge
 conda install numpy scipy shapely pandas geopandas matplotlib notebook scikit-learn scikit-image metpy pykrige zope.event black
 
 pip install naturalneighbor
+pip install openpyxl
 ```
 
 7. Download and install/unpack [SUMO](https://sumo.dlr.de/docs/Downloads.php)

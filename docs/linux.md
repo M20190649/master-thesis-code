@@ -68,6 +68,7 @@ conda config --add channels conda-forge
 conda install numpy scipy shapely pandas geopandas matplotlib notebook scikit-learn scikit-image metpy pykrige zope.event lxml black
 
 pip install naturalneighbor
+pip install openpyxl
 ```
 
 Make sure Python 3.x.x is callable via "python"
